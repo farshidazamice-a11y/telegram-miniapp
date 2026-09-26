@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>ثبت‌نام</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Tahoma, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: var(--tg-theme-bg-color, #ffffff);
+      color: var(--tg-theme-text-color, #000000);
+      direction: rtl;
+    }
+    h2 {
+      text-align: center;
+      color: var(--tg-theme-button-color, #229ED9);
+      margin-bottom: 20px;
+    }
+    .info-box {
+      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      background: var(--tg-theme-bg-color, #ffffff);
+      color: var(--tg-theme-text-color, #000000);
+    }
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: var(--tg-theme-button-color, #229ED9);
+      color: var(--tg-theme-button-text-color, #ffffff);
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; }
+    .message {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 14px;
+      white-space: pre-line;
+    }
+    .msg-success { background: #d1fae5; color: #065f46; }
+    .msg-error { background: #fee2e2; color: #991b1b; }
+    .msg-info { background: #dbeafe; color: #1e40af; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div id="loading" class="message msg-info">در حال بارگذاری...</div>
+
+  <div id="formSection" class="hidden">
+    <h2>فرم ثبت‌نام</h2>
+    <div class="info-box" id="tgInfo"></div>
+
+    <form id="regForm">
+      <label>نام و نام خانوادگی *</label>
+      <input id="fullName" type="text" required>
+
+      <label>سمت *</label>
+      <input id="position" type="text" required>
+
+      <label>واحد *</label>
+      <input id="unit" type="text" required>
+
+      <button type="submit" id="submitBtn">ثبت‌نام</button>
+    </form>
+
+    <div id="formMessage"></div>
+  </div>
+
+  <div id="registeredSection" class="hidden">
+    <h2>شما قبلاً ثبت‌نام کرده‌اید ✅</h2>
+    <div class="info-box" id="registeredInfo"></div>
+    <div class="message msg-info">برای تغییر اطلاعات با ادمین تماس بگیرید.</div>
+  </div>
+
+  <script>
+    var API_URL = 'https://script.google.com/macros/s/AKfycbxbAjL-aXFwt8uRS3s_auq03ZdjHDaOPZwe5txc53bfIf2jobgAjJ3ST-hH3oFxDOMy/exec';
+
+    var tg = window.Telegram && window.Telegram.WebApp;
+    var tgUser = null;
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user;
+    }
+
+    function show(id) {
+      ['loading', 'formSection', 'registeredSection'].forEach(function(x) {
+        document.getElementById(x).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function showMessage(text, type) {
+      var el = document.getElementById('formMessage');
+      el.className = 'message ' + (type === 'success' ? 'msg-success' : type === 'error' ? 'msg-error' : 'msg-info');
+      el.innerText = text;
+    }
+
+    function apiCall(payload) {
+      return fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      }).then(function(r) { return r.json(); });
+    }
+
+    if (!tgUser) {
+      show('loading');
+      document.getElementById('loading').innerText = 'لطفاً از داخل تلگرام باز کنید.';
+    } else {
+      var info = document.getElementById('tgInfo');
+      info.innerHTML =
+        '<b>شناسه:</b> ' + tgUser.id + '<br>' +
+        '<b>نام تلگرام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '') + '<br>' +
+        '<b>یوزرنیم:</b> ' + (tgUser.username ? '@' + tgUser.username : 'ندارد');
+
+      apiCall({ action: 'getUserStatus', chatId: tgUser.id })
+        .then(function(res) {
+          if (res && res.registered) {
+            var u = res.userData;
+            var box = document.getElementById('registeredInfo');
+            box.innerHTML =
+              '<b>نام:</b> ' + u.fullName + '<br>' +
+              '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+              '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
+              '<b>وضعیت:</b> ' + (u.active ? 'فعال' : 'غیرفعال') + '<br>' +
+              '<b>سطح دسترسی:</b> ' + (u.access || 'در انتظار تعیین توسط ادمین');
+            show('registeredSection');
+          } else {
+            show('formSection');
+          }
+        })
+        .catch(function(err) {
+          show('formSection');
+          showMessage('خطا در دریافت وضعیت: ' + err.message, 'error');
+        });
+    }
+
+    document.getElementById('regForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var fullName = document.getElementById('fullName').value.trim();
+      var position = document.getElementById('position').value.trim();
+      var unit = document.getElementById('unit').value.trim();
+
+      if (!fullName || !position || !unit) {
+        showMessage('همه فیلدها الزامی هستند', 'error');
+        return;
+      }
+
+      var btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = 'در حال ارسال...';
+
+      apiCall({
+        action: 'registerUser',
+        chatId: tgUser.id,
+        username: tgUser.username || '',
+        fullName: fullName,
+        position: position,
+        unit: unit
+      })
+      .then(function(res) {
+        btn.disabled = false;
+        btn.innerText = 'ثبت‌نام';
+        if (res.ok) {
+          showMessage('✅ ' + res.message + '\nمنتظر تأیید ادمین باشید.', 'success');
+          document.getElementById('regForm').reset();
+        } else {
+          showMessage('❌ ' + res.message, 'error');
+        }
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.innerText = 'ثبت‌نام';
+        showMessage('❌ خطا: ' + err.message, 'error');
+      });
+    });
+  </script>
+</body>
+</html>

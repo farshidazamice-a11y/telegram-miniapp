@@ -43,7 +43,6 @@
     .badge-inactive { background: #fee2e2; color: #991b1b; }
     .badge-access { background: #dbeafe; color: #1e40af; }
 
-    /* Date */
     .date-row { display: flex; gap: 8px; }
     .date-row .col { flex: 1; }
     .date-row .col.month { flex: 1.6; }
@@ -62,7 +61,6 @@
       margin: 0;
     }
 
-    /* Platform */
     .platform-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-top: 10px; }
     .platform-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
     .platform-row input[type="checkbox"] { width: 22px; height: 22px; }
@@ -71,30 +69,38 @@
     .platform-row.all-row { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 6px; }
     .platform-row.all-row label { font-weight: bold; }
 
-    /* Search select */
-    .search-select { position: relative; margin-top: 6px; }
-    .ss-wrap { position: relative; }
+    /* Searchable Select */
+    .ss-container { position: relative; margin-top: 6px; }
     .ss-input {
-      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;
+      width: 100%; padding: 12px 14px 12px 36px;
+      border: 1px solid #ccc; border-radius: 8px;
       font-size: 15px; font-family: inherit;
       background: var(--tg-theme-bg-color, #fff);
       color: var(--tg-theme-text-color, #000);
     }
-    .ss-list {
+    .ss-arrow {
+      position: absolute; top: 50%; left: 12px; transform: translateY(-50%);
+      pointer-events: none; font-size: 14px; color: #888;
+    }
+    .ss-dropdown {
       position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-      max-height: 220px; overflow-y: auto;
+      max-height: 240px; overflow-y: auto;
       background: #fff; border: 1px solid #ddd; border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      z-index: 1000;
     }
     .ss-item {
-      padding: 10px 14px; cursor: pointer; font-size: 14px;
+      padding: 12px 14px; cursor: pointer; font-size: 14px;
       border-bottom: 1px solid #f1f5f9; color: #222;
+      transition: background 0.1s;
     }
-    .ss-item:hover, .ss-item:active { background: #dbeafe; }
+    .ss-item:active { background: #dbeafe; }
     .ss-item:last-child { border-bottom: none; }
-    .ss-empty { padding: 12px; color: #888; text-align: center; font-size: 13px; }
-    .ss-selected { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .ss-empty {
+      padding: 14px; color: #888; text-align: center; font-size: 13px;
+    }
+    .ss-highlight { background: #fef3c7; font-weight: bold; }
+    .ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .ss-chip {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 6px 12px;
@@ -102,8 +108,10 @@
       color: #ffffff; border-radius: 20px;
       font-size: 13px; font-weight: 500;
     }
-    .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.8; }
+    .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.85; }
     .ss-chip-x:hover { opacity: 1; }
+    .ss-hint { font-size: 11px; color: #888; margin-top: 4px; }
+    .ss-debug { font-size: 10px; color: #c00; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -143,8 +151,9 @@
     <button id="backBtn" class="btn-secondary">→ بازگشت</button>
 
     <h3>مخاطب دستور کار</h3>
-    <label>مخاطب * (قابل جستجو)</label>
+    <label>مخاطب * (تایپ کنید تا جستجو شود)</label>
     <div id="recipientSS"></div>
+    <div id="recipientDebug" class="ss-debug"></div>
 
     <div class="platform-box">
       <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">پلتفورم ارسال پیام:</div>
@@ -185,7 +194,7 @@
       <label>رشته *</label>
       <div id="fieldWrap"></div>
 
-      <label>آدرس / محل * (چند انتخابی + جستجو)</label>
+      <label>آدرس / محل * (چند انتخابی)</label>
       <div id="addrWrap"></div>
 
       <label>تاریخ شروع (شمسی) *</label>
@@ -223,7 +232,6 @@
     var currentAccess = '';
     var recipientsData = [];
 
-    // کامپوننت‌ها
     var recipientSS = null;
     var fieldSS = null;
     var addressSS = null;
@@ -250,12 +258,41 @@
       el.innerText = text;
     }
 
-    function apiCall(payload) {
+    // ============================================
+    // API با retry
+    // ============================================
+    function apiCall(payload, retries) {
+      if (retries === undefined) retries = 2;
+      var body = JSON.stringify(payload);
+
       return fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      }).then(function(r) { return r.json(); });
+        body: body,
+        redirect: 'follow'
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(text) {
+        try { return JSON.parse(text); }
+        catch (e) {
+          console.error('Bad JSON:', text.substring(0, 500));
+          throw new Error('پاسخ نامعتبر از سرور');
+        }
+      })
+      .catch(function(err) {
+        console.error('API error:', err);
+        if (retries > 0) {
+          return new Promise(function(resolve) {
+            setTimeout(resolve, 800);
+          }).then(function() {
+            return apiCall(payload, retries - 1);
+          });
+        }
+        throw err;
+      });
     }
 
     // ============================================
@@ -352,166 +389,191 @@
     }
 
     // ============================================
-    // Searchable Select Component
+    // Searchable Select - بهبودیافته
     // ============================================
     function createSearchSelect(containerId, opts) {
       var container = document.getElementById(containerId);
-      var multi = opts.multi === true;
-      var options = opts.options || [];
-      var selectedValue = multi ? [] : '';
-      var placeholder = opts.placeholder || 'جستجو...';
-
       container.innerHTML = '';
-      container.className = 'search-select';
+      container.className = 'ss-container';
 
-      var inputWrap = document.createElement('div');
-      inputWrap.className = 'ss-wrap';
+      var multi = opts.multi === true;
+      var options = (opts.options || []).slice();
+      var placeholder = opts.placeholder || 'تایپ کنید...';
+      var selectedValue = multi ? [] : '';
 
       var input = document.createElement('input');
       input.type = 'text';
       input.className = 'ss-input';
       input.placeholder = placeholder;
       input.autocomplete = 'off';
-      inputWrap.appendChild(input);
+      container.appendChild(input);
 
-      var list = document.createElement('div');
-      list.className = 'ss-list hidden';
-      inputWrap.appendChild(list);
+      var arrow = document.createElement('span');
+      arrow.className = 'ss-arrow';
+      arrow.textContent = '▼';
+      container.appendChild(arrow);
 
-      container.appendChild(inputWrap);
+      var dropdown = document.createElement('div');
+      dropdown.className = 'ss-dropdown hidden';
+      container.appendChild(dropdown);
 
-      var selWrap = document.createElement('div');
-      selWrap.className = 'ss-selected';
-      container.appendChild(selWrap);
+      var chipsWrap = document.createElement('div');
+      chipsWrap.className = 'ss-chips';
+      container.appendChild(chipsWrap);
 
-      function normalizeOption(o) {
+      function normOpt(o) {
         if (typeof o === 'string') return { value: o, label: o };
         return { value: o.value, label: o.label || o.value };
       }
-      function getOptionLabel(value) {
+
+      function labelFor(v) {
         for (var i = 0; i < options.length; i++) {
-          var o = normalizeOption(options[i]);
-          if (o.value === value) return o.label;
+          var o = normOpt(options[i]);
+          if (o.value === v) return o.label;
         }
-        return value;
+        return v;
       }
 
-      function renderList(filter) {
-        var f = String(filter || '').toLowerCase().trim();
+      function highlight(text, q) {
+        if (!q) return document.createTextNode(text);
+        var idx = text.toLowerCase().indexOf(q.toLowerCase());
+        if (idx === -1) return document.createTextNode(text);
+        var frag = document.createDocumentFragment();
+        frag.appendChild(document.createTextNode(text.substring(0, idx)));
+        var span = document.createElement('span');
+        span.className = 'ss-highlight';
+        span.textContent = text.substring(idx, idx + q.length);
+        frag.appendChild(span);
+        frag.appendChild(document.createTextNode(text.substring(idx + q.length)));
+        return frag;
+      }
+
+      function renderDropdown(filter) {
+        var q = String(filter || '').trim().toLowerCase();
+        dropdown.innerHTML = '';
+
         var items = [];
         for (var i = 0; i < options.length; i++) {
-          var o = normalizeOption(options[i]);
-          var lbl = String(o.label).toLowerCase();
-          var vll = String(o.value).toLowerCase();
-          if (f && lbl.indexOf(f) === -1 && vll.indexOf(f) === -1) continue;
+          var o = normOpt(options[i]);
           if (multi && selectedValue.indexOf(o.value) !== -1) continue;
-          if (!multi && selectedValue === o.value) continue;
+          if (!multi && selectedValue === o.value && q === '') continue;
+          if (q) {
+            var lbl = o.label.toLowerCase();
+            var vll = o.value.toLowerCase();
+            if (lbl.indexOf(q) === -1 && vll.indexOf(q) === -1) continue;
+          }
           items.push(o);
         }
-        list.innerHTML = '';
+
         if (items.length === 0) {
           var empty = document.createElement('div');
           empty.className = 'ss-empty';
-          empty.textContent = 'نتیجه‌ای یافت نشد';
-          list.appendChild(empty);
+          empty.textContent = options.length === 0 ? 'هیچ گزینه‌ای موجود نیست' : 'نتیجه‌ای یافت نشد';
+          dropdown.appendChild(empty);
           return;
         }
+
         items.forEach(function(o) {
           var item = document.createElement('div');
           item.className = 'ss-item';
-          item.textContent = o.label;
-          item.onclick = function(ev) {
+          if (q) item.appendChild(highlight(o.label, q));
+          else item.textContent = o.label;
+
+          item.addEventListener('mousedown', function(ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+          });
+          item.addEventListener('click', function(ev) {
             ev.stopPropagation();
             if (multi) {
               if (selectedValue.indexOf(o.value) === -1) selectedValue.push(o.value);
               input.value = '';
-              renderList('');
-              renderSelected();
-              input.focus();
-              if (opts.onChange) opts.onChange(selectedValue);
+              renderChips();
+              renderDropdown('');
+              if (opts.onChange) opts.onChange(selectedValue.slice());
             } else {
               selectedValue = o.value;
               input.value = o.label;
-              list.classList.add('hidden');
-              renderSelected();
+              dropdown.classList.add('hidden');
+              renderChips();
               if (opts.onChange) opts.onChange(selectedValue);
             }
-          };
-          list.appendChild(item);
+          });
+          dropdown.appendChild(item);
         });
       }
 
-      function renderSelected() {
-        selWrap.innerHTML = '';
+      function renderChips() {
+        chipsWrap.innerHTML = '';
         if (multi) {
           selectedValue.forEach(function(v) {
             var chip = document.createElement('span');
             chip.className = 'ss-chip';
-            var txt = document.createElement('span');
-            txt.textContent = getOptionLabel(v);
+            var t = document.createElement('span');
+            t.textContent = labelFor(v);
             var x = document.createElement('span');
             x.className = 'ss-chip-x';
             x.textContent = '×';
-            x.onclick = function(ev) {
+            x.addEventListener('click', function(ev) {
               ev.stopPropagation();
               selectedValue = selectedValue.filter(function(s) { return s !== v; });
-              renderSelected();
-              renderList(input.value);
-              if (opts.onChange) opts.onChange(selectedValue);
-            };
-            chip.appendChild(txt);
+              renderChips();
+              renderDropdown(input.value);
+              if (opts.onChange) opts.onChange(selectedValue.slice());
+            });
+            chip.appendChild(t);
             chip.appendChild(x);
-            selWrap.appendChild(chip);
+            chipsWrap.appendChild(chip);
           });
         } else {
           if (selectedValue) {
             var chip = document.createElement('span');
             chip.className = 'ss-chip';
-            var txt = document.createElement('span');
-            txt.textContent = getOptionLabel(selectedValue);
+            var t = document.createElement('span');
+            t.textContent = labelFor(selectedValue);
             var x = document.createElement('span');
             x.className = 'ss-chip-x';
             x.textContent = '×';
-            x.onclick = function(ev) {
+            x.addEventListener('click', function(ev) {
               ev.stopPropagation();
               selectedValue = '';
               input.value = '';
-              renderSelected();
-              renderList('');
+              renderChips();
+              renderDropdown('');
               if (opts.onChange) opts.onChange('');
-            };
-            chip.appendChild(txt);
+            });
+            chip.appendChild(t);
             chip.appendChild(x);
-            selWrap.appendChild(chip);
+            chipsWrap.appendChild(chip);
           }
         }
       }
 
       input.addEventListener('focus', function() {
-        list.classList.remove('hidden');
-        renderList(input.value);
+        dropdown.classList.remove('hidden');
+        renderDropdown(input.value);
       });
 
       input.addEventListener('input', function() {
         if (!multi) {
-          if (input.value !== getOptionLabel(selectedValue)) {
+          if (input.value !== labelFor(selectedValue)) {
             selectedValue = '';
-            renderSelected();
+            renderChips();
             if (opts.onChange) opts.onChange('');
           }
         }
-        list.classList.remove('hidden');
-        renderList(input.value);
+        dropdown.classList.remove('hidden');
+        renderDropdown(input.value);
       });
 
-      document.addEventListener('click', function(ev) {
-        if (!container.contains(ev.target)) {
-          list.classList.add('hidden');
-        }
+      input.addEventListener('blur', function() {
+        setTimeout(function() {
+          dropdown.classList.add('hidden');
+        }, 200);
       });
 
-      renderList('');
-      renderSelected();
+      renderChips();
+      renderDropdown('');
 
       return {
         getValue: function() { return multi ? selectedValue.slice() : selectedValue; },
@@ -519,19 +581,20 @@
           if (multi) return selectedValue.join('، ');
           return selectedValue;
         },
-        getDisplayString: function() {
-          if (multi) return selectedValue.map(getOptionLabel).join('، ');
-          return getOptionLabel(selectedValue);
-        },
         setOptions: function(newOpts) {
-          options = newOpts || [];
-          renderList(input.value);
+          options = (newOpts || []).slice();
+          input.placeholder = placeholder;
+          renderDropdown(input.value);
+        },
+        setPlaceholder: function(p) {
+          placeholder = p;
+          input.placeholder = p;
         },
         clear: function() {
           selectedValue = multi ? [] : '';
           input.value = '';
-          renderSelected();
-          renderList('');
+          renderChips();
+          renderDropdown('');
         }
       };
     }
@@ -628,32 +691,28 @@
     // Recipients
     // ============================================
     function loadRecipients() {
-      // Placeholder اولیه
       recipientSS = createSearchSelect('recipientSS', {
         multi: false,
         options: [],
-        placeholder: 'در حال بارگذاری...'
+        placeholder: 'در حال بارگذاری...',
+        onChange: onRecipientChange
       });
 
       apiCall({ action: 'getRecipients' })
         .then(function(res) {
           recipientsData = res.recipients || [];
           if (recipientsData.length === 0) {
-            recipientSS.setOptions([]);
+            recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد');
             return;
           }
           var opts = recipientsData.map(function(c) {
             return { value: c.systemName, label: c.displayName };
           });
-          recipientSS = createSearchSelect('recipientSS', {
-            multi: false,
-            options: opts,
-            placeholder: 'تایپ کنید تا جستجو شود...',
-            onChange: onRecipientChange
-          });
+          recipientSS.setOptions(opts);
+          recipientSS.setPlaceholder('تایپ کنید تا جستجو شود (' + opts.length + ' مخاطب)');
         })
         .catch(function(err) {
-          console.error(err);
+          recipientSS.setPlaceholder('خطا: ' + err.message);
         });
     }
 
@@ -707,7 +766,6 @@
     // Form Options
     // ============================================
     function loadFormOptions() {
-      // Placeholder
       engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
       fieldSS = createSearchSelect('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
       addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
@@ -718,38 +776,29 @@
           var fieldOpts = (res.fields && res.fields.options) || [];
           var addrOpts = (res.addresses && res.addresses.options) || [];
 
-          engagementSS = createSearchSelect('engagementWrap', {
-            multi: false,
-            options: engOpts,
-            placeholder: 'انتخاب یا جستجو...'
-          });
+          engagementSS.setOptions(engOpts);
+          engagementSS.setPlaceholder(engOpts.length ? 'انتخاب یا جستجو...' : 'گزینه‌ای تعریف نشده - تایپ کنید');
 
-          fieldSS = createSearchSelect('fieldWrap', {
-            multi: false,
-            options: fieldOpts,
-            placeholder: 'انتخاب یا جستجو...'
-          });
+          fieldSS.setOptions(fieldOpts);
+          fieldSS.setPlaceholder(fieldOpts.length ? 'انتخاب یا جستجو...' : 'گزینه‌ای تعریف نشده - تایپ کنید');
 
-          addressSS = createSearchSelect('addrWrap', {
-            multi: true,
-            options: addrOpts,
-            placeholder: 'جستجو و انتخاب (چندتایی)...'
-          });
+          addressSS.setOptions(addrOpts);
+          addressSS.setPlaceholder(addrOpts.length ? 'چندتایی انتخاب کنید...' : 'گزینه‌ای تعریف نشده - تایپ کنید');
         })
         .catch(function(err) {
-          console.error(err);
+          console.error('FormOptions error:', err);
         });
     }
 
     // ============================================
-    // Submit Work Order
+    // Submit
     // ============================================
     document.getElementById('woForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var btn = document.getElementById('woSubmitBtn');
       btn.disabled = true; btn.innerText = 'در حال ارسال...';
 
-      apiCall({
+      var payload = {
         action: 'createWorkOrder',
         adminChatId: String(tgUser.id),
         recipientSystemName: recipientSS ? recipientSS.getRawString() : '',
@@ -765,32 +814,36 @@
         startMonth: document.getElementById('woMonth').value,
         startDay: document.getElementById('woDay').value,
         duration: document.getElementById('woDuration').value
-      })
-      .then(function(res) {
-        btn.disabled = false; btn.innerText = 'ثبت و ارسال دستور کار';
-        if (res.ok) {
-          var msg = '✅ ' + res.message;
-          if (res.recipient) msg += '\nمخاطب: ' + res.recipient;
-          if (res.status) msg += '\nوضعیت: ' + res.status;
-          if (res.sends) msg += '\nارسال: ' + res.sends;
-          showMessage('woMessage', msg, 'success');
+      };
 
-          document.getElementById('woForm').reset();
-          if (recipientSS) recipientSS.clear();
-          if (fieldSS) fieldSS.clear();
-          if (addressSS) addressSS.clear();
-          if (engagementSS) engagementSS.clear();
-          document.getElementById('chkTg').checked = false;
-          document.getElementById('chkBale').checked = false;
-          document.getElementById('chkAll').checked = false;
-        } else {
-          showMessage('woMessage', '❌ ' + res.message, 'error');
-        }
-      })
-      .catch(function(err) {
-        btn.disabled = false; btn.innerText = 'ثبت و ارسال دستور کار';
-        showMessage('woMessage', '❌ خطا: ' + err.message, 'error');
-      });
+      console.log('Submitting:', payload);
+
+      apiCall(payload)
+        .then(function(res) {
+          btn.disabled = false; btn.innerText = 'ثبت و ارسال دستور کار';
+          if (res.ok) {
+            var msg = '✅ ' + res.message;
+            if (res.recipient) msg += '\nمخاطب: ' + res.recipient;
+            if (res.status) msg += '\nوضعیت: ' + res.status;
+            if (res.sends) msg += '\nارسال: ' + res.sends;
+            showMessage('woMessage', msg, 'success');
+
+            document.getElementById('woForm').reset();
+            if (recipientSS) recipientSS.clear();
+            if (fieldSS) fieldSS.clear();
+            if (addressSS) addressSS.clear();
+            if (engagementSS) engagementSS.clear();
+            document.getElementById('chkTg').checked = false;
+            document.getElementById('chkBale').checked = false;
+            document.getElementById('chkAll').checked = false;
+          } else {
+            showMessage('woMessage', '❌ ' + res.message, 'error');
+          }
+        })
+        .catch(function(err) {
+          btn.disabled = false; btn.innerText = 'ثبت و ارسال دستور کار';
+          showMessage('woMessage', '❌ خطا در ارتباط با سرور: ' + err.message, 'error');
+        });
     });
   </script>
 </body>

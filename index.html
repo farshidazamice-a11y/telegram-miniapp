@@ -69,13 +69,25 @@
     .msg-success { background: #d1fae5; color: #065f46; }
     .msg-error { background: #fee2e2; color: #991b1b; }
     .msg-info { background: #dbeafe; color: #1e40af; }
+    .msg-warning { background: #fef3c7; color: #92400e; }
     .hidden { display: none; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .badge-active { background: #d1fae5; color: #065f46; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+    .badge-access { background: #dbeafe; color: #1e40af; }
   </style>
 </head>
 <body>
 
   <div id="loading" class="message msg-info">در حال بارگذاری...</div>
 
+  <!-- فرم ثبت‌نام -->
   <div id="formSection" class="hidden">
     <h2>فرم ثبت‌نام</h2>
     <div class="info-box" id="tgInfo"></div>
@@ -96,10 +108,23 @@
     <div id="formMessage"></div>
   </div>
 
-  <div id="registeredSection" class="hidden">
-    <h2>شما قبلاً ثبت‌نام کرده‌اید ✅</h2>
-    <div class="info-box" id="registeredInfo"></div>
-    <div class="message msg-info">برای تغییر اطلاعات با ادمین تماس بگیرید.</div>
+  <!-- کاربر ثبت‌نام کرده ولی هنوز تأیید نشده -->
+  <div id="pendingSection" class="hidden">
+    <h2>در انتظار تأیید ادمین ⏳</h2>
+    <div class="info-box" id="pendingInfo"></div>
+    <div class="message msg-warning">
+      ثبت‌نام شما انجام شد و در انتظار تأیید توسط ادمین است.
+      <br>پس از تأیید، به سیستم دسترسی خواهید داشت.
+    </div>
+  </div>
+
+  <!-- کاربر تأیید شده -->
+  <div id="activeSection" class="hidden">
+    <h2>خوش آمدید ✅</h2>
+    <div class="info-box" id="activeInfo"></div>
+    <div class="message msg-success">
+      دسترسی شما فعال است.
+    </div>
   </div>
 
   <script>
@@ -115,7 +140,7 @@
     }
 
     function show(id) {
-      ['loading', 'formSection', 'registeredSection'].forEach(function(x) {
+      ['loading', 'formSection', 'pendingSection', 'activeSection'].forEach(function(x) {
         document.getElementById(x).classList.add('hidden');
       });
       document.getElementById(id).classList.remove('hidden');
@@ -139,25 +164,42 @@
       show('loading');
       document.getElementById('loading').innerText = 'لطفاً از داخل تلگرام باز کنید.';
     } else {
-      var info = document.getElementById('tgInfo');
-      info.innerHTML =
-        '<b>شناسه:</b> ' + tgUser.id + '<br>' +
-        '<b>نام تلگرام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '') + '<br>' +
-        '<b>یوزرنیم:</b> ' + (tgUser.username ? '@' + tgUser.username : 'ندارد');
+      checkStatus();
+    }
 
+    function checkStatus() {
       apiCall({ action: 'getUserStatus', chatId: tgUser.id })
         .then(function(res) {
           if (res && res.registered) {
             var u = res.userData;
-            var box = document.getElementById('registeredInfo');
-            box.innerHTML =
-              '<b>نام:</b> ' + u.fullName + '<br>' +
-              '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-              '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
-              '<b>وضعیت:</b> ' + (u.active ? 'فعال' : 'غیرفعال') + '<br>' +
-              '<b>سطح دسترسی:</b> ' + (u.access || 'در انتظار تعیین توسط ادمین');
-            show('registeredSection');
+
+            if (u.active === true || u.active === 'TRUE' || u.active === 'true') {
+              // کاربر تأیید شده
+              var box = document.getElementById('activeInfo');
+              box.innerHTML =
+                '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
+                '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+                '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
+                '<b>وضعیت:</b> <span class="badge badge-active">فعال</span><br>' +
+                '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (u.access || 'تعیین نشده') + '</span>';
+              show('activeSection');
+            } else {
+              // ثبت‌نام کرده ولی تأیید نشده
+              var pbox = document.getElementById('pendingInfo');
+              pbox.innerHTML =
+                '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
+                '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+                '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
+                '<b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
+              show('pendingSection');
+            }
           } else {
+            // کاربر ثبت‌نام نکرده
+            var info = document.getElementById('tgInfo');
+            info.innerHTML =
+              '<b>شناسه:</b> ' + tgUser.id + '<br>' +
+              '<b>نام تلگرام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '') + '<br>' +
+              '<b>یوزرنیم:</b> ' + (tgUser.username ? '@' + tgUser.username : 'ندارد');
             show('formSection');
           }
         })
@@ -195,8 +237,10 @@
         btn.disabled = false;
         btn.innerText = 'ثبت‌نام';
         if (res.ok) {
-          showMessage('✅ ' + res.message + '\nمنتظر تأیید ادمین باشید.', 'success');
+          showMessage('✅ ' + res.message, 'success');
           document.getElementById('regForm').reset();
+          // بعد از ثبت‌نام موفق، صفحه pending رو نشون بده
+          setTimeout(checkStatus, 1500);
         } else {
           showMessage('❌ ' + res.message, 'error');
         }

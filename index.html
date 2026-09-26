@@ -43,7 +43,7 @@
     .badge-inactive { background: #fee2e2; color: #991b1b; }
     .badge-access { background: #dbeafe; color: #1e40af; }
 
-    /* Date picker */
+    /* Date */
     .date-row { display: flex; gap: 8px; }
     .date-row .col { flex: 1; }
     .date-row .col.month { flex: 1.6; }
@@ -61,7 +61,6 @@
       font-size: 14px; font-weight: bold; cursor: pointer;
       margin: 0;
     }
-    .btn-quick:active { opacity: 0.7; }
 
     /* Platform */
     .platform-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-top: 10px; }
@@ -72,20 +71,39 @@
     .platform-row.all-row { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 6px; }
     .platform-row.all-row label { font-weight: bold; }
 
-    /* Chips */
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 8px; }
-    .chip {
-      padding: 8px 14px; background: #ffffff; border: 1px solid #ccc;
-      border-radius: 20px; font-size: 14px; cursor: pointer;
-      transition: all 0.15s; user-select: none;
+    /* Search select */
+    .search-select { position: relative; margin-top: 6px; }
+    .ss-wrap { position: relative; }
+    .ss-input {
+      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;
+      font-size: 15px; font-family: inherit;
+      background: var(--tg-theme-bg-color, #fff);
+      color: var(--tg-theme-text-color, #000);
     }
-    .chip.selected {
+    .ss-list {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      max-height: 220px; overflow-y: auto;
+      background: #fff; border: 1px solid #ddd; border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+    }
+    .ss-item {
+      padding: 10px 14px; cursor: pointer; font-size: 14px;
+      border-bottom: 1px solid #f1f5f9; color: #222;
+    }
+    .ss-item:hover, .ss-item:active { background: #dbeafe; }
+    .ss-item:last-child { border-bottom: none; }
+    .ss-empty { padding: 12px; color: #888; text-align: center; font-size: 13px; }
+    .ss-selected { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .ss-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
       background: var(--tg-theme-button-color, #229ED9);
-      color: var(--tg-theme-button-text-color, #ffffff);
-      border-color: var(--tg-theme-button-color, #229ED9);
-      font-weight: bold;
+      color: #ffffff; border-radius: 20px;
+      font-size: 13px; font-weight: 500;
     }
-    .chip-hint { font-size: 11px; color: #888; margin-top: 4px; text-align: center; }
+    .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.8; }
+    .ss-chip-x:hover { opacity: 1; }
   </style>
 </head>
 <body>
@@ -125,10 +143,8 @@
     <button id="backBtn" class="btn-secondary">→ بازگشت</button>
 
     <h3>مخاطب دستور کار</h3>
-    <label>مخاطب *</label>
-    <select id="woRecipient" required>
-      <option value="">در حال بارگذاری...</option>
-    </select>
+    <label>مخاطب * (قابل جستجو)</label>
+    <div id="recipientSS"></div>
 
     <div class="platform-box">
       <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">پلتفورم ارسال پیام:</div>
@@ -163,15 +179,14 @@
         <option value="مهندسی">مهندسی</option>
       </select>
 
-      <label>رشته *</label>
-      <div id="fieldWrap">
-        <input id="woField" type="text" required>
-      </div>
+      <label>پیمانکاری / امانی *</label>
+      <div id="engagementWrap"></div>
 
-      <label>آدرس / محل *</label>
-      <div id="addrWrap">
-        <input id="woAddress" type="text" required>
-      </div>
+      <label>رشته *</label>
+      <div id="fieldWrap"></div>
+
+      <label>آدرس / محل * (چند انتخابی + جستجو)</label>
+      <div id="addrWrap"></div>
 
       <label>تاریخ شروع (شمسی) *</label>
       <div class="quick-date-row">
@@ -208,6 +223,12 @@
     var currentAccess = '';
     var recipientsData = [];
 
+    // کامپوننت‌ها
+    var recipientSS = null;
+    var fieldSS = null;
+    var addressSS = null;
+    var engagementSS = null;
+
     var MONTHS = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
 
     if (tg) {
@@ -237,7 +258,9 @@
       }).then(function(r) { return r.json(); });
     }
 
-    // ============ Jalali Date (frontend) ============
+    // ============================================
+    // Jalali Date
+    // ============================================
     function gregorianToJalali(gy, gm, gd) {
       var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
       var jy = (gy <= 1600) ? 0 : 979;
@@ -309,7 +332,6 @@
     function setDateDropdowns(y, m, d) {
       yearSel.value = y;
       monthSel.value = m;
-      // Trigger days refresh
       var ev = document.createEvent('HTMLEvents');
       ev.initEvent('change', true, false);
       monthSel.dispatchEvent(ev);
@@ -329,7 +351,194 @@
       setDateDropdowns(j[0], j[1], j[2]);
     }
 
-    // ============ Init ============
+    // ============================================
+    // Searchable Select Component
+    // ============================================
+    function createSearchSelect(containerId, opts) {
+      var container = document.getElementById(containerId);
+      var multi = opts.multi === true;
+      var options = opts.options || [];
+      var selectedValue = multi ? [] : '';
+      var placeholder = opts.placeholder || 'جستجو...';
+
+      container.innerHTML = '';
+      container.className = 'search-select';
+
+      var inputWrap = document.createElement('div');
+      inputWrap.className = 'ss-wrap';
+
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'ss-input';
+      input.placeholder = placeholder;
+      input.autocomplete = 'off';
+      inputWrap.appendChild(input);
+
+      var list = document.createElement('div');
+      list.className = 'ss-list hidden';
+      inputWrap.appendChild(list);
+
+      container.appendChild(inputWrap);
+
+      var selWrap = document.createElement('div');
+      selWrap.className = 'ss-selected';
+      container.appendChild(selWrap);
+
+      function normalizeOption(o) {
+        if (typeof o === 'string') return { value: o, label: o };
+        return { value: o.value, label: o.label || o.value };
+      }
+      function getOptionLabel(value) {
+        for (var i = 0; i < options.length; i++) {
+          var o = normalizeOption(options[i]);
+          if (o.value === value) return o.label;
+        }
+        return value;
+      }
+
+      function renderList(filter) {
+        var f = String(filter || '').toLowerCase().trim();
+        var items = [];
+        for (var i = 0; i < options.length; i++) {
+          var o = normalizeOption(options[i]);
+          var lbl = String(o.label).toLowerCase();
+          var vll = String(o.value).toLowerCase();
+          if (f && lbl.indexOf(f) === -1 && vll.indexOf(f) === -1) continue;
+          if (multi && selectedValue.indexOf(o.value) !== -1) continue;
+          if (!multi && selectedValue === o.value) continue;
+          items.push(o);
+        }
+        list.innerHTML = '';
+        if (items.length === 0) {
+          var empty = document.createElement('div');
+          empty.className = 'ss-empty';
+          empty.textContent = 'نتیجه‌ای یافت نشد';
+          list.appendChild(empty);
+          return;
+        }
+        items.forEach(function(o) {
+          var item = document.createElement('div');
+          item.className = 'ss-item';
+          item.textContent = o.label;
+          item.onclick = function(ev) {
+            ev.stopPropagation();
+            if (multi) {
+              if (selectedValue.indexOf(o.value) === -1) selectedValue.push(o.value);
+              input.value = '';
+              renderList('');
+              renderSelected();
+              input.focus();
+              if (opts.onChange) opts.onChange(selectedValue);
+            } else {
+              selectedValue = o.value;
+              input.value = o.label;
+              list.classList.add('hidden');
+              renderSelected();
+              if (opts.onChange) opts.onChange(selectedValue);
+            }
+          };
+          list.appendChild(item);
+        });
+      }
+
+      function renderSelected() {
+        selWrap.innerHTML = '';
+        if (multi) {
+          selectedValue.forEach(function(v) {
+            var chip = document.createElement('span');
+            chip.className = 'ss-chip';
+            var txt = document.createElement('span');
+            txt.textContent = getOptionLabel(v);
+            var x = document.createElement('span');
+            x.className = 'ss-chip-x';
+            x.textContent = '×';
+            x.onclick = function(ev) {
+              ev.stopPropagation();
+              selectedValue = selectedValue.filter(function(s) { return s !== v; });
+              renderSelected();
+              renderList(input.value);
+              if (opts.onChange) opts.onChange(selectedValue);
+            };
+            chip.appendChild(txt);
+            chip.appendChild(x);
+            selWrap.appendChild(chip);
+          });
+        } else {
+          if (selectedValue) {
+            var chip = document.createElement('span');
+            chip.className = 'ss-chip';
+            var txt = document.createElement('span');
+            txt.textContent = getOptionLabel(selectedValue);
+            var x = document.createElement('span');
+            x.className = 'ss-chip-x';
+            x.textContent = '×';
+            x.onclick = function(ev) {
+              ev.stopPropagation();
+              selectedValue = '';
+              input.value = '';
+              renderSelected();
+              renderList('');
+              if (opts.onChange) opts.onChange('');
+            };
+            chip.appendChild(txt);
+            chip.appendChild(x);
+            selWrap.appendChild(chip);
+          }
+        }
+      }
+
+      input.addEventListener('focus', function() {
+        list.classList.remove('hidden');
+        renderList(input.value);
+      });
+
+      input.addEventListener('input', function() {
+        if (!multi) {
+          if (input.value !== getOptionLabel(selectedValue)) {
+            selectedValue = '';
+            renderSelected();
+            if (opts.onChange) opts.onChange('');
+          }
+        }
+        list.classList.remove('hidden');
+        renderList(input.value);
+      });
+
+      document.addEventListener('click', function(ev) {
+        if (!container.contains(ev.target)) {
+          list.classList.add('hidden');
+        }
+      });
+
+      renderList('');
+      renderSelected();
+
+      return {
+        getValue: function() { return multi ? selectedValue.slice() : selectedValue; },
+        getRawString: function() {
+          if (multi) return selectedValue.join('، ');
+          return selectedValue;
+        },
+        getDisplayString: function() {
+          if (multi) return selectedValue.map(getOptionLabel).join('، ');
+          return getOptionLabel(selectedValue);
+        },
+        setOptions: function(newOpts) {
+          options = newOpts || [];
+          renderList(input.value);
+        },
+        clear: function() {
+          selectedValue = multi ? [] : '';
+          input.value = '';
+          renderSelected();
+          renderList('');
+        }
+      };
+    }
+
+    // ============================================
+    // Init
+    // ============================================
     if (!tgUser) {
       show('loading');
       document.getElementById('loading').innerText = 'لطفاً از داخل تلگرام باز کنید.';
@@ -415,33 +624,40 @@
       show('activeSection');
     });
 
-    // ============ Recipients ============
+    // ============================================
+    // Recipients
+    // ============================================
     function loadRecipients() {
-      var sel = document.getElementById('woRecipient');
-      sel.innerHTML = '<option value="">در حال بارگذاری...</option>';
+      // Placeholder اولیه
+      recipientSS = createSearchSelect('recipientSS', {
+        multi: false,
+        options: [],
+        placeholder: 'در حال بارگذاری...'
+      });
+
       apiCall({ action: 'getRecipients' })
         .then(function(res) {
           recipientsData = res.recipients || [];
           if (recipientsData.length === 0) {
-            sel.innerHTML = '<option value="">هیچ مخاطبی یافت نشد</option>';
+            recipientSS.setOptions([]);
             return;
           }
-          sel.innerHTML = '<option value="">— انتخاب کنید —</option>';
-          recipientsData.forEach(function(c) {
-            var opt = document.createElement('option');
-            opt.value = c.systemName;
-            opt.textContent = c.displayName;
-            sel.appendChild(opt);
+          var opts = recipientsData.map(function(c) {
+            return { value: c.systemName, label: c.displayName };
           });
-          sel.onchange = onRecipientChange;
+          recipientSS = createSearchSelect('recipientSS', {
+            multi: false,
+            options: opts,
+            placeholder: 'تایپ کنید تا جستجو شود...',
+            onChange: onRecipientChange
+          });
         })
         .catch(function(err) {
-          sel.innerHTML = '<option value="">خطا: ' + err.message + '</option>';
+          console.error(err);
         });
     }
 
-    function onRecipientChange() {
-      var val = document.getElementById('woRecipient').value;
+    function onRecipientChange(val) {
       var chkTg = document.getElementById('chkTg');
       var chkBale = document.getElementById('chkBale');
       var chkAll = document.getElementById('chkAll');
@@ -453,12 +669,14 @@
       chkTg.disabled = false; chkBale.disabled = false;
 
       if (!val) return;
-      var r = recipientsData.filter(function(x) { return x.systemName === val; })[0];
+      var r = null;
+      for (var i = 0; i < recipientsData.length; i++) {
+        if (recipientsData[i].systemName === val) { r = recipientsData[i]; break; }
+      }
       if (!r) return;
 
       if (r.telegramChatId) { chkTg.checked = true; } else { chkTg.disabled = true; rowTg.classList.add('disabled'); }
       if (r.baleChatId) { chkBale.checked = true; } else { chkBale.disabled = true; rowBale.classList.add('disabled'); }
-
       updateAllCheckbox();
     }
 
@@ -485,91 +703,47 @@
     document.getElementById('chkTg').addEventListener('change', updateAllCheckbox);
     document.getElementById('chkBale').addEventListener('change', updateAllCheckbox);
 
-    // ============ Dynamic fields ============
-    function renderFieldInto(wrapId, fieldId, info) {
-      var wrap = document.getElementById(wrapId);
-      wrap.innerHTML = '';
-
-      if (!info || !info.hasValidation || !info.options || info.options.length === 0) {
-        var inp = document.createElement('input');
-        inp.id = fieldId;
-        inp.type = 'text';
-        inp.required = true;
-        inp.placeholder = 'متن را وارد کنید';
-        wrap.appendChild(inp);
-        return;
-      }
-
-      if (info.multiSelect) {
-        var chipsWrap = document.createElement('div');
-        chipsWrap.className = 'chips';
-        chipsWrap.id = fieldId;
-        chipsWrap.setAttribute('data-multi', 'true');
-        info.options.forEach(function(opt) {
-          var chip = document.createElement('span');
-          chip.className = 'chip';
-          chip.textContent = opt;
-          chip.setAttribute('data-value', opt);
-          chip.addEventListener('click', function() {
-            chip.classList.toggle('selected');
-          });
-          chipsWrap.appendChild(chip);
-        });
-        wrap.appendChild(chipsWrap);
-        var hint = document.createElement('div');
-        hint.className = 'chip-hint';
-        hint.textContent = 'می‌توانید چند گزینه انتخاب کنید';
-        wrap.appendChild(hint);
-        return;
-      }
-
-      var sel = document.createElement('select');
-      sel.id = fieldId;
-      sel.required = true;
-      var empty = document.createElement('option');
-      empty.value = '';
-      empty.textContent = '— انتخاب کنید —';
-      sel.appendChild(empty);
-      info.options.forEach(function(opt) {
-        var o = document.createElement('option');
-        o.value = opt;
-        o.textContent = opt;
-        sel.appendChild(o);
-      });
-      wrap.appendChild(sel);
-    }
-
-    function getFieldValue(fieldId) {
-      var el = document.getElementById(fieldId);
-      if (!el) return '';
-      if (el.getAttribute('data-multi') === 'true') {
-        var selected = [];
-        el.querySelectorAll('.chip.selected').forEach(function(c) {
-          selected.push(c.getAttribute('data-value'));
-        });
-        return selected.join('، ');
-      }
-      return String(el.value || '').trim();
-    }
-
+    // ============================================
+    // Form Options
+    // ============================================
     function loadFormOptions() {
-      var fWrap = document.getElementById('fieldWrap');
-      var aWrap = document.getElementById('addrWrap');
-      fWrap.innerHTML = '<input id="woField" type="text" required placeholder="در حال بارگذاری...">';
-      aWrap.innerHTML = '<input id="woAddress" type="text" required placeholder="در حال بارگذاری...">';
+      // Placeholder
+      engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      fieldSS = createSearchSelect('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
       apiCall({ action: 'getFormOptions' })
         .then(function(res) {
-          renderFieldInto('fieldWrap', 'woField', res.fields);
-          renderFieldInto('addrWrap', 'woAddress', res.addresses);
+          var engOpts = (res.engagementTypes && res.engagementTypes.options) || [];
+          var fieldOpts = (res.fields && res.fields.options) || [];
+          var addrOpts = (res.addresses && res.addresses.options) || [];
+
+          engagementSS = createSearchSelect('engagementWrap', {
+            multi: false,
+            options: engOpts,
+            placeholder: 'انتخاب یا جستجو...'
+          });
+
+          fieldSS = createSearchSelect('fieldWrap', {
+            multi: false,
+            options: fieldOpts,
+            placeholder: 'انتخاب یا جستجو...'
+          });
+
+          addressSS = createSearchSelect('addrWrap', {
+            multi: true,
+            options: addrOpts,
+            placeholder: 'جستجو و انتخاب (چندتایی)...'
+          });
         })
         .catch(function(err) {
-          renderFieldInto('fieldWrap', 'woField', { hasValidation: false });
-          renderFieldInto('addrWrap', 'woAddress', { hasValidation: false });
+          console.error(err);
         });
     }
 
-    // ============ Submit ============
+    // ============================================
+    // Submit Work Order
+    // ============================================
     document.getElementById('woForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var btn = document.getElementById('woSubmitBtn');
@@ -578,14 +752,15 @@
       apiCall({
         action: 'createWorkOrder',
         adminChatId: String(tgUser.id),
-        recipientSystemName: document.getElementById('woRecipient').value,
+        recipientSystemName: recipientSS ? recipientSS.getRawString() : '',
         sendTelegram: document.getElementById('chkTg').checked,
         sendBale: document.getElementById('chkBale').checked,
         subject: document.getElementById('woSubject').value.trim(),
         description: document.getElementById('woDescription').value.trim(),
         epc: document.getElementById('woEpc').value,
-        field: getFieldValue('woField'),
-        address: getFieldValue('woAddress'),
+        engagementType: engagementSS ? engagementSS.getRawString() : '',
+        field: fieldSS ? fieldSS.getRawString() : '',
+        address: addressSS ? addressSS.getRawString() : '',
         startYear: document.getElementById('woYear').value,
         startMonth: document.getElementById('woMonth').value,
         startDay: document.getElementById('woDay').value,
@@ -594,17 +769,20 @@
       .then(function(res) {
         btn.disabled = false; btn.innerText = 'ثبت و ارسال دستور کار';
         if (res.ok) {
-          var msg = '✅ ' + res.message + '\nمخاطب: ' + res.recipient;
+          var msg = '✅ ' + res.message;
+          if (res.recipient) msg += '\nمخاطب: ' + res.recipient;
+          if (res.status) msg += '\nوضعیت: ' + res.status;
           if (res.sends) msg += '\nارسال: ' + res.sends;
           showMessage('woMessage', msg, 'success');
+
           document.getElementById('woForm').reset();
-          document.getElementById('woRecipient').value = '';
+          if (recipientSS) recipientSS.clear();
+          if (fieldSS) fieldSS.clear();
+          if (addressSS) addressSS.clear();
+          if (engagementSS) engagementSS.clear();
           document.getElementById('chkTg').checked = false;
           document.getElementById('chkBale').checked = false;
           document.getElementById('chkAll').checked = false;
-          document.querySelectorAll('#fieldWrap .chip.selected, #addrWrap .chip.selected').forEach(function(c) {
-            c.classList.remove('selected');
-          });
         } else {
           showMessage('woMessage', '❌ ' + res.message, 'error');
         }

@@ -53,6 +53,15 @@
       border: 1px solid transparent;
     }
     .date-label { font-size: 11px; color: #888; text-align: center; margin-top: 4px; }
+    .quick-date-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .btn-quick {
+      flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px;
+      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
+      color: var(--tg-theme-text-color, #000);
+      font-size: 14px; font-weight: bold; cursor: pointer;
+      margin: 0;
+    }
+    .btn-quick:active { opacity: 0.7; }
 
     /* Platform */
     .platform-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-top: 10px; }
@@ -60,8 +69,10 @@
     .platform-row input[type="checkbox"] { width: 22px; height: 22px; }
     .platform-row label { margin: 0; flex: 1; font-weight: normal; }
     .platform-row.disabled { opacity: 0.4; }
+    .platform-row.all-row { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 6px; }
+    .platform-row.all-row label { font-weight: bold; }
 
-    /* Chips (multi-select) */
+    /* Chips */
     .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 8px; }
     .chip {
       padding: 8px 14px; background: #ffffff; border: 1px solid #ccc;
@@ -118,15 +129,20 @@
     <select id="woRecipient" required>
       <option value="">در حال بارگذاری...</option>
     </select>
+
     <div class="platform-box">
       <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">پلتفورم ارسال پیام:</div>
+      <div class="platform-row all-row">
+        <input type="checkbox" id="chkAll">
+        <label for="chkAll">🌐 همه پلتفورم ها</label>
+      </div>
       <div class="platform-row" id="rowTg">
         <input type="checkbox" id="chkTg">
-        <label for="chkTg">📱 تلگرام</label>
+        <label for="chkTg">📱 Telegram</label>
       </div>
       <div class="platform-row" id="rowBale">
         <input type="checkbox" id="chkBale">
-        <label for="chkBale">📨 بله</label>
+        <label for="chkBale">📨 Bale</label>
       </div>
     </div>
 
@@ -158,6 +174,10 @@
       </div>
 
       <label>تاریخ شروع (شمسی) *</label>
+      <div class="quick-date-row">
+        <button type="button" class="btn-quick" onclick="setToday()">📅 امروز</button>
+        <button type="button" class="btn-quick" onclick="setTomorrow()">📅 فردا</button>
+      </div>
       <div class="date-row">
         <div class="col">
           <select id="woYear"></select>
@@ -217,18 +237,39 @@
       }).then(function(r) { return r.json(); });
     }
 
+    // ============ Jalali Date (frontend) ============
+    function gregorianToJalali(gy, gm, gd) {
+      var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+      var jy = (gy <= 1600) ? 0 : 979;
+      gy -= (gy <= 1600) ? 621 : 1600;
+      var gy2 = (gm > 2) ? (gy + 1) : gy;
+      var days = (365 * gy) + parseInt((gy2 + 3) / 4) - parseInt((gy2 + 99) / 100) + parseInt((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+      jy += 33 * parseInt(days / 12053);
+      days %= 12053;
+      jy += 4 * parseInt(days / 1461);
+      days %= 1461;
+      if (days > 365) { jy += parseInt((days - 1) / 365); days = (days - 1) % 365; }
+      var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+      var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+      return [jy, jm, jd];
+    }
+
     function daysInJalaliMonth(year, month) {
       if (month <= 6) return 31;
       if (month <= 11) return 30;
       return 29;
     }
 
+    var yearSel, monthSel, daySel;
+
     function buildDatePickers() {
+      yearSel = document.getElementById('woYear');
+      monthSel = document.getElementById('woMonth');
+      daySel = document.getElementById('woDay');
+
       var now = new Date();
-      var year = now.getFullYear() - 621;
-      var yearSel = document.getElementById('woYear');
-      var monthSel = document.getElementById('woMonth');
-      var daySel = document.getElementById('woDay');
+      var todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+      var year = todayJ[0];
 
       yearSel.innerHTML = '';
       for (var y = year - 2; y <= year + 3; y++) {
@@ -244,7 +285,7 @@
         o.value = m; o.textContent = MONTHS[m];
         monthSel.appendChild(o);
       }
-      monthSel.value = 1;
+      monthSel.value = todayJ[1];
 
       function refreshDays() {
         var y = parseInt(yearSel.value);
@@ -262,8 +303,33 @@
       yearSel.addEventListener('change', refreshDays);
       monthSel.addEventListener('change', refreshDays);
       refreshDays();
+      daySel.value = todayJ[2];
     }
 
+    function setDateDropdowns(y, m, d) {
+      yearSel.value = y;
+      monthSel.value = m;
+      // Trigger days refresh
+      var ev = document.createEvent('HTMLEvents');
+      ev.initEvent('change', true, false);
+      monthSel.dispatchEvent(ev);
+      daySel.value = d;
+    }
+
+    function setToday() {
+      var now = new Date();
+      var j = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+      setDateDropdowns(j[0], j[1], j[2]);
+    }
+
+    function setTomorrow() {
+      var t = new Date();
+      t.setDate(t.getDate() + 1);
+      var j = gregorianToJalali(t.getFullYear(), t.getMonth() + 1, t.getDate());
+      setDateDropdowns(j[0], j[1], j[2]);
+    }
+
+    // ============ Init ============
     if (!tgUser) {
       show('loading');
       document.getElementById('loading').innerText = 'لطفاً از داخل تلگرام باز کنید.';
@@ -349,6 +415,7 @@
       show('activeSection');
     });
 
+    // ============ Recipients ============
     function loadRecipients() {
       var sel = document.getElementById('woRecipient');
       sel.innerHTML = '<option value="">در حال بارگذاری...</option>';
@@ -377,10 +444,11 @@
       var val = document.getElementById('woRecipient').value;
       var chkTg = document.getElementById('chkTg');
       var chkBale = document.getElementById('chkBale');
+      var chkAll = document.getElementById('chkAll');
       var rowTg = document.getElementById('rowTg');
       var rowBale = document.getElementById('rowBale');
 
-      chkTg.checked = false; chkBale.checked = false;
+      chkTg.checked = false; chkBale.checked = false; chkAll.checked = false;
       rowTg.classList.remove('disabled'); rowBale.classList.remove('disabled');
       chkTg.disabled = false; chkBale.disabled = false;
 
@@ -390,17 +458,38 @@
 
       if (r.telegramChatId) { chkTg.checked = true; } else { chkTg.disabled = true; rowTg.classList.add('disabled'); }
       if (r.baleChatId) { chkBale.checked = true; } else { chkBale.disabled = true; rowBale.classList.add('disabled'); }
+
+      updateAllCheckbox();
     }
 
-    // ============================================
-    // رندر داینامیک فیلدها بر اساس data validation
-    // ============================================
+    function updateAllCheckbox() {
+      var chkTg = document.getElementById('chkTg');
+      var chkBale = document.getElementById('chkBale');
+      var chkAll = document.getElementById('chkAll');
+      var enabled = [];
+      if (!chkTg.disabled) enabled.push(chkTg);
+      if (!chkBale.disabled) enabled.push(chkBale);
+      if (enabled.length === 0) { chkAll.checked = false; return; }
+      var allChecked = enabled.every(function(c) { return c.checked; });
+      chkAll.checked = allChecked;
+    }
 
+    document.getElementById('chkAll').addEventListener('change', function() {
+      var checked = this.checked;
+      var chkTg = document.getElementById('chkTg');
+      var chkBale = document.getElementById('chkBale');
+      if (!chkTg.disabled) chkTg.checked = checked;
+      if (!chkBale.disabled) chkBale.checked = checked;
+    });
+
+    document.getElementById('chkTg').addEventListener('change', updateAllCheckbox);
+    document.getElementById('chkBale').addEventListener('change', updateAllCheckbox);
+
+    // ============ Dynamic fields ============
     function renderFieldInto(wrapId, fieldId, info) {
       var wrap = document.getElementById(wrapId);
       wrap.innerHTML = '';
 
-      // حالت ۱: هیچ validation ای نیست → text input
       if (!info || !info.hasValidation || !info.options || info.options.length === 0) {
         var inp = document.createElement('input');
         inp.id = fieldId;
@@ -411,7 +500,6 @@
         return;
       }
 
-      // حالت ۲: multi-select → chips
       if (info.multiSelect) {
         var chipsWrap = document.createElement('div');
         chipsWrap.className = 'chips';
@@ -435,7 +523,6 @@
         return;
       }
 
-      // حالت ۳: single-select → dropdown
       var sel = document.createElement('select');
       sel.id = fieldId;
       sel.required = true;
@@ -466,7 +553,6 @@
     }
 
     function loadFormOptions() {
-      // پیش‌فرض: input های ساده تا وقتی جواب بیاد
       var fWrap = document.getElementById('fieldWrap');
       var aWrap = document.getElementById('addrWrap');
       fWrap.innerHTML = '<input id="woField" type="text" required placeholder="در حال بارگذاری...">';
@@ -483,6 +569,7 @@
         });
     }
 
+    // ============ Submit ============
     document.getElementById('woForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var btn = document.getElementById('woSubmitBtn');
@@ -514,7 +601,7 @@
           document.getElementById('woRecipient').value = '';
           document.getElementById('chkTg').checked = false;
           document.getElementById('chkBale').checked = false;
-          // پاک کردن chips انتخاب‌شده
+          document.getElementById('chkAll').checked = false;
           document.querySelectorAll('#fieldWrap .chip.selected, #addrWrap .chip.selected').forEach(function(c) {
             c.classList.remove('selected');
           });

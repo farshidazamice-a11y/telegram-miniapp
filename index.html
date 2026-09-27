@@ -334,7 +334,7 @@
   </div>
 
   <script>
-    var API_URL = 'https://script.google.com/macros/s/AKfycbxbAjL-aXFwt8uRS3s_auq03ZdjHDaOPZwe5txc53bfIf2jobgAjJ3ST-hH3oFxDOMy/exec';
+    var API_URL = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
     var tg = window.Telegram && window.Telegram.WebApp;
     var tgUser = null;
     var currentAccess = '';
@@ -377,23 +377,18 @@
       dbg.innerText = txt;
     }
 
-    // 🐞 تابع دیباگ - اطلاعات کامل رو نشون می‌ده
     function runDebug() {
       var out = '';
       out += '=== DEBUG INFO ===\n\n';
       out += 'tgUser:\n' + JSON.stringify(tgUser, null, 2) + '\n\n';
       out += 'API_URL:\n' + API_URL + '\n\n';
-      out += 'initData length: ' + ((tg && tg.initData) ? tg.initData.length : 'NULL') + '\n';
-      out += 'initData sample: ' + ((tg && tg.initData) ? tg.initData.substring(0, 150) : 'EMPTY') + '\n\n';
 
-      // کدوم باکس دیباگ فعاله؟
       var activeBox = 'debugBox';
       if (document.getElementById('pendingSection').classList.contains('active')) activeBox = 'debugBox2';
       if (document.getElementById('activeSection').classList.contains('active')) activeBox = 'debugBox3';
 
       setDebug(out + 'در حال دریافت...', activeBox);
 
-      // مرحله ۱
       fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -402,9 +397,7 @@
       })
       .then(function(r) { return r.text(); })
       .then(function(t) {
-        out += '--- getUserStatus ---\n';
-        out += 'Status: 200\n';
-        out += 'Response text (first 400):\n' + t.substring(0, 400) + '\n\n';
+        out += '--- getUserStatus ---\n' + t.substring(0, 400) + '\n\n';
         return fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -413,8 +406,7 @@
         }).then(function(r) { return r.text(); });
       })
       .then(function(t) {
-        out += '--- getRecipients ---\n';
-        out += 'Response (first 400):\n' + t.substring(0, 400) + '\n\n';
+        out += '--- getRecipients ---\n' + t.substring(0, 400) + '\n\n';
         return fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -423,8 +415,7 @@
         }).then(function(r) { return r.text(); });
       })
       .then(function(t) {
-        out += '--- getFormOptions ---\n';
-        out += 'Response (first 400):\n' + t.substring(0, 400) + '\n';
+        out += '--- getFormOptions ---\n' + t.substring(0, 400) + '\n';
         setDebug(out, activeBox);
       })
       .catch(function(err) {

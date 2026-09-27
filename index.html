@@ -20,7 +20,6 @@
     h2 { text-align: center; color: var(--tg-theme-button-color, #229ED9); margin-bottom: 20px; }
     h3 { color: var(--tg-theme-button-color, #229ED9); margin: 22px 0 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
     .info-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 13px; line-height: 1.8; }
-    .debug-box { background: #fee2e2; color: #7f1d1d; padding: 10px; border-radius: 6px; font-size: 11px; direction: ltr; text-align: left; word-break: break-all; margin-bottom: 10px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
     label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 14px; font-weight: bold; }
     input, select, textarea {
       width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;
@@ -39,7 +38,6 @@
     .btn-secondary { background: var(--tg-theme-secondary-bg-color, #e2e8f0); color: var(--tg-theme-text-color, #000); margin-bottom: 12px; }
     .btn-success { background: #10b981 !important; color: white !important; }
     .btn-locked { background: #9ca3af !important; color: white !important; }
-    .btn-debug { background: #dc2626 !important; color: white !important; margin-bottom: 12px; }
 
     .message { margin-top: 16px; padding: 12px; border-radius: 10px; text-align: center; font-size: 14px; white-space: pre-line; }
     .msg-success { background: #d1fae5; color: #065f46; }
@@ -68,28 +66,11 @@
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .loading-text {
-      font-size: 15px; color: #666;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
-    }
-    .loading-dots::after {
-      content: '';
-      animation: dots 1.5s steps(4, end) infinite;
-    }
-    @keyframes dots {
-      0%, 20% { content: ''; }
-      40% { content: '.'; }
-      60% { content: '..'; }
-      80%, 100% { content: '...'; }
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .loading-text { font-size: 15px; color: #666; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    .loading-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
+    @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
 
     .date-row { display: flex; gap: 8px; }
     .date-row .col { flex: 1; }
@@ -125,19 +106,9 @@
       background: var(--tg-theme-bg-color, #fff);
       color: var(--tg-theme-text-color, #000);
     }
-    .ss-input[readonly] {
-      background: #e8f5e9; border-color: #10b981; font-weight: bold;
-      cursor: pointer;
-    }
-    .ss-arrow {
-      position: absolute; top: 50%; left: 12px; transform: translateY(-50%);
-      pointer-events: none; font-size: 14px; color: #888;
-    }
-    .ss-clear-btn {
-      position: absolute; top: 50%; right: 12px; transform: translateY(-50%);
-      cursor: pointer; color: #c00; font-weight: bold;
-      font-size: 18px; padding: 4px 8px; user-select: none;
-    }
+    .ss-input[readonly] { background: #e8f5e9; border-color: #10b981; font-weight: bold; cursor: pointer; }
+    .ss-arrow { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); pointer-events: none; font-size: 14px; color: #888; }
+    .ss-clear-btn { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); cursor: pointer; color: #c00; font-weight: bold; font-size: 18px; padding: 4px 8px; user-select: none; }
     .ss-dropdown {
       position: absolute; top: calc(100% + 4px); left: 0; right: 0;
       max-height: 240px; overflow-y: auto;
@@ -145,57 +116,23 @@
       box-shadow: 0 4px 16px rgba(0,0,0,0.18);
       z-index: 1000;
     }
-    .ss-item {
-      padding: 12px 14px; cursor: pointer; font-size: 14px;
-      border-bottom: 1px solid #f1f5f9; color: #222;
-      transition: background 0.1s;
-    }
+    .ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #222; transition: background 0.1s; }
     .ss-item:active { background: #dbeafe; }
     .ss-item:last-child { border-bottom: none; }
-    .ss-empty {
-      padding: 14px; color: #888; text-align: center; font-size: 13px;
-    }
+    .ss-empty { padding: 14px; color: #888; text-align: center; font-size: 13px; }
     .ss-highlight { background: #fef3c7; font-weight: bold; }
     .ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .ss-chip {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 6px 12px;
-      background: var(--tg-theme-button-color, #229ED9);
-      color: #ffffff; border-radius: 20px;
-      font-size: 13px; font-weight: 500;
-    }
+    .ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--tg-theme-button-color, #229ED9); color: #ffffff; border-radius: 20px; font-size: 13px; font-weight: 500; }
     .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.85; }
     .ss-chip-x:hover { opacity: 1; }
 
-    .preview-card {
-      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
-      border-radius: 12px; padding: 16px; margin-bottom: 16px;
-      border: 2px solid #229ED9;
-    }
-    .preview-title {
-      font-size: 16px; font-weight: bold; color: #229ED9;
-      text-align: center; margin-bottom: 14px;
-      border-bottom: 1px dashed #ccc; padding-bottom: 8px;
-    }
-    .preview-row {
-      display: flex; padding: 8px 0;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 14px;
-    }
+    .preview-card { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 2px solid #229ED9; }
+    .preview-title { font-size: 16px; font-weight: bold; color: #229ED9; text-align: center; margin-bottom: 14px; border-bottom: 1px dashed #ccc; padding-bottom: 8px; }
+    .preview-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
     .preview-row:last-child { border-bottom: none; }
-    .preview-label {
-      font-weight: bold; width: 100px; flex-shrink: 0;
-      color: #555;
-    }
-    .preview-value {
-      flex: 1; word-break: break-word; color: #111;
-    }
-    .preview-message {
-      background: #fff; border-radius: 8px; padding: 12px;
-      margin-top: 12px; font-size: 13px; white-space: pre-line;
-      line-height: 1.7; border: 1px solid #ddd;
-      font-family: Tahoma, monospace; max-height: 300px; overflow-y: auto;
-    }
+    .preview-label { font-weight: bold; width: 100px; flex-shrink: 0; color: #555; }
+    .preview-value { flex: 1; word-break: break-word; color: #111; }
+    .preview-message { background: #fff; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 13px; white-space: pre-line; line-height: 1.7; border: 1px solid #ddd; font-family: Tahoma, monospace; max-height: 300px; overflow-y: auto; }
     .btn-row { display: flex; gap: 8px; margin-top: 18px; }
     .btn-row button { flex: 1; margin-top: 0; }
   </style>
@@ -209,8 +146,6 @@
 
   <div id="formSection" class="screen">
     <h2>فرم ثبت‌نام</h2>
-    <button type="button" class="btn-debug" onclick="runDebug()">🐞 نمایش اطلاعات دیباگ</button>
-    <div id="debugBox" class="debug-box hidden"></div>
     <div class="info-box" id="tgInfo"></div>
     <form id="regForm">
       <label>نام و نام خانوادگی *</label>
@@ -226,16 +161,12 @@
 
   <div id="pendingSection" class="screen">
     <h2>در انتظار تأیید ادمین ⏳</h2>
-    <button type="button" class="btn-debug" onclick="runDebug()">🐞 نمایش اطلاعات دیباگ</button>
-    <div id="debugBox2" class="debug-box hidden"></div>
     <div class="info-box" id="pendingInfo"></div>
     <div class="message msg-warning">ثبت‌نام شما انجام شد و در انتظار تأیید ادمین است.</div>
   </div>
 
   <div id="activeSection" class="screen">
     <h2>خوش آمدید ✅</h2>
-    <button type="button" class="btn-debug" onclick="runDebug()">🐞 نمایش اطلاعات دیباگ</button>
-    <div id="debugBox3" class="debug-box hidden"></div>
     <div class="info-box" id="activeInfo"></div>
     <div class="message msg-success">دسترسی شما فعال است.</div>
     <button id="adminBtn" class="hidden" style="margin-top: 16px;">🛠 پنل ادمین</button>
@@ -349,6 +280,7 @@
 
     var pendingPayload = null;
     var isSubmitting = false;
+    var dataLoaded = false;
 
     var MONTHS = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
 
@@ -366,62 +298,6 @@
       }
       var target = document.getElementById(id);
       if (target) target.classList.add('active');
-    }
-
-    function setDebug(txt, boxId) {
-      boxId = boxId || 'debugBox';
-      var dbg = document.getElementById(boxId);
-      if (!dbg) dbg = document.getElementById('debugBox');
-      if (!dbg) return;
-      dbg.classList.remove('hidden');
-      dbg.innerText = txt;
-    }
-
-    function runDebug() {
-      var out = '';
-      out += '=== DEBUG INFO ===\n\n';
-      out += 'tgUser:\n' + JSON.stringify(tgUser, null, 2) + '\n\n';
-      out += 'API_URL:\n' + API_URL + '\n\n';
-
-      var activeBox = 'debugBox';
-      if (document.getElementById('pendingSection').classList.contains('active')) activeBox = 'debugBox2';
-      if (document.getElementById('activeSection').classList.contains('active')) activeBox = 'debugBox3';
-
-      setDebug(out + 'در حال دریافت...', activeBox);
-
-      fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'getUserStatus', chatId: tgUser.id }),
-        redirect: 'follow'
-      })
-      .then(function(r) { return r.text(); })
-      .then(function(t) {
-        out += '--- getUserStatus ---\n' + t.substring(0, 400) + '\n\n';
-        return fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'getRecipients' }),
-          redirect: 'follow'
-        }).then(function(r) { return r.text(); });
-      })
-      .then(function(t) {
-        out += '--- getRecipients ---\n' + t.substring(0, 400) + '\n\n';
-        return fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'getFormOptions' }),
-          redirect: 'follow'
-        }).then(function(r) { return r.text(); });
-      })
-      .then(function(t) {
-        out += '--- getFormOptions ---\n' + t.substring(0, 400) + '\n';
-        setDebug(out, activeBox);
-      })
-      .catch(function(err) {
-        out += '\n\n❌ ERROR: ' + err.message;
-        setDebug(out, activeBox);
-      });
     }
 
     function showMessage(elId, text, type) {
@@ -445,7 +321,7 @@
       })
       .then(function(text) {
         try { return JSON.parse(text); }
-        catch (e) { throw new Error('پاسخ نامعتبر از سرور: ' + text.substring(0,200)); }
+        catch (e) { throw new Error('پاسخ نامعتبر: ' + text.substring(0,150)); }
       })
       .catch(function(err) {
         if (retries > 0) {
@@ -456,6 +332,7 @@
       });
     }
 
+    // ============ Jalali ============
     function gregorianToJalali(gy, gm, gd) {
       var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
       var jy = (gy <= 1600) ? 0 : 979;
@@ -539,6 +416,7 @@
       setDateDropdowns(j[0], j[1], j[2]);
     }
 
+    // ============ Searchable Select ============
     function createSearchSelect(containerId, opts) {
       var container = document.getElementById(containerId);
       container.innerHTML = '';
@@ -599,13 +477,11 @@
         frag.appendChild(document.createTextNode(text.substring(idx + q.length)));
         return frag;
       }
-
       function updateClearBtn() {
         var has = multi ? selectedValue.length > 0 : !!selectedValue;
         if (has) clearBtn.classList.remove('hidden');
         else clearBtn.classList.add('hidden');
       }
-
       function renderDropdown(filter) {
         var q = String(filter || '').trim().toLowerCase();
         dropdown.innerHTML = '';
@@ -639,17 +515,14 @@
             if (multi) {
               if (selectedValue.indexOf(o.value) === -1) selectedValue.push(o.value);
               input.value = '';
-              renderChips();
-              renderDropdown('');
-              updateClearBtn();
+              renderChips(); renderDropdown(''); updateClearBtn();
               if (onChangeFn) onChangeFn(selectedValue.slice());
             } else {
               selectedValue = o.value;
               input.value = o.label;
               input.readOnly = true;
               dropdown.classList.add('hidden');
-              renderChips();
-              updateClearBtn();
+              renderChips(); updateClearBtn();
               if (onChangeFn) onChangeFn(selectedValue);
             }
           }
@@ -658,47 +531,31 @@
           dropdown.appendChild(item);
         });
       }
-
       function renderChips() {
         chipsWrap.innerHTML = '';
         if (multi) {
           selectedValue.forEach(function(v) {
             var chip = document.createElement('span');
             chip.className = 'ss-chip';
-            var t = document.createElement('span');
-            t.textContent = labelFor(v);
-            var x = document.createElement('span');
-            x.className = 'ss-chip-x';
-            x.textContent = '×';
+            var t = document.createElement('span'); t.textContent = labelFor(v);
+            var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×';
             x.addEventListener('click', function(ev) {
               ev.stopPropagation();
               selectedValue = selectedValue.filter(function(s) { return s !== v; });
-              renderChips();
-              renderDropdown(input.value);
-              updateClearBtn();
+              renderChips(); renderDropdown(input.value); updateClearBtn();
               if (onChangeFn) onChangeFn(selectedValue.slice());
             });
-            chip.appendChild(t);
-            chip.appendChild(x);
-            chipsWrap.appendChild(chip);
+            chip.appendChild(t); chip.appendChild(x); chipsWrap.appendChild(chip);
           });
         }
       }
-
       clearBtn.addEventListener('click', function(ev) {
         ev.stopPropagation();
         if (multi) selectedValue = [];
-        else {
-          selectedValue = '';
-          input.value = '';
-          input.readOnly = false;
-        }
-        renderChips();
-        renderDropdown('');
-        updateClearBtn();
+        else { selectedValue = ''; input.value = ''; input.readOnly = false; }
+        renderChips(); renderDropdown(''); updateClearBtn();
         if (onChangeFn) onChangeFn(multi ? [] : '');
       });
-
       input.addEventListener('focus', function() {
         if (input.readOnly) return;
         dropdown.classList.remove('hidden');
@@ -708,57 +565,50 @@
         if (input.readOnly) return;
         if (!multi) {
           if (input.value !== labelFor(selectedValue)) {
-            selectedValue = '';
-            updateClearBtn();
+            selectedValue = ''; updateClearBtn();
             if (onChangeFn) onChangeFn('');
           }
         }
         dropdown.classList.remove('hidden');
         renderDropdown(input.value);
       });
-
       document.addEventListener('click', function(ev) {
         if (!container.contains(ev.target)) dropdown.classList.add('hidden');
       });
 
-      renderDropdown('');
-      updateClearBtn();
+      renderDropdown(''); updateClearBtn();
 
       return {
         getValue: function() { return multi ? selectedValue.slice() : selectedValue; },
-        getRawString: function() {
-          if (multi) return selectedValue.join('، ');
-          return selectedValue;
+        getRawString: function() { return multi ? selectedValue.join('، ') : selectedValue; },
+        getChatIds: function() {
+          if (!multi && selectedValue) {
+            for (var i = 0; i < recipientsData.length; i++) {
+              if (recipientsData[i].systemName === selectedValue) {
+                return {
+                  telegramChatId: recipientsData[i].telegramChatId || '',
+                  baleChatId: recipientsData[i].baleChatId || ''
+                };
+              }
+            }
+          }
+          return { telegramChatId: '', baleChatId: '' };
         },
-        setOptions: function(newOpts) {
-          options = (newOpts || []).slice();
-          renderDropdown(input.value);
-        },
-        setPlaceholder: function(p) {
-          placeholder = p;
-          input.placeholder = p;
-        },
+        setOptions: function(newOpts) { options = (newOpts || []).slice(); renderDropdown(input.value); },
+        setPlaceholder: function(p) { placeholder = p; input.placeholder = p; },
         clear: function() {
           if (multi) selectedValue = [];
-          else {
-            selectedValue = '';
-            input.value = '';
-            input.readOnly = false;
-          }
-          renderChips();
-          renderDropdown('');
-          updateClearBtn();
+          else { selectedValue = ''; input.value = ''; input.readOnly = false; }
+          renderChips(); renderDropdown(''); updateClearBtn();
         }
       };
     }
 
+    // ============ Init ============
     function init() {
       try {
         if (!tgUser) {
-          document.getElementById('loading').innerHTML =
-            '<div style="padding:20px;color:#c00;text-align:center;">' +
-            'لطفاً از داخل تلگرام باز کنید.' +
-            '</div>';
+          document.getElementById('loading').innerHTML = '<div style="padding:20px;color:#c00;text-align:center;">لطفاً از داخل تلگرام باز کنید.</div>';
           return;
         }
         try { buildDatePickers(); } catch (e) { console.error('datePicker:', e); }
@@ -767,63 +617,97 @@
           if (document.getElementById('loading').classList.contains('active')) {
             show('formSection');
           }
-        }, 12000);
+        }, 15000);
 
-        checkStatus(function() { clearTimeout(safetyTimer); });
+        // 🚀 یک درخواست برای همه‌چیز
+        apiCall({ action: 'getInitData', chatId: tgUser.id })
+          .then(function(res) {
+            clearTimeout(safetyTimer);
+            handleInitData(res);
+          })
+          .catch(function(err) {
+            clearTimeout(safetyTimer);
+            // fallback: getUserStatus تنها
+            apiCall({ action: 'getUserStatus', chatId: tgUser.id })
+              .then(function(res) { handleUserStatus(res); })
+              .catch(function(e2) { show('formSection'); });
+          });
       } catch (e) {
         console.error('init error:', e);
         show('formSection');
       }
     }
 
-    function checkStatus(onDone) {
-      apiCall({ action: 'getUserStatus', chatId: tgUser.id })
-        .then(function(res) {
-          try {
-            if (res && res.registered === true) {
-              var u = res.userData || {};
-              currentAccess = String(u.access || '').trim();
-              if (u.active === true || u.active === 'TRUE' || u.active === 'true') {
-                var box = document.getElementById('activeInfo');
-                box.innerHTML =
-                  '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
-                  '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-                  '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
-                  '<b>وضعیت:</b> <span class="badge badge-active">فعال</span><br>' +
-                  '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (currentAccess || 'تعیین نشده') + '</span>';
-                if (currentAccess === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
-                show('activeSection');
-              } else {
-                var pbox = document.getElementById('pendingInfo');
-                pbox.innerHTML =
-                  '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
-                  '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-                  '<b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
-                show('pendingSection');
-              }
-            } else {
-              var info = document.getElementById('tgInfo');
-              info.innerHTML =
-                '<b>شناسه:</b> ' + tgUser.id + '<br>' +
-                '<b>نام تلگرام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '') + '<br>' +
-                '<b>یوزرنیم:</b> ' + (tgUser.username ? '@' + tgUser.username : 'ندارد');
-              show('formSection');
-            }
-          } catch (e) {
-            console.error('render error:', e);
-            show('formSection');
-          }
-          if (onDone) onDone();
-        })
-        .catch(function(err) {
-          console.error('checkStatus error:', err);
-          show('formSection');
-          if (onDone) onDone();
-        });
+    function handleInitData(res) {
+      if (!res || !res.ok) { show('formSection'); return; }
+      var userStatus = res.userStatus;
+      if (!userStatus || !userStatus.registered) { handleUserStatus(userStatus); return; }
+
+      var u = userStatus.userData || {};
+      currentAccess = String(u.access || '').trim();
+      var isActive = (u.active === true || u.active === 'TRUE' || u.active === 'true');
+
+      if (isActive) {
+        var box = document.getElementById('activeInfo');
+        box.innerHTML =
+          '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
+          '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+          '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
+          '<b>وضعیت:</b> <span class="badge badge-active">فعال</span><br>' +
+          '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (currentAccess || 'تعیین نشده') + '</span>';
+        if (currentAccess === 'ادمین') {
+          document.getElementById('adminBtn').classList.remove('hidden');
+          // 🚀 کش کردن داده‌های پنل ادمین
+          if (res.recipients) recipientsData = res.recipients;
+          if (res.formOptions) window._formOptionsCache = res.formOptions;
+        }
+        show('activeSection');
+        dataLoaded = true;
+      } else {
+        var pbox = document.getElementById('pendingInfo');
+        pbox.innerHTML =
+          '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
+          '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+          '<b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
+        show('pendingSection');
+      }
+    }
+
+    function handleUserStatus(res) {
+      if (res && res.registered) {
+        var u = res.userData;
+        currentAccess = String(u.access || '').trim();
+        if (u.active === true || u.active === 'TRUE' || u.active === 'true') {
+          var box = document.getElementById('activeInfo');
+          box.innerHTML =
+            '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
+            '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+            '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
+            '<b>وضعیت:</b> <span class="badge badge-active">فعال</span><br>' +
+            '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (currentAccess || 'تعیین نشده') + '</span>';
+          if (currentAccess === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
+          show('activeSection');
+        } else {
+          var pbox = document.getElementById('pendingInfo');
+          pbox.innerHTML =
+            '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
+            '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+            '<b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
+          show('pendingSection');
+        }
+      } else {
+        var info = document.getElementById('tgInfo');
+        info.innerHTML =
+          '<b>شناسه:</b> ' + tgUser.id + '<br>' +
+          '<b>نام تلگرام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '') + '<br>' +
+          '<b>یوزرنیم:</b> ' + (tgUser.username ? '@' + tgUser.username : 'ندارد');
+        show('formSection');
+      }
     }
 
     init();
 
+    // ============ ثبت‌نام ============
     document.getElementById('regForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var btn = document.getElementById('submitBtn');
@@ -841,7 +725,7 @@
         if (res && res.ok) {
           showMessage('formMessage', '✅ ' + (res.message || 'انجام شد'), 'success');
           document.getElementById('regForm').reset();
-          setTimeout(function() { checkStatus(); }, 1500);
+          setTimeout(function() { init(); }, 1500);
         } else {
           showMessage('formMessage', '❌ ' + ((res && res.message) || 'خطای نامشخص'), 'error');
         }
@@ -854,37 +738,90 @@
 
     document.getElementById('adminBtn').addEventListener('click', function() {
       show('adminSection');
-      loadRecipients();
-      loadFormOptions();
+      // اگه قبلاً لود شده، فوری نمایش بده
+      if (dataLoaded) {
+        populateAdminPanel();
+      } else {
+        // در غیر این صورت، لود کن
+        loadAdminData();
+      }
     });
 
     document.getElementById('backBtn').addEventListener('click', function() {
       show('activeSection');
     });
 
-    function loadRecipients() {
+    function loadAdminData() {
+      recipientSS = createSearchSelect('recipientSS', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipientChange });
+      subjectSS = createSearchSelect('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      epcSS = createSearchSelect('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      fieldSS = createSearchSelect('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
+
+      // درخواست موازی
+      Promise.all([
+        apiCall({ action: 'getRecipients' }),
+        apiCall({ action: 'getFormOptions' })
+      ]).then(function(results) {
+        var recRes = results[0];
+        var optRes = results[1];
+        recipientsData = (recRes && recRes.recipients) || [];
+        fillRecipients(recipientsData);
+        fillFormOptions(optRes);
+        dataLoaded = true;
+      }).catch(function(err) {
+        console.error('loadAdminData:', err);
+      });
+    }
+
+    function populateAdminPanel() {
       recipientSS = createSearchSelect('recipientSS', {
         multi: false,
-        options: [],
-        placeholder: 'در حال بارگذاری...',
+        options: recipientsData.map(function(c) { return { value: c.systemName, label: c.displayName }; }),
+        placeholder: 'تایپ کنید (' + recipientsData.length + ' مخاطب)',
         onChange: onRecipientChange
       });
-      apiCall({ action: 'getRecipients' })
-        .then(function(res) {
-          recipientsData = (res && res.recipients) || [];
-          if (recipientsData.length === 0) {
-            recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد');
-            return;
-          }
-          var opts = recipientsData.map(function(c) {
-            return { value: c.systemName, label: c.displayName };
-          });
-          recipientSS.setOptions(opts);
-          recipientSS.setPlaceholder('تایپ کنید (' + opts.length + ' مخاطب)');
-        })
-        .catch(function(err) {
-          recipientSS.setPlaceholder('خطا: ' + err.message);
-        });
+      subjectSS = createSearchSelect('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      epcSS = createSearchSelect('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      fieldSS = createSearchSelect('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+      addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
+
+      if (window._formOptionsCache) {
+        fillFormOptions(window._formOptionsCache);
+      } else {
+        apiCall({ action: 'getFormOptions' }).then(fillFormOptions);
+      }
+    }
+
+    function fillRecipients(data) {
+      if (!data || data.length === 0) {
+        recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد');
+        return;
+      }
+      recipientSS.setOptions(data.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
+      recipientSS.setPlaceholder('تایپ کنید (' + data.length + ' مخاطب)');
+    }
+
+    function fillFormOptions(res) {
+      res = res || {};
+      var subjOpts = (res.subjects && res.subjects.options) || [];
+      var epcOpts = (res.epcs && res.epcs.options) || [];
+      var fieldOpts = (res.fields && res.fields.options) || [];
+      var engOpts = (res.engagementTypes && res.engagementTypes.options) || [];
+      var addrOpts = (res.addresses && res.addresses.options) || [];
+
+      subjectSS.setOptions(subjOpts);
+      subjectSS.setPlaceholder(subjOpts.length ? 'انتخاب کنید (' + subjOpts.length + ')' : 'تایپ کنید');
+      epcSS.setOptions(epcOpts);
+      epcSS.setPlaceholder(epcOpts.length ? 'انتخاب کنید (' + epcOpts.length + ')' : 'تایپ کنید');
+      fieldSS.setOptions(fieldOpts);
+      fieldSS.setPlaceholder(fieldOpts.length ? 'انتخاب کنید (' + fieldOpts.length + ')' : 'تایپ کنید');
+      engagementSS.setOptions(engOpts);
+      engagementSS.setPlaceholder(engOpts.length ? 'انتخاب کنید (' + engOpts.length + ')' : 'تایپ کنید');
+      addressSS.setOptions(addrOpts);
+      addressSS.setPlaceholder(addrOpts.length ? 'چندتایی (' + addrOpts.length + ')' : 'تایپ کنید');
     }
 
     function onRecipientChange(val) {
@@ -928,42 +865,7 @@
     document.getElementById('chkTg').addEventListener('change', updateAllCheckbox);
     document.getElementById('chkBale').addEventListener('change', updateAllCheckbox);
 
-    function loadFormOptions() {
-      subjectSS = createSearchSelect('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      epcSS = createSearchSelect('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      fieldSS = createSearchSelect('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
-
-      apiCall({ action: 'getFormOptions' })
-        .then(function(res) {
-          res = res || {};
-          var subjOpts = (res.subjects && res.subjects.options) || [];
-          var epcOpts = (res.epcs && res.epcs.options) || [];
-          var fieldOpts = (res.fields && res.fields.options) || [];
-          var engOpts = (res.engagementTypes && res.engagementTypes.options) || [];
-          var addrOpts = (res.addresses && res.addresses.options) || [];
-
-          subjectSS.setOptions(subjOpts);
-          subjectSS.setPlaceholder(subjOpts.length ? 'انتخاب کنید (' + subjOpts.length + ')' : 'تایپ کنید');
-
-          epcSS.setOptions(epcOpts);
-          epcSS.setPlaceholder(epcOpts.length ? 'انتخاب کنید (' + epcOpts.length + ')' : 'تایپ کنید');
-
-          fieldSS.setOptions(fieldOpts);
-          fieldSS.setPlaceholder(fieldOpts.length ? 'انتخاب کنید (' + fieldOpts.length + ')' : 'تایپ کنید');
-
-          engagementSS.setOptions(engOpts);
-          engagementSS.setPlaceholder(engOpts.length ? 'انتخاب کنید (' + engOpts.length + ')' : 'تایپ کنید');
-
-          addressSS.setOptions(addrOpts);
-          addressSS.setPlaceholder(addrOpts.length ? 'چندتایی (' + addrOpts.length + ')' : 'تایپ کنید');
-        })
-        .catch(function(err) {
-          console.error('FormOptions error:', err);
-        });
-    }
-
+    // ============ Preview ============
     document.getElementById('previewBtn').addEventListener('click', function() {
       var recipientName = recipientSS ? recipientSS.getRawString() : '';
       var subject = subjectSS ? subjectSS.getRawString() : '';
@@ -980,14 +882,14 @@
       var sendBale = document.getElementById('chkBale').checked;
 
       if (!recipientName) return showMessage('woMessage', '❌ مخاطب را انتخاب کنید', 'error');
-      if (!subject) return showMessage('woMessage', '❌ موضوع ردیف را انتخاب کنید', 'error');
+      if (!subject) return showMessage('woMessage', '❌ موضوع را انتخاب کنید', 'error');
       if (!description) return showMessage('woMessage', '❌ شرح عملیات الزامی است', 'error');
       if (!epc) return showMessage('woMessage', '❌ EPC را انتخاب کنید', 'error');
       if (!field) return showMessage('woMessage', '❌ رشته را انتخاب کنید', 'error');
       if (!engagement) return showMessage('woMessage', '❌ پیمانکاری/امانی را انتخاب کنید', 'error');
       if (!address) return showMessage('woMessage', '❌ آدرس را انتخاب کنید', 'error');
       if (!startYear || !startMonth || !startDay) return showMessage('woMessage', '❌ تاریخ شروع الزامی است', 'error');
-      if (!duration || parseInt(duration, 10) < 1) return showMessage('woMessage', '❌ مدت زمان معتبر نیست', 'error');
+      if (!duration || parseInt(duration, 10) < 1) return showMessage('woMessage', '❌ مدت معتبر نیست', 'error');
       if (!sendTg && !sendBale) return showMessage('woMessage', '❌ حداقل یک پلتفورم انتخاب کنید', 'error');
 
       var sY = parseInt(startYear, 10), sM = parseInt(startMonth, 10), sD = parseInt(startDay, 10);
@@ -1031,10 +933,14 @@
       document.getElementById('pvEndDate').innerText = endShamsi + ' (شمسی)';
       document.getElementById('pvMessage').innerText = messagePreview;
 
+      var chatIds = recipientSS.getChatIds ? recipientSS.getChatIds() : { telegramChatId: '', baleChatId: '' };
+
       pendingPayload = {
         action: 'createWorkOrder',
         adminChatId: String(tgUser.id),
         recipientSystemName: recipientName,
+        recipientTelegramChatId: chatIds.telegramChatId,
+        recipientBaleChatId: chatIds.baleChatId,
         sendTelegram: sendTg,
         sendBale: sendBale,
         subject: subject,
@@ -1052,9 +958,12 @@
       isSubmitting = false;
       var finalBtn = document.getElementById('finalSubmitBtn');
       finalBtn.disabled = false;
+      finalBtn.style.pointerEvents = 'auto';
       finalBtn.classList.remove('btn-locked');
       finalBtn.classList.add('btn-success');
       finalBtn.innerText = '✅ ثبت نهایی و ارسال';
+      document.getElementById('editBtn').disabled = false;
+      document.getElementById('editBtn').innerText = '← ویرایش';
       document.getElementById('finalMessage').innerText = '';
       document.getElementById('finalMessage').className = '';
 
@@ -1062,44 +971,81 @@
     });
 
     document.getElementById('editBtn').addEventListener('click', function() {
+      document.getElementById('finalMessage').innerText = '';
+      document.getElementById('finalMessage').className = '';
+      isSubmitting = false;
+      var btn = document.getElementById('finalSubmitBtn');
+      btn.disabled = false;
+      btn.style.pointerEvents = 'auto';
+      btn.classList.remove('btn-locked');
+      btn.classList.add('btn-success');
+      btn.innerText = '✅ ثبت نهایی و ارسال';
+      document.getElementById('editBtn').innerText = '← ویرایش';
       show('adminSection');
     });
 
+    // ============ Submit ============
     document.getElementById('finalSubmitBtn').addEventListener('click', function() {
       if (isSubmitting) return;
       isSubmitting = true;
 
       var btn = document.getElementById('finalSubmitBtn');
       btn.disabled = true;
+      btn.style.pointerEvents = 'none';
       btn.classList.remove('btn-success');
       btn.classList.add('btn-locked');
       btn.innerText = '⏳ در حال ارسال...';
+      document.getElementById('editBtn').disabled = true;
+
+      var fmsg = document.getElementById('finalMessage');
+      fmsg.innerText = '';
+      fmsg.className = '';
 
       apiCall(pendingPayload)
         .then(function(res) {
           if (res && res.ok) {
             var msg = '✅ ' + (res.message || 'ثبت شد');
+            if (res.row) msg += ' (ردیف ' + res.row + ')';
             if (res.recipient) msg += '\nمخاطب: ' + res.recipient;
             if (res.status) msg += '\nوضعیت: ' + res.status;
             if (res.sends) msg += '\nارسال: ' + res.sends;
             showMessage('finalMessage', msg, 'success');
             btn.innerText = '✅ ثبت شد';
             btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            document.getElementById('editBtn').disabled = false;
+            document.getElementById('editBtn').innerText = '➕ دستور کار جدید';
+            // پاک کردن کش recipients چون شیت عوض شد
+            dataLoaded = false;
+          } else if (res && res.duplicate) {
+            var msg2 = '⚠️ ' + res.message;
+            if (res.existingRow) msg2 += '\n\nمی‌توانید اطلاعات را ویرایش کرده و دوباره تلاش کنید.';
+            showMessage('finalMessage', msg2, 'error');
+            btn.innerText = '⚠️ قبلاً ثبت شده';
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            document.getElementById('editBtn').disabled = false;
+            document.getElementById('editBtn').innerText = '✏️ ویرایش اطلاعات';
           } else {
             isSubmitting = false;
             btn.disabled = false;
+            btn.style.pointerEvents = 'auto';
             btn.classList.remove('btn-locked');
             btn.classList.add('btn-success');
             btn.innerText = '✅ تلاش دوباره';
+            document.getElementById('editBtn').disabled = false;
+            document.getElementById('editBtn').innerText = '← ویرایش';
             showMessage('finalMessage', '❌ ' + ((res && res.message) || 'خطای نامشخص'), 'error');
           }
         })
         .catch(function(err) {
           isSubmitting = false;
           btn.disabled = false;
+          btn.style.pointerEvents = 'auto';
           btn.classList.remove('btn-locked');
           btn.classList.add('btn-success');
           btn.innerText = '✅ تلاش دوباره';
+          document.getElementById('editBtn').disabled = false;
           showMessage('finalMessage', '❌ خطا: ' + err.message, 'error');
         });
     });

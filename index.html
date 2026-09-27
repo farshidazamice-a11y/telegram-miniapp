@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <title>پروژه ایگل</title>
   <style>
@@ -16,6 +19,11 @@
     .screen { display: none !important; }
     .screen.active { display: block !important; }
     #loading.active { display: flex !important; }
+    .version-badge {
+      position: fixed; top: 4px; left: 4px; z-index: 9999;
+      background: #dc2626; color: white; padding: 2px 8px;
+      border-radius: 4px; font-size: 10px; font-weight: bold;
+    }
 
     h2 { text-align: center; color: var(--tg-theme-button-color, #229ED9); margin-bottom: 20px; }
     h3 { color: var(--tg-theme-button-color, #229ED9); margin: 22px 0 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
@@ -38,6 +46,7 @@
     .btn-secondary { background: var(--tg-theme-secondary-bg-color, #e2e8f0); color: var(--tg-theme-text-color, #000); margin-bottom: 12px; }
     .btn-success { background: #10b981 !important; color: white !important; }
     .btn-locked { background: #9ca3af !important; color: white !important; }
+    .btn-debug { background: #dc2626 !important; color: white !important; margin-bottom: 8px; }
 
     .message { margin-top: 16px; padding: 12px; border-radius: 10px; text-align: center; font-size: 14px; white-space: pre-line; }
     .msg-success { background: #d1fae5; color: #065f46; }
@@ -50,22 +59,8 @@
     .badge-inactive { background: #fee2e2; color: #991b1b; }
     .badge-access { background: #dbeafe; color: #1e40af; }
 
-    #loading {
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      text-align: center;
-      min-height: 60vh;
-    }
-    .spinner {
-      width: 54px; height: 54px;
-      border: 5px solid rgba(34,158,217,0.2);
-      border-top: 5px solid #229ED9;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    }
+    #loading { flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; min-height: 60vh; }
+    .spinner { width: 54px; height: 54px; border: 5px solid rgba(34,158,217,0.2); border-top: 5px solid #229ED9; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .loading-text { font-size: 15px; color: #666; animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
@@ -75,20 +70,10 @@
     .date-row { display: flex; gap: 8px; }
     .date-row .col { flex: 1; }
     .date-row .col.month { flex: 1.6; }
-    .date-row select {
-      text-align: center; font-weight: bold; padding: 14px 8px;
-      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
-      border: 1px solid transparent;
-    }
+    .date-row select { text-align: center; font-weight: bold; padding: 14px 8px; background: var(--tg-theme-secondary-bg-color, #f1f5f9); border: 1px solid transparent; }
     .date-label { font-size: 11px; color: #888; text-align: center; margin-top: 4px; }
     .quick-date-row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .btn-quick {
-      flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px;
-      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
-      color: var(--tg-theme-text-color, #000);
-      font-size: 14px; font-weight: bold; cursor: pointer;
-      margin: 0;
-    }
+    .btn-quick { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; background: var(--tg-theme-secondary-bg-color, #f1f5f9); color: var(--tg-theme-text-color, #000); font-size: 14px; font-weight: bold; cursor: pointer; margin: 0; }
 
     .platform-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-top: 10px; }
     .platform-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
@@ -99,23 +84,11 @@
     .platform-row.all-row label { font-weight: bold; }
 
     .ss-container { position: relative; margin-top: 6px; }
-    .ss-input {
-      width: 100%; padding: 12px 14px 12px 36px;
-      border: 1px solid #ccc; border-radius: 8px;
-      font-size: 15px; font-family: inherit;
-      background: var(--tg-theme-bg-color, #fff);
-      color: var(--tg-theme-text-color, #000);
-    }
+    .ss-input { width: 100%; padding: 12px 14px 12px 36px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; font-family: inherit; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); }
     .ss-input[readonly] { background: #e8f5e9; border-color: #10b981; font-weight: bold; cursor: pointer; }
     .ss-arrow { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); pointer-events: none; font-size: 14px; color: #888; }
     .ss-clear-btn { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); cursor: pointer; color: #c00; font-weight: bold; font-size: 18px; padding: 4px 8px; user-select: none; }
-    .ss-dropdown {
-      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-      max-height: 240px; overflow-y: auto;
-      background: #fff; border: 1px solid #ddd; border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-      z-index: 1000;
-    }
+    .ss-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 240px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); z-index: 1000; }
     .ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #222; transition: background 0.1s; }
     .ss-item:active { background: #dbeafe; }
     .ss-item:last-child { border-bottom: none; }
@@ -124,7 +97,6 @@
     .ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--tg-theme-button-color, #229ED9); color: #ffffff; border-radius: 20px; font-size: 13px; font-weight: 500; }
     .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.85; }
-    .ss-chip-x:hover { opacity: 1; }
 
     .preview-card { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 2px solid #229ED9; }
     .preview-title { font-size: 16px; font-weight: bold; color: #229ED9; text-align: center; margin-bottom: 14px; border-bottom: 1px dashed #ccc; padding-bottom: 8px; }
@@ -138,6 +110,8 @@
   </style>
 </head>
 <body>
+
+  <div class="version-badge">V3</div>
 
   <div id="loading" class="screen active">
     <div class="spinner"></div>
@@ -175,6 +149,7 @@
   <div id="adminSection" class="screen">
     <h2>🛠 پنل ادمین</h2>
     <button id="backBtn" class="btn-secondary">→ بازگشت</button>
+    <button type="button" class="btn-debug" id="debugRecipientsBtn">🐞 تعداد مخاطبین</button>
 
     <h3>مخاطب دستور کار</h3>
     <label>مخاطب * (تایپ کنید)</label>
@@ -266,21 +241,16 @@
 
   <script>
     var API_URL = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
+    var APP_VERSION = 'V3-' + Date.now();
     var tg = window.Telegram && window.Telegram.WebApp;
     var tgUser = null;
     var currentAccess = '';
     var recipientsData = [];
-
-    var recipientSS = null;
-    var subjectSS = null;
-    var epcSS = null;
-    var fieldSS = null;
-    var addressSS = null;
-    var engagementSS = null;
-
     var pendingPayload = null;
     var isSubmitting = false;
     var dataLoaded = false;
+
+    var recipientSS = null, subjectSS = null, epcSS = null, fieldSS = null, addressSS = null, engagementSS = null;
 
     var MONTHS = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
 
@@ -306,8 +276,10 @@
       el.innerText = text;
     }
 
+    // API با cache buster
     function apiCall(payload, retries) {
       if (retries === undefined) retries = 2;
+      payload._v = APP_VERSION;
       var body = JSON.stringify(payload);
       return fetch(API_URL, {
         method: 'POST',
@@ -315,13 +287,10 @@
         body: body,
         redirect: 'follow'
       })
-      .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
       .then(function(text) {
         try { return JSON.parse(text); }
-        catch (e) { throw new Error('پاسخ نامعتبر: ' + text.substring(0,150)); }
+        catch (e) { throw new Error('پاسخ نامعتبر'); }
       })
       .catch(function(err) {
         if (retries > 0) {
@@ -374,24 +343,17 @@
       var todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
       var year = todayJ[0];
       yearSel.innerHTML = '';
-      for (var y = year - 2; y <= year + 3; y++) {
-        var o = document.createElement('option'); o.value = y; o.textContent = y; yearSel.appendChild(o);
-      }
+      for (var y = year - 2; y <= year + 3; y++) { var o = document.createElement('option'); o.value = y; o.textContent = y; yearSel.appendChild(o); }
       yearSel.value = year;
       monthSel.innerHTML = '';
-      for (var m = 1; m <= 12; m++) {
-        var o = document.createElement('option'); o.value = m; o.textContent = MONTHS[m]; monthSel.appendChild(o);
-      }
+      for (var m = 1; m <= 12; m++) { var o = document.createElement('option'); o.value = m; o.textContent = MONTHS[m]; monthSel.appendChild(o); }
       monthSel.value = todayJ[1];
       function refreshDays() {
-        var y = parseInt(yearSel.value);
-        var m = parseInt(monthSel.value);
+        var y = parseInt(yearSel.value), m = parseInt(monthSel.value);
         var max = daysInJalaliMonth(y, m);
         var cur = parseInt(daySel.value) || 1;
         daySel.innerHTML = '';
-        for (var d = 1; d <= max; d++) {
-          var o = document.createElement('option'); o.value = d; o.textContent = d; daySel.appendChild(o);
-        }
+        for (var d = 1; d <= max; d++) { var o = document.createElement('option'); o.value = d; o.textContent = d; daySel.appendChild(o); }
         daySel.value = Math.min(cur, max);
       }
       yearSel.addEventListener('change', refreshDays);
@@ -421,7 +383,6 @@
       var container = document.getElementById(containerId);
       container.innerHTML = '';
       container.className = 'ss-container';
-
       var multi = opts.multi === true;
       var options = (opts.options || []).slice();
       var placeholder = opts.placeholder || 'تایپ کنید...';
@@ -429,58 +390,25 @@
       var onChangeFn = opts.onChange || null;
 
       var input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'ss-input';
-      input.placeholder = placeholder;
-      input.autocomplete = 'off';
+      input.type = 'text'; input.className = 'ss-input'; input.placeholder = placeholder; input.autocomplete = 'off';
       container.appendChild(input);
-
-      var arrow = document.createElement('span');
-      arrow.className = 'ss-arrow';
-      arrow.textContent = '▼';
+      var arrow = document.createElement('span'); arrow.className = 'ss-arrow'; arrow.textContent = '▼';
       container.appendChild(arrow);
-
-      var clearBtn = document.createElement('span');
-      clearBtn.className = 'ss-clear-btn hidden';
-      clearBtn.textContent = '✕';
+      var clearBtn = document.createElement('span'); clearBtn.className = 'ss-clear-btn hidden'; clearBtn.textContent = '✕';
       container.appendChild(clearBtn);
-
-      var dropdown = document.createElement('div');
-      dropdown.className = 'ss-dropdown hidden';
+      var dropdown = document.createElement('div'); dropdown.className = 'ss-dropdown hidden';
       container.appendChild(dropdown);
-
-      var chipsWrap = document.createElement('div');
-      chipsWrap.className = 'ss-chips';
+      var chipsWrap = document.createElement('div'); chipsWrap.className = 'ss-chips';
       container.appendChild(chipsWrap);
 
-      function normOpt(o) {
-        if (typeof o === 'string') return { value: o, label: o };
-        return { value: o.value, label: o.label || o.value };
-      }
+      function normOpt(o) { return (typeof o === 'string') ? { value: o, label: o } : { value: o.value, label: o.label || o.value }; }
       function labelFor(v) {
-        for (var i = 0; i < options.length; i++) {
-          var o = normOpt(options[i]);
-          if (o.value === v) return o.label;
-        }
+        for (var i = 0; i < options.length; i++) { var o = normOpt(options[i]); if (o.value === v) return o.label; }
         return v;
-      }
-      function highlight(text, q) {
-        if (!q) return document.createTextNode(text);
-        var idx = text.toLowerCase().indexOf(q.toLowerCase());
-        if (idx === -1) return document.createTextNode(text);
-        var frag = document.createDocumentFragment();
-        frag.appendChild(document.createTextNode(text.substring(0, idx)));
-        var span = document.createElement('span');
-        span.className = 'ss-highlight';
-        span.textContent = text.substring(idx, idx + q.length);
-        frag.appendChild(span);
-        frag.appendChild(document.createTextNode(text.substring(idx + q.length)));
-        return frag;
       }
       function updateClearBtn() {
         var has = multi ? selectedValue.length > 0 : !!selectedValue;
-        if (has) clearBtn.classList.remove('hidden');
-        else clearBtn.classList.add('hidden');
+        if (has) clearBtn.classList.remove('hidden'); else clearBtn.classList.add('hidden');
       }
       function renderDropdown(filter) {
         var q = String(filter || '').trim().toLowerCase();
@@ -491,38 +419,28 @@
           if (multi && selectedValue.indexOf(o.value) !== -1) continue;
           if (!multi && selectedValue === o.value && q === '') continue;
           if (q) {
-            var lbl = o.label.toLowerCase();
-            var vll = o.value.toLowerCase();
+            var lbl = o.label.toLowerCase(), vll = o.value.toLowerCase();
             if (lbl.indexOf(q) === -1 && vll.indexOf(q) === -1) continue;
           }
           items.push(o);
         }
         if (items.length === 0) {
-          var empty = document.createElement('div');
-          empty.className = 'ss-empty';
+          var empty = document.createElement('div'); empty.className = 'ss-empty';
           empty.textContent = options.length === 0 ? 'هیچ گزینه‌ای موجود نیست' : 'نتیجه‌ای یافت نشد';
           dropdown.appendChild(empty);
           return;
         }
         items.forEach(function(o) {
-          var item = document.createElement('div');
-          item.className = 'ss-item';
-          if (q) item.appendChild(highlight(o.label, q));
-          else item.textContent = o.label;
-
+          var item = document.createElement('div'); item.className = 'ss-item'; item.textContent = o.label;
           function pick(ev) {
             if (ev) { ev.preventDefault(); ev.stopPropagation(); }
             if (multi) {
               if (selectedValue.indexOf(o.value) === -1) selectedValue.push(o.value);
-              input.value = '';
-              renderChips(); renderDropdown(''); updateClearBtn();
+              input.value = ''; renderChips(); renderDropdown(''); updateClearBtn();
               if (onChangeFn) onChangeFn(selectedValue.slice());
             } else {
-              selectedValue = o.value;
-              input.value = o.label;
-              input.readOnly = true;
-              dropdown.classList.add('hidden');
-              renderChips(); updateClearBtn();
+              selectedValue = o.value; input.value = o.label; input.readOnly = true;
+              dropdown.classList.add('hidden'); renderChips(); updateClearBtn();
               if (onChangeFn) onChangeFn(selectedValue);
             }
           }
@@ -535,8 +453,7 @@
         chipsWrap.innerHTML = '';
         if (multi) {
           selectedValue.forEach(function(v) {
-            var chip = document.createElement('span');
-            chip.className = 'ss-chip';
+            var chip = document.createElement('span'); chip.className = 'ss-chip';
             var t = document.createElement('span'); t.textContent = labelFor(v);
             var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×';
             x.addEventListener('click', function(ev) {
@@ -558,24 +475,18 @@
       });
       input.addEventListener('focus', function() {
         if (input.readOnly) return;
-        dropdown.classList.remove('hidden');
-        renderDropdown(input.value);
+        dropdown.classList.remove('hidden'); renderDropdown(input.value);
       });
       input.addEventListener('input', function() {
         if (input.readOnly) return;
         if (!multi) {
-          if (input.value !== labelFor(selectedValue)) {
-            selectedValue = ''; updateClearBtn();
-            if (onChangeFn) onChangeFn('');
-          }
+          if (input.value !== labelFor(selectedValue)) { selectedValue = ''; updateClearBtn(); if (onChangeFn) onChangeFn(''); }
         }
-        dropdown.classList.remove('hidden');
-        renderDropdown(input.value);
+        dropdown.classList.remove('hidden'); renderDropdown(input.value);
       });
       document.addEventListener('click', function(ev) {
         if (!container.contains(ev.target)) dropdown.classList.add('hidden');
       });
-
       renderDropdown(''); updateClearBtn();
 
       return {
@@ -585,10 +496,7 @@
           if (!multi && selectedValue) {
             for (var i = 0; i < recipientsData.length; i++) {
               if (recipientsData[i].systemName === selectedValue) {
-                return {
-                  telegramChatId: recipientsData[i].telegramChatId || '',
-                  baleChatId: recipientsData[i].baleChatId || ''
-                };
+                return { telegramChatId: recipientsData[i].telegramChatId || '', baleChatId: recipientsData[i].baleChatId || '' };
               }
             }
           }
@@ -611,42 +519,30 @@
           document.getElementById('loading').innerHTML = '<div style="padding:20px;color:#c00;text-align:center;">لطفاً از داخل تلگرام باز کنید.</div>';
           return;
         }
-        try { buildDatePickers(); } catch (e) { console.error('datePicker:', e); }
+        try { buildDatePickers(); } catch (e) {}
 
         var safetyTimer = setTimeout(function() {
-          if (document.getElementById('loading').classList.contains('active')) {
-            show('formSection');
-          }
+          if (document.getElementById('loading').classList.contains('active')) show('formSection');
         }, 15000);
 
-        // 🚀 یک درخواست برای همه‌چیز
         apiCall({ action: 'getInitData', chatId: tgUser.id })
-          .then(function(res) {
-            clearTimeout(safetyTimer);
-            handleInitData(res);
-          })
+          .then(function(res) { clearTimeout(safetyTimer); handleInitData(res); })
           .catch(function(err) {
             clearTimeout(safetyTimer);
-            // fallback: getUserStatus تنها
             apiCall({ action: 'getUserStatus', chatId: tgUser.id })
               .then(function(res) { handleUserStatus(res); })
-              .catch(function(e2) { show('formSection'); });
+              .catch(function() { show('formSection'); });
           });
-      } catch (e) {
-        console.error('init error:', e);
-        show('formSection');
-      }
+      } catch (e) { show('formSection'); }
     }
 
     function handleInitData(res) {
       if (!res || !res.ok) { show('formSection'); return; }
       var userStatus = res.userStatus;
       if (!userStatus || !userStatus.registered) { handleUserStatus(userStatus); return; }
-
       var u = userStatus.userData || {};
       currentAccess = String(u.access || '').trim();
       var isActive = (u.active === true || u.active === 'TRUE' || u.active === 'true');
-
       if (isActive) {
         var box = document.getElementById('activeInfo');
         box.innerHTML =
@@ -657,8 +553,10 @@
           '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (currentAccess || 'تعیین نشده') + '</span>';
         if (currentAccess === 'ادمین') {
           document.getElementById('adminBtn').classList.remove('hidden');
-          // 🚀 کش کردن داده‌های پنل ادمین
-          if (res.recipients) recipientsData = res.recipients;
+          if (res.recipients && res.recipients.length > 0) {
+            recipientsData = res.recipients;
+            console.log('Recipients loaded from initData: ' + recipientsData.length);
+          }
           if (res.formOptions) window._formOptionsCache = res.formOptions;
         }
         show('activeSection');
@@ -689,66 +587,60 @@
           show('activeSection');
         } else {
           var pbox = document.getElementById('pendingInfo');
-          pbox.innerHTML =
-            '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
-            '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-            '<b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
+          pbox.innerHTML = '<b>نام:</b> ' + (u.fullName || '—') + '<br><b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
           show('pendingSection');
         }
       } else {
         var info = document.getElementById('tgInfo');
-        info.innerHTML =
-          '<b>شناسه:</b> ' + tgUser.id + '<br>' +
-          '<b>نام تلگرام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '') + '<br>' +
-          '<b>یوزرنیم:</b> ' + (tgUser.username ? '@' + tgUser.username : 'ندارد');
+        info.innerHTML = '<b>شناسه:</b> ' + tgUser.id + '<br><b>نام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '');
         show('formSection');
       }
     }
 
     init();
 
-    // ============ ثبت‌نام ============
+    // ثبت‌نام
     document.getElementById('regForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var btn = document.getElementById('submitBtn');
       btn.disabled = true; btn.innerText = 'در حال ارسال...';
       apiCall({
-        action: 'registerUser',
-        chatId: tgUser.id,
-        username: tgUser.username || '',
+        action: 'registerUser', chatId: tgUser.id, username: tgUser.username || '',
         fullName: document.getElementById('fullName').value.trim(),
         position: document.getElementById('position').value.trim(),
         unit: document.getElementById('unit').value.trim()
       })
       .then(function(res) {
         btn.disabled = false; btn.innerText = 'ثبت‌نام';
-        if (res && res.ok) {
-          showMessage('formMessage', '✅ ' + (res.message || 'انجام شد'), 'success');
-          document.getElementById('regForm').reset();
-          setTimeout(function() { init(); }, 1500);
-        } else {
-          showMessage('formMessage', '❌ ' + ((res && res.message) || 'خطای نامشخص'), 'error');
-        }
+        if (res && res.ok) { showMessage('formMessage', '✅ ' + res.message, 'success'); document.getElementById('regForm').reset(); setTimeout(init, 1500); }
+        else showMessage('formMessage', '❌ ' + ((res && res.message) || 'خطا'), 'error');
       })
-      .catch(function(err) {
-        btn.disabled = false; btn.innerText = 'ثبت‌نام';
-        showMessage('formMessage', '❌ خطا: ' + err.message, 'error');
-      });
+      .catch(function(err) { btn.disabled = false; btn.innerText = 'ثبت‌نام'; showMessage('formMessage', '❌ خطا: ' + err.message, 'error'); });
     });
 
     document.getElementById('adminBtn').addEventListener('click', function() {
       show('adminSection');
-      // اگه قبلاً لود شده، فوری نمایش بده
-      if (dataLoaded) {
+      if (dataLoaded && recipientsData.length > 0) {
         populateAdminPanel();
       } else {
-        // در غیر این صورت، لود کن
         loadAdminData();
       }
     });
 
-    document.getElementById('backBtn').addEventListener('click', function() {
-      show('activeSection');
+    document.getElementById('backBtn').addEventListener('click', function() { show('activeSection'); });
+
+    // 🐞 دکمه دیباگ
+    document.getElementById('debugRecipientsBtn').addEventListener('click', function() {
+      var msg = '🔍 تعداد مخاطبین: ' + recipientsData.length + '\n\n';
+      if (recipientsData.length > 0) {
+        var sample = recipientsData.slice(0, 10).map(function(c, i) { return (i+1) + '. ' + c.displayName; }).join('\n');
+        msg += 'نمونه:\n' + sample;
+        if (recipientsData.length > 10) msg += '\n... و ' + (recipientsData.length - 10) + ' نفر دیگر';
+      } else {
+        msg += '❌ هیچ مخاطبی لود نشده!\n\n' +
+               'APP_VERSION: ' + APP_VERSION;
+      }
+      alert(msg);
     });
 
     function loadAdminData() {
@@ -759,20 +651,17 @@
       engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
       addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
-      // درخواست موازی
       Promise.all([
         apiCall({ action: 'getRecipients' }),
         apiCall({ action: 'getFormOptions' })
       ]).then(function(results) {
-        var recRes = results[0];
-        var optRes = results[1];
+        var recRes = results[0], optRes = results[1];
         recipientsData = (recRes && recRes.recipients) || [];
+        console.log('Recipients loaded via loadAdminData: ' + recipientsData.length);
         fillRecipients(recipientsData);
         fillFormOptions(optRes);
         dataLoaded = true;
-      }).catch(function(err) {
-        console.error('loadAdminData:', err);
-      });
+      }).catch(function(err) { console.error('loadAdminData:', err); });
     }
 
     function populateAdminPanel() {
@@ -788,18 +677,12 @@
       engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
       addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
-      if (window._formOptionsCache) {
-        fillFormOptions(window._formOptionsCache);
-      } else {
-        apiCall({ action: 'getFormOptions' }).then(fillFormOptions);
-      }
+      if (window._formOptionsCache) fillFormOptions(window._formOptionsCache);
+      else apiCall({ action: 'getFormOptions' }).then(fillFormOptions);
     }
 
     function fillRecipients(data) {
-      if (!data || data.length === 0) {
-        recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد');
-        return;
-      }
+      if (!data || data.length === 0) { recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد'); return; }
       recipientSS.setOptions(data.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
       recipientSS.setPlaceholder('تایپ کنید (' + data.length + ' مخاطب)');
     }
@@ -811,43 +694,30 @@
       var fieldOpts = (res.fields && res.fields.options) || [];
       var engOpts = (res.engagementTypes && res.engagementTypes.options) || [];
       var addrOpts = (res.addresses && res.addresses.options) || [];
-
-      subjectSS.setOptions(subjOpts);
-      subjectSS.setPlaceholder(subjOpts.length ? 'انتخاب کنید (' + subjOpts.length + ')' : 'تایپ کنید');
-      epcSS.setOptions(epcOpts);
-      epcSS.setPlaceholder(epcOpts.length ? 'انتخاب کنید (' + epcOpts.length + ')' : 'تایپ کنید');
-      fieldSS.setOptions(fieldOpts);
-      fieldSS.setPlaceholder(fieldOpts.length ? 'انتخاب کنید (' + fieldOpts.length + ')' : 'تایپ کنید');
-      engagementSS.setOptions(engOpts);
-      engagementSS.setPlaceholder(engOpts.length ? 'انتخاب کنید (' + engOpts.length + ')' : 'تایپ کنید');
-      addressSS.setOptions(addrOpts);
-      addressSS.setPlaceholder(addrOpts.length ? 'چندتایی (' + addrOpts.length + ')' : 'تایپ کنید');
+      subjectSS.setOptions(subjOpts); subjectSS.setPlaceholder(subjOpts.length ? 'انتخاب کنید (' + subjOpts.length + ')' : 'تایپ کنید');
+      epcSS.setOptions(epcOpts); epcSS.setPlaceholder(epcOpts.length ? 'انتخاب کنید (' + epcOpts.length + ')' : 'تایپ کنید');
+      fieldSS.setOptions(fieldOpts); fieldSS.setPlaceholder(fieldOpts.length ? 'انتخاب کنید (' + fieldOpts.length + ')' : 'تایپ کنید');
+      engagementSS.setOptions(engOpts); engagementSS.setPlaceholder(engOpts.length ? 'انتخاب کنید (' + engOpts.length + ')' : 'تایپ کنید');
+      addressSS.setOptions(addrOpts); addressSS.setPlaceholder(addrOpts.length ? 'چندتایی (' + addrOpts.length + ')' : 'تایپ کنید');
     }
 
     function onRecipientChange(val) {
-      var chkTg = document.getElementById('chkTg');
-      var chkBale = document.getElementById('chkBale');
-      var chkAll = document.getElementById('chkAll');
-      var rowTg = document.getElementById('rowTg');
-      var rowBale = document.getElementById('rowBale');
+      var chkTg = document.getElementById('chkTg'), chkBale = document.getElementById('chkBale'), chkAll = document.getElementById('chkAll');
+      var rowTg = document.getElementById('rowTg'), rowBale = document.getElementById('rowBale');
       chkTg.checked = false; chkBale.checked = false; chkAll.checked = false;
       rowTg.classList.remove('disabled'); rowBale.classList.remove('disabled');
       chkTg.disabled = false; chkBale.disabled = false;
       if (!val) return;
       var r = null;
-      for (var i = 0; i < recipientsData.length; i++) {
-        if (recipientsData[i].systemName === val) { r = recipientsData[i]; break; }
-      }
+      for (var i = 0; i < recipientsData.length; i++) if (recipientsData[i].systemName === val) { r = recipientsData[i]; break; }
       if (!r) return;
-      if (r.telegramChatId) { chkTg.checked = true; } else { chkTg.disabled = true; rowTg.classList.add('disabled'); }
-      if (r.baleChatId) { chkBale.checked = true; } else { chkBale.disabled = true; rowBale.classList.add('disabled'); }
+      if (r.telegramChatId) chkTg.checked = true; else { chkTg.disabled = true; rowTg.classList.add('disabled'); }
+      if (r.baleChatId) chkBale.checked = true; else { chkBale.disabled = true; rowBale.classList.add('disabled'); }
       updateAllCheckbox();
     }
 
     function updateAllCheckbox() {
-      var chkTg = document.getElementById('chkTg');
-      var chkBale = document.getElementById('chkBale');
-      var chkAll = document.getElementById('chkAll');
+      var chkTg = document.getElementById('chkTg'), chkBale = document.getElementById('chkBale'), chkAll = document.getElementById('chkAll');
       var enabled = [];
       if (!chkTg.disabled) enabled.push(chkTg);
       if (!chkBale.disabled) enabled.push(chkBale);
@@ -857,15 +727,13 @@
 
     document.getElementById('chkAll').addEventListener('change', function() {
       var checked = this.checked;
-      var chkTg = document.getElementById('chkTg');
-      var chkBale = document.getElementById('chkBale');
+      var chkTg = document.getElementById('chkTg'), chkBale = document.getElementById('chkBale');
       if (!chkTg.disabled) chkTg.checked = checked;
       if (!chkBale.disabled) chkBale.checked = checked;
     });
     document.getElementById('chkTg').addEventListener('change', updateAllCheckbox);
     document.getElementById('chkBale').addEventListener('change', updateAllCheckbox);
 
-    // ============ Preview ============
     document.getElementById('previewBtn').addEventListener('click', function() {
       var recipientName = recipientSS ? recipientSS.getRawString() : '';
       var subject = subjectSS ? subjectSS.getRawString() : '';
@@ -888,7 +756,6 @@
       if (!field) return showMessage('woMessage', '❌ رشته را انتخاب کنید', 'error');
       if (!engagement) return showMessage('woMessage', '❌ پیمانکاری/امانی را انتخاب کنید', 'error');
       if (!address) return showMessage('woMessage', '❌ آدرس را انتخاب کنید', 'error');
-      if (!startYear || !startMonth || !startDay) return showMessage('woMessage', '❌ تاریخ شروع الزامی است', 'error');
       if (!duration || parseInt(duration, 10) < 1) return showMessage('woMessage', '❌ مدت معتبر نیست', 'error');
       if (!sendTg && !sendBale) return showMessage('woMessage', '❌ حداقل یک پلتفورم انتخاب کنید', 'error');
 
@@ -936,37 +803,25 @@
       var chatIds = recipientSS.getChatIds ? recipientSS.getChatIds() : { telegramChatId: '', baleChatId: '' };
 
       pendingPayload = {
-        action: 'createWorkOrder',
-        adminChatId: String(tgUser.id),
+        action: 'createWorkOrder', adminChatId: String(tgUser.id),
         recipientSystemName: recipientName,
         recipientTelegramChatId: chatIds.telegramChatId,
         recipientBaleChatId: chatIds.baleChatId,
-        sendTelegram: sendTg,
-        sendBale: sendBale,
-        subject: subject,
-        description: description,
-        epc: epc,
-        field: field,
-        engagementType: engagement,
-        address: address,
-        startYear: startYear,
-        startMonth: startMonth,
-        startDay: startDay,
-        duration: duration
+        sendTelegram: sendTg, sendBale: sendBale,
+        subject: subject, description: description, epc: epc, field: field,
+        engagementType: engagement, address: address,
+        startYear: startYear, startMonth: startMonth, startDay: startDay, duration: duration
       };
 
       isSubmitting = false;
       var finalBtn = document.getElementById('finalSubmitBtn');
-      finalBtn.disabled = false;
-      finalBtn.style.pointerEvents = 'auto';
-      finalBtn.classList.remove('btn-locked');
-      finalBtn.classList.add('btn-success');
+      finalBtn.disabled = false; finalBtn.style.pointerEvents = 'auto';
+      finalBtn.classList.remove('btn-locked'); finalBtn.classList.add('btn-success');
       finalBtn.innerText = '✅ ثبت نهایی و ارسال';
       document.getElementById('editBtn').disabled = false;
       document.getElementById('editBtn').innerText = '← ویرایش';
       document.getElementById('finalMessage').innerText = '';
       document.getElementById('finalMessage').className = '';
-
       show('previewSection');
     });
 
@@ -975,31 +830,23 @@
       document.getElementById('finalMessage').className = '';
       isSubmitting = false;
       var btn = document.getElementById('finalSubmitBtn');
-      btn.disabled = false;
-      btn.style.pointerEvents = 'auto';
-      btn.classList.remove('btn-locked');
-      btn.classList.add('btn-success');
+      btn.disabled = false; btn.style.pointerEvents = 'auto';
+      btn.classList.remove('btn-locked'); btn.classList.add('btn-success');
       btn.innerText = '✅ ثبت نهایی و ارسال';
       document.getElementById('editBtn').innerText = '← ویرایش';
       show('adminSection');
     });
 
-    // ============ Submit ============
     document.getElementById('finalSubmitBtn').addEventListener('click', function() {
       if (isSubmitting) return;
       isSubmitting = true;
-
       var btn = document.getElementById('finalSubmitBtn');
-      btn.disabled = true;
-      btn.style.pointerEvents = 'none';
-      btn.classList.remove('btn-success');
-      btn.classList.add('btn-locked');
+      btn.disabled = true; btn.style.pointerEvents = 'none';
+      btn.classList.remove('btn-success'); btn.classList.add('btn-locked');
       btn.innerText = '⏳ در حال ارسال...';
       document.getElementById('editBtn').disabled = true;
-
       var fmsg = document.getElementById('finalMessage');
-      fmsg.innerText = '';
-      fmsg.className = '';
+      fmsg.innerText = ''; fmsg.className = '';
 
       apiCall(pendingPayload)
         .then(function(res) {
@@ -1010,28 +857,20 @@
             if (res.status) msg += '\nوضعیت: ' + res.status;
             if (res.sends) msg += '\nارسال: ' + res.sends;
             showMessage('finalMessage', msg, 'success');
-            btn.innerText = '✅ ثبت شد';
-            btn.disabled = true;
-            btn.style.pointerEvents = 'none';
+            btn.innerText = '✅ ثبت شد'; btn.disabled = true; btn.style.pointerEvents = 'none';
             document.getElementById('editBtn').disabled = false;
             document.getElementById('editBtn').innerText = '➕ دستور کار جدید';
-            // پاک کردن کش recipients چون شیت عوض شد
             dataLoaded = false;
           } else if (res && res.duplicate) {
             var msg2 = '⚠️ ' + res.message;
-            if (res.existingRow) msg2 += '\n\nمی‌توانید اطلاعات را ویرایش کرده و دوباره تلاش کنید.';
             showMessage('finalMessage', msg2, 'error');
-            btn.innerText = '⚠️ قبلاً ثبت شده';
-            btn.disabled = true;
-            btn.style.pointerEvents = 'none';
+            btn.innerText = '⚠️ قبلاً ثبت شده'; btn.disabled = true; btn.style.pointerEvents = 'none';
             document.getElementById('editBtn').disabled = false;
             document.getElementById('editBtn').innerText = '✏️ ویرایش اطلاعات';
           } else {
             isSubmitting = false;
-            btn.disabled = false;
-            btn.style.pointerEvents = 'auto';
-            btn.classList.remove('btn-locked');
-            btn.classList.add('btn-success');
+            btn.disabled = false; btn.style.pointerEvents = 'auto';
+            btn.classList.remove('btn-locked'); btn.classList.add('btn-success');
             btn.innerText = '✅ تلاش دوباره';
             document.getElementById('editBtn').disabled = false;
             document.getElementById('editBtn').innerText = '← ویرایش';
@@ -1040,10 +879,8 @@
         })
         .catch(function(err) {
           isSubmitting = false;
-          btn.disabled = false;
-          btn.style.pointerEvents = 'auto';
-          btn.classList.remove('btn-locked');
-          btn.classList.add('btn-success');
+          btn.disabled = false; btn.style.pointerEvents = 'auto';
+          btn.classList.remove('btn-locked'); btn.classList.add('btn-success');
           btn.innerText = '✅ تلاش دوباره';
           document.getElementById('editBtn').disabled = false;
           showMessage('finalMessage', '❌ خطا: ' + err.message, 'error');

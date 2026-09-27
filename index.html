@@ -1,863 +1,669 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <title>پروژه ایگل</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Tahoma, sans-serif; margin: 0; padding: 16px;
-      background: var(--tg-theme-bg-color, #ffffff);
-      color: var(--tg-theme-text-color, #000000);
-      direction: rtl;
-    }
-    .screen { display: none !important; }
-    .screen.active { display: block !important; }
-    #loading.active { display: flex !important; }
-    .version-badge {
-      position: fixed; top: 4px; left: 4px; z-index: 9999;
-      background: #dc2626; color: white; padding: 2px 8px;
-      border-radius: 4px; font-size: 10px; font-weight: bold;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>پروژه ایگل</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Tahoma, sans-serif; margin: 0; padding: 16px; direction: rtl; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); }
+.screen { display: none; }
+.screen.active { display: block; }
+#loading.active { display: flex; }
+h2 { text-align: center; color: #229ED9; margin: 20px 0; }
+h3 { color: #229ED9; margin: 22px 0 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 14px; font-weight: bold; }
+input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; font-family: inherit; background: #fff; }
+textarea { min-height: 80px; }
+button { width: 100%; margin-top: 18px; padding: 14px; border: none; border-radius: 10px; background: #229ED9; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
+button:disabled { opacity: 0.5; }
+.btn-sec { background: #e2e8f0; color: #000; margin-bottom: 12px; }
+.btn-ok { background: #10b981; }
+.msg { margin-top: 16px; padding: 12px; border-radius: 10px; text-align: center; font-size: 14px; white-space: pre-line; }
+.msg-ok { background: #d1fae5; color: #065f46; }
+.msg-err { background: #fee2e2; color: #991b1b; }
+.msg-info { background: #dbeafe; color: #1e40af; }
+.msg-warn { background: #fef3c7; color: #92400e; }
+.hidden { display: none !important; }
+#loading { flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; min-height: 60vh; }
+.spinner { width: 50px; height: 50px; border: 5px solid #e0e0e0; border-top-color: #229ED9; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.date-row { display: flex; gap: 8px; }
+.date-row .col { flex: 1; }
+.quick-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.btn-q { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #f1f5f9; color: #000; font-size: 14px; font-weight: bold; cursor: pointer; margin: 0; }
+.plat-box { background: #f1f5f9; border-radius: 10px; padding: 12px; margin-top: 10px; }
+.plat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.plat-row input { width: 22px; height: 22px; }
+.plat-row label { margin: 0; flex: 1; font-weight: normal; }
+.plat-row.dis { opacity: 0.4; }
+.plat-row.all { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 6px; }
+.plat-row.all label { font-weight: bold; }
 
-    h2 { text-align: center; color: var(--tg-theme-button-color, #229ED9); margin-bottom: 20px; }
-    h3 { color: var(--tg-theme-button-color, #229ED9); margin: 22px 0 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
-    .info-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 13px; line-height: 1.8; }
-    label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 14px; font-weight: bold; }
-    input, select, textarea {
-      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;
-      font-size: 15px; font-family: inherit;
-      background: var(--tg-theme-bg-color, #ffffff);
-      color: var(--tg-theme-text-color, #000000);
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    button {
-      width: 100%; margin-top: 22px; padding: 14px; border: none; border-radius: 10px;
-      background: var(--tg-theme-button-color, #229ED9);
-      color: var(--tg-theme-button-text-color, #ffffff);
-      font-size: 16px; font-weight: bold; cursor: pointer;
-    }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary { background: var(--tg-theme-secondary-bg-color, #e2e8f0); color: var(--tg-theme-text-color, #000); margin-bottom: 12px; }
-    .btn-success { background: #10b981 !important; color: white !important; }
-    .btn-locked { background: #9ca3af !important; color: white !important; }
-    .btn-debug { background: #dc2626 !important; color: white !important; margin-bottom: 8px; }
+/* searchable multi-select */
+.ss-box { position: relative; margin-top: 6px; }
+.ss-in { width: 100%; padding: 12px 36px 12px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; background: #fff; }
+.ss-in[readonly] { background: #e8f5e9; border-color: #10b981; font-weight: bold; }
+.ss-arrow { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); font-size: 12px; color: #888; pointer-events: none; }
+.ss-clear { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); cursor: pointer; color: #c00; font-weight: bold; font-size: 18px; }
+.ss-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 100; }
+.ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #222; }
+.ss-item:last-child { border-bottom: none; }
+.ss-empty { padding: 14px; color: #888; text-align: center; font-size: 13px; }
+.ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #229ED9; color: #fff; border-radius: 20px; font-size: 13px; }
+.ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; }
 
-    .message { margin-top: 16px; padding: 12px; border-radius: 10px; text-align: center; font-size: 14px; white-space: pre-line; }
-    .msg-success { background: #d1fae5; color: #065f46; }
-    .msg-error { background: #fee2e2; color: #991b1b; text-align: left; direction: ltr; font-size: 11px; font-family: monospace; word-break: break-all; max-height: 400px; overflow-y: auto; }
-    .msg-info { background: #dbeafe; color: #1e40af; }
-    .msg-warning { background: #fef3c7; color: #92400e; }
-    .hidden { display: none !important; }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
-    .badge-active { background: #d1fae5; color: #065f46; }
-    .badge-inactive { background: #fee2e2; color: #991b1b; }
-    .badge-access { background: #dbeafe; color: #1e40af; }
-
-    #loading { flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; min-height: 60vh; }
-    .spinner { width: 54px; height: 54px; border: 5px solid rgba(34,158,217,0.2); border-top: 5px solid #229ED9; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .loading-text { font-size: 15px; color: #666; animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-    .loading-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
-    @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
-
-    .date-row { display: flex; gap: 8px; }
-    .date-row .col { flex: 1; }
-    .date-row .col.month { flex: 1.6; }
-    .date-row select { text-align: center; font-weight: bold; padding: 14px 8px; background: var(--tg-theme-secondary-bg-color, #f1f5f9); border: 1px solid transparent; }
-    .date-label { font-size: 11px; color: #888; text-align: center; margin-top: 4px; }
-    .quick-date-row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .btn-quick { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; background: var(--tg-theme-secondary-bg-color, #f1f5f9); color: var(--tg-theme-text-color, #000); font-size: 14px; font-weight: bold; cursor: pointer; margin: 0; }
-
-    .platform-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-top: 10px; }
-    .platform-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-    .platform-row input[type="checkbox"] { width: 22px; height: 22px; }
-    .platform-row label { margin: 0; flex: 1; font-weight: normal; }
-    .platform-row.disabled { opacity: 0.4; }
-    .platform-row.all-row { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 6px; }
-    .platform-row.all-row label { font-weight: bold; }
-
-    .ss-container { position: relative; margin-top: 6px; }
-    .ss-input { width: 100%; padding: 12px 14px 12px 36px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; font-family: inherit; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); }
-    .ss-input[readonly] { background: #e8f5e9; border-color: #10b981; font-weight: bold; cursor: pointer; }
-    .ss-arrow { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); pointer-events: none; font-size: 14px; color: #888; }
-    .ss-clear-btn { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); cursor: pointer; color: #c00; font-weight: bold; font-size: 18px; padding: 4px 8px; user-select: none; }
-    .ss-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 240px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); z-index: 1000; }
-    .ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #222; transition: background 0.1s; }
-    .ss-item:active { background: #dbeafe; }
-    .ss-item:last-child { border-bottom: none; }
-    .ss-empty { padding: 14px; color: #888; text-align: center; font-size: 13px; }
-    .ss-highlight { background: #fef3c7; font-weight: bold; }
-    .ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--tg-theme-button-color, #229ED9); color: #ffffff; border-radius: 20px; font-size: 13px; font-weight: 500; }
-    .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.85; }
-
-    .preview-card { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 2px solid #229ED9; }
-    .preview-title { font-size: 16px; font-weight: bold; color: #229ED9; text-align: center; margin-bottom: 14px; border-bottom: 1px dashed #ccc; padding-bottom: 8px; }
-    .preview-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
-    .preview-row:last-child { border-bottom: none; }
-    .preview-label { font-weight: bold; width: 100px; flex-shrink: 0; color: #555; }
-    .preview-value { flex: 1; word-break: break-word; color: #111; white-space: pre-line; }
-    .preview-message { background: #fff; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 13px; white-space: pre-line; line-height: 1.7; border: 1px solid #ddd; font-family: Tahoma, monospace; max-height: 300px; overflow-y: auto; }
-    .btn-row { display: flex; gap: 8px; margin-top: 18px; }
-    .btn-row button { flex: 1; margin-top: 0; }
-  </style>
+.preview-card { background: #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 2px solid #229ED9; }
+.preview-title { font-weight: bold; color: #229ED9; text-align: center; margin-bottom: 14px; }
+.preview-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+.preview-row:last-child { border-bottom: none; }
+.preview-label { font-weight: bold; width: 100px; flex-shrink: 0; color: #555; }
+.preview-value { flex: 1; word-break: break-word; }
+.preview-msg { background: #fff; border-radius: 8px; padding: 12px; font-size: 13px; white-space: pre-line; line-height: 1.7; border: 1px solid #ddd; max-height: 280px; overflow-y: auto; }
+.btn-row { display: flex; gap: 8px; margin-top: 18px; }
+.btn-row button { flex: 1; margin-top: 0; }
+</style>
 </head>
 <body>
 
-  <div class="version-badge">V7</div>
+<div id="loading" class="screen active">
+  <div class="spinner"></div>
+  <p style="color:#666; margin-top:16px;">در حال بارگذاری...</p>
+</div>
 
-  <div id="loading" class="screen active">
-    <div class="spinner"></div>
-    <div class="loading-text">در حال بارگذاری<span class="loading-dots"></span></div>
+<div id="formSection" class="screen">
+  <h2>فرم ثبت‌نام</h2>
+  <div class="msg msg-info" id="tgInfo"></div>
+  <form id="regForm">
+    <label>نام و نام خانوادگی *</label>
+    <input id="fullName" required>
+    <label>سمت *</label>
+    <input id="position" required>
+    <label>واحد *</label>
+    <input id="unit" required>
+    <button type="submit" id="regBtn">ثبت‌نام</button>
+  </form>
+  <div id="formMsg"></div>
+</div>
+
+<div id="pendingSection" class="screen">
+  <h2>در انتظار تأیید ادمین ⏳</h2>
+  <div class="msg msg-warn">ثبت‌نام شما انجام شد و در انتظار تأیید ادمین است.</div>
+</div>
+
+<div id="activeSection" class="screen">
+  <h2>خوش آمدید ✅</h2>
+  <div class="msg msg-info" id="activeInfo"></div>
+  <button id="adminBtn" class="hidden">🛠 پنل ادمین</button>
+</div>
+
+<div id="adminSection" class="screen">
+  <h2>🛠 پنل ادمین</h2>
+  <button id="backBtn" class="btn-sec">→ بازگشت</button>
+
+  <h3>مخاطب</h3>
+  <label>مخاطب *</label>
+  <div id="recipientWrap"></div>
+
+  <div class="plat-box">
+    <div style="font-size:13px; font-weight:bold; margin-bottom:6px;">پلتفورم ارسال:</div>
+    <div class="plat-row all">
+      <input type="checkbox" id="chkAll">
+      <label for="chkAll">🌐 همه</label>
+    </div>
+    <div class="plat-row" id="rowTg">
+      <input type="checkbox" id="chkTg">
+      <label for="chkTg">📱 Telegram</label>
+    </div>
+    <div class="plat-row" id="rowBale">
+      <input type="checkbox" id="chkBale">
+      <label for="chkBale">📨 Bale</label>
+    </div>
   </div>
 
-  <div id="formSection" class="screen">
-    <h2>فرم ثبت‌نام</h2>
-    <div class="info-box" id="tgInfo"></div>
-    <form id="regForm">
-      <label>نام و نام خانوادگی *</label>
-      <input id="fullName" type="text" required>
-      <label>سمت *</label>
-      <input id="position" type="text" required>
-      <label>واحد *</label>
-      <input id="unit" type="text" required>
-      <button type="submit" id="submitBtn">ثبت‌نام</button>
-    </form>
-    <div id="formMessage"></div>
-  </div>
+  <h3>اطلاعات دستور کار</h3>
+  <form id="woForm" onsubmit="return false;">
+    <label>موضوع ردیف *</label>
+    <div id="subjectWrap"></div>
 
-  <div id="pendingSection" class="screen">
-    <h2>در انتظار تأیید ادمین ⏳</h2>
-    <div class="info-box" id="pendingInfo"></div>
-    <div class="message msg-warning">ثبت‌نام شما انجام شد و در انتظار تأیید ادمین است.</div>
-  </div>
+    <label>شرح عملیات *</label>
+    <textarea id="woDesc"></textarea>
 
-  <div id="activeSection" class="screen">
-    <h2>خوش آمدید ✅</h2>
-    <div class="info-box" id="activeInfo"></div>
-    <div class="message msg-success">دسترسی شما فعال است.</div>
-    <button id="adminBtn" class="hidden" style="margin-top: 16px;">🛠 پنل ادمین</button>
-  </div>
+    <label>EPC *</label>
+    <div id="epcWrap"></div>
 
-  <div id="adminSection" class="screen">
-    <h2>🛠 پنل ادمین</h2>
-    <button id="backBtn" class="btn-secondary">→ بازگشت</button>
-    <button type="button" class="btn-debug" id="debugRecipientsBtn">🐞 تعداد مخاطبین</button>
+    <label>رشته *</label>
+    <div id="fieldWrap"></div>
 
-    <h3>مخاطب دستور کار</h3>
-    <label>مخاطب * (تایپ کنید)</label>
-    <div id="recipientSS"></div>
+    <label>پیمانکاری / امانی *</label>
+    <div id="engWrap"></div>
 
-    <div class="platform-box">
-      <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">پلتفورم ارسال پیام:</div>
-      <div class="platform-row all-row">
-        <input type="checkbox" id="chkAll">
-        <label for="chkAll">🌐 همه پلتفورم ها</label>
-      </div>
-      <div class="platform-row" id="rowTg">
-        <input type="checkbox" id="chkTg">
-        <label for="chkTg">📱 Telegram</label>
-      </div>
-      <div class="platform-row" id="rowBale">
-        <input type="checkbox" id="chkBale">
-        <label for="chkBale">📨 Bale</label>
-      </div>
+    <label>آدرس / محل *</label>
+    <div id="addrWrap"></div>
+
+    <label>تاریخ شروع (شمسی) *</label>
+    <div class="quick-row">
+      <button type="button" class="btn-q" onclick="setToday()">📅 امروز</button>
+      <button type="button" class="btn-q" onclick="setTomorrow()">📅 فردا</button>
+    </div>
+    <div class="date-row">
+      <div class="col"><select id="woYear"></select><div style="font-size:11px;text-align:center;color:#888;">سال</div></div>
+      <div class="col"><select id="woMonth"></select><div style="font-size:11px;text-align:center;color:#888;">ماه</div></div>
+      <div class="col"><select id="woDay"></select><div style="font-size:11px;text-align:center;color:#888;">روز</div></div>
     </div>
 
-    <h3>اطلاعات دستور کار</h3>
-    <form id="woForm" onsubmit="return false;">
-      <label>موضوع ردیف *</label>
-      <div id="subjectWrap"></div>
+    <label>مدت زمان (روز) *</label>
+    <input id="woDur" type="number" min="1" placeholder="مثال: 3">
 
-      <label>شرح عملیات *</label>
-      <textarea id="woDescription"></textarea>
+    <button type="button" id="previewBtn">👁 پیش‌نمایش</button>
+  </form>
+  <div id="woMsg"></div>
+</div>
 
-      <label>EPC *</label>
-      <div id="epcWrap"></div>
-
-      <label>رشته *</label>
-      <div id="fieldWrap"></div>
-
-      <label>پیمانکاری / امانی *</label>
-      <div id="engagementWrap"></div>
-
-      <label>آدرس / محل * (چند انتخابی)</label>
-      <div id="addrWrap"></div>
-
-      <label>تاریخ شروع (شمسی) *</label>
-      <div class="quick-date-row">
-        <button type="button" class="btn-quick" onclick="setToday()">📅 امروز</button>
-        <button type="button" class="btn-quick" onclick="setTomorrow()">📅 فردا</button>
-      </div>
-      <div class="date-row">
-        <div class="col"><select id="woYear"></select><div class="date-label">سال</div></div>
-        <div class="col month"><select id="woMonth"></select><div class="date-label">ماه</div></div>
-        <div class="col"><select id="woDay"></select><div class="date-label">روز</div></div>
-      </div>
-
-      <label>مدت زمان (روز) *</label>
-      <input id="woDuration" type="number" min="1" placeholder="مثال: 3">
-
-      <button type="button" id="previewBtn">👁 پیش‌نمایش</button>
-    </form>
-    <div id="woMessage"></div>
+<div id="previewSection" class="screen">
+  <h2>👁 پیش‌نمایش</h2>
+  <div class="preview-card">
+    <div class="preview-title">اطلاعات دستور کار</div>
+    <div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value" id="pvRecipient">—</div></div>
+    <div class="preview-row"><div class="preview-label">پلتفورم:</div><div class="preview-value" id="pvPlatforms">—</div></div>
+    <div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value" id="pvSubject">—</div></div>
+    <div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value" id="pvEpc">—</div></div>
+    <div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value" id="pvField">—</div></div>
+    <div class="preview-row"><div class="preview-label">پیمانکاری:</div><div class="preview-value" id="pvEng">—</div></div>
+    <div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value" id="pvAddr">—</div></div>
+    <div class="preview-row"><div class="preview-label">شرح:</div><div class="preview-value" id="pvDesc">—</div></div>
+    <div class="preview-row"><div class="preview-label">شروع:</div><div class="preview-value" id="pvStart">—</div></div>
+    <div class="preview-row"><div class="preview-label">مدت:</div><div class="preview-value" id="pvDur">—</div></div>
+    <div class="preview-row"><div class="preview-label">پایان:</div><div class="preview-value" id="pvEnd">—</div></div>
   </div>
-
-  <div id="previewSection" class="screen">
-    <h2>👁 پیش‌نمایش دستور کار</h2>
-
-    <div class="preview-card">
-      <div class="preview-title">اطلاعات دستور کار</div>
-      <div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value" id="pvRecipient">—</div></div>
-      <div class="preview-row"><div class="preview-label">پلتفورم:</div><div class="preview-value" id="pvPlatforms">—</div></div>
-      <div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value" id="pvSubject">—</div></div>
-      <div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value" id="pvEpc">—</div></div>
-      <div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value" id="pvField">—</div></div>
-      <div class="preview-row"><div class="preview-label">پیمانکاری/امانی:</div><div class="preview-value" id="pvEngagement">—</div></div>
-      <div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value" id="pvAddress">—</div></div>
-      <div class="preview-row"><div class="preview-label">شرح عملیات:</div><div class="preview-value" id="pvDescription">—</div></div>
-      <div class="preview-row"><div class="preview-label">تاریخ شروع:</div><div class="preview-value" id="pvStartDate">—</div></div>
-      <div class="preview-row"><div class="preview-label">مدت:</div><div class="preview-value" id="pvDuration">—</div></div>
-      <div class="preview-row"><div class="preview-label">تاریخ پایان:</div><div class="preview-value" id="pvEndDate">—</div></div>
-    </div>
-
-    <div class="preview-title" style="text-align:right; margin-top:20px;">📩 متن پیام ارسالی:</div>
-    <div class="preview-message" id="pvMessage"></div>
-
-    <div class="btn-row">
-      <button type="button" id="editBtn" class="btn-secondary">← ویرایش</button>
-      <button type="button" id="finalSubmitBtn" class="btn-success">✅ ثبت نهایی و ارسال</button>
-    </div>
-
-    <div id="finalMessage"></div>
+  <div class="preview-title" style="text-align:right; margin-top:16px;">📩 متن پیام:</div>
+  <div class="preview-msg" id="pvMsg"></div>
+  <div class="btn-row">
+    <button id="editBtn" class="btn-sec">← ویرایش</button>
+    <button id="submitBtn" class="btn-ok">✅ ثبت و ارسال</button>
   </div>
+  <div id="finalMsg"></div>
+</div>
 
-  <script>
-    var API_URL = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
-    var APP_VERSION = 'V7-' + Date.now();
-    var tg = window.Telegram && window.Telegram.WebApp;
-    var tgUser = null;
-    var currentAccess = '';
-    var recipientsData = [];
-    var pendingPayload = null;
-    var isSubmitting = false;
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
+var tg = window.Telegram && window.Telegram.WebApp;
+var tgUser = null;
+var recipients = [];
+var payload = null;
+var submitting = false;
 
-    var recipientSS = null, subjectSS = null, epcSS = null, fieldSS = null, addressSS = null, engagementSS = null;
+var MONTHS = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 
-    var MONTHS = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user; }
 
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user;
+function show(id) {
+  ['loading','formSection','pendingSection','activeSection','adminSection','previewSection'].forEach(function(x) {
+    document.getElementById(x).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+}
+
+function showMsg(el, text, type) {
+  var e = document.getElementById(el);
+  e.className = 'msg ' + (type === 'ok' ? 'msg-ok' : type === 'err' ? 'msg-err' : 'msg-info');
+  e.innerText = text;
+}
+
+function api(data, retries) {
+  if (data.action === 'createWorkOrder') retries = 0;
+  else if (retries === undefined) retries = 1;
+  return fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(data),
+    redirect: 'follow',
+    cache: 'no-store'
+  })
+  .then(function(r) { return r.text(); })
+  .then(function(t) { try { return JSON.parse(t); } catch (e) { throw new Error('bad response'); } })
+  .catch(function(err) {
+    if (retries > 0) return new Promise(function(r) { setTimeout(r, 700); }).then(function() { return api(data, retries - 1); });
+    throw err;
+  });
+}
+
+// --- تاریخ ---
+function g2j(gy, gm, gd) {
+  var m = [0,31,59,90,120,151,181,212,243,273,304,334];
+  var jy = gy <= 1600 ? 0 : 979;
+  gy -= gy <= 1600 ? 621 : 1600;
+  var gy2 = gm > 2 ? gy + 1 : gy;
+  var d = (365*gy) + parseInt((gy2+3)/4) - parseInt((gy2+99)/100) + parseInt((gy2+399)/400) - 80 + gd + m[gm-1];
+  jy += 33*parseInt(d/12053); d %= 12053;
+  jy += 4*parseInt(d/1461); d %= 1461;
+  if (d > 365) { jy += parseInt((d-1)/365); d = (d-1)%365; }
+  var jm = d < 186 ? 1+parseInt(d/31) : 7+parseInt((d-186)/30);
+  var jd = 1 + (d < 186 ? d%31 : (d-186)%30);
+  return [jy, jm, jd];
+}
+function j2g(jy, jm, jd) {
+  jy += 1595;
+  var d = -355668 + 365*jy + parseInt(jy/33)*8 + parseInt(((jy%33)+3)/4) + jd + (jm<7 ? (jm-1)*31 : (jm-7)*30+186);
+  var gy = 400*parseInt(d/146097); d %= 146097;
+  if (d > 36524) { gy += 100*parseInt(--d/36524); d %= 36524; if (d >= 365) d++; }
+  gy += 4*parseInt(d/1461); d %= 1461;
+  if (d > 365) { gy += parseInt((d-1)/365); d = (d-1)%365; }
+  var gd = d+1;
+  var sa = [0,31,((gy%4===0&&gy%100!==0)||(gy%400===0))?29:28,31,30,31,30,31,31,30,31,30,31];
+  var gm;
+  for (gm = 0; gm < 13; gm++) { var v = sa[gm]; if (gd <= v) break; gd -= v; }
+  return [gy, gm, gd];
+}
+function dim(y, m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
+
+var yS, mS, dS;
+function buildDates() {
+  yS = document.getElementById('woYear');
+  mS = document.getElementById('woMonth');
+  dS = document.getElementById('woDay');
+  var now = new Date();
+  var t = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
+  var y = t[0];
+  yS.innerHTML = '';
+  for (var i = y-2; i <= y+3; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; yS.appendChild(o); }
+  yS.value = y;
+  mS.innerHTML = '';
+  for (var j = 1; j <= 12; j++) { var o2 = document.createElement('option'); o2.value = j; o2.textContent = MONTHS[j]; mS.appendChild(o2); }
+  mS.value = t[1];
+  function refresh() {
+    var yy = parseInt(yS.value), mm = parseInt(mS.value);
+    var mx = dim(yy, mm), cur = parseInt(dS.value) || 1;
+    dS.innerHTML = '';
+    for (var k = 1; k <= mx; k++) { var o3 = document.createElement('option'); o3.value = k; o3.textContent = k; dS.appendChild(o3); }
+    dS.value = Math.min(cur, mx);
+  }
+  yS.onchange = refresh;
+  mS.onchange = refresh;
+  refresh();
+  dS.value = t[2];
+}
+function setD(y, m, d) {
+  yS.value = y; mS.value = m;
+  var ev = document.createEvent('HTMLEvents'); ev.initEvent('change', true, false);
+  mS.dispatchEvent(ev);
+  dS.value = d;
+}
+function setToday() {
+  var now = new Date();
+  var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
+  setD(j[0], j[1], j[2]);
+}
+function setTomorrow() {
+  var t = new Date(); t.setDate(t.getDate()+1);
+  var j = g2j(t.getFullYear(), t.getMonth()+1, t.getDate());
+  setD(j[0], j[1], j[2]);
+}
+
+// --- searchable select ---
+function makeSS(boxId, opt) {
+  var box = document.getElementById(boxId);
+  box.innerHTML = '';
+  box.className = 'ss-box';
+  var multi = opt.multi === true;
+  var opts = (opt.options || []).slice();
+  var placeholder = opt.placeholder || 'تایپ کنید...';
+  var val = multi ? [] : '';
+  var onChange = opt.onChange || null;
+
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'ss-in'; inp.placeholder = placeholder; inp.autocomplete = 'off';
+  box.appendChild(inp);
+  var ar = document.createElement('span'); ar.className = 'ss-arrow'; ar.textContent = '▼'; box.appendChild(ar);
+  var clr = document.createElement('span'); clr.className = 'ss-clear hidden'; clr.textContent = '✕'; clr.style.position = 'absolute'; clr.style.top = '50%'; clr.style.right = '12px'; clr.style.transform = 'translateY(-50%)'; clr.style.cursor = 'pointer'; clr.style.color = '#c00'; clr.style.fontWeight = 'bold'; clr.style.fontSize = '18px'; box.appendChild(clr);
+  var list = document.createElement('div'); list.className = 'ss-list hidden'; box.appendChild(list);
+  var chips = document.createElement('div'); chips.className = 'ss-chips'; box.appendChild(chips);
+
+  function norm(o) { return typeof o === 'string' ? { value: o, label: o } : { value: o.value, label: o.label || o.value }; }
+  function labelOf(v) {
+    for (var i = 0; i < opts.length; i++) { if (norm(opts[i]).value === v) return norm(opts[i]).label; }
+    return v;
+  }
+  function updateClear() { clr.classList.toggle('hidden', multi ? val.length === 0 : !val); }
+
+  function renderList(q) {
+    q = String(q || '').toLowerCase().trim();
+    list.innerHTML = '';
+    var items = [];
+    opts.forEach(function(o) {
+      o = norm(o);
+      if (multi && val.indexOf(o.value) !== -1) return;
+      if (!multi && val === o.value && !q) return;
+      if (q && o.label.toLowerCase().indexOf(q) === -1 && o.value.toLowerCase().indexOf(q) === -1) return;
+      items.push(o);
+    });
+    if (!items.length) {
+      var e = document.createElement('div'); e.className = 'ss-empty';
+      e.textContent = opts.length ? 'نتیجه‌ای یافت نشد' : 'گزینه‌ای موجود نیست';
+      list.appendChild(e); return;
     }
-
-    function show(id) {
-      var ids = ['loading', 'formSection', 'pendingSection', 'activeSection', 'adminSection', 'previewSection'];
-      for (var i = 0; i < ids.length; i++) {
-        var el = document.getElementById(ids[i]);
-        if (el) el.classList.remove('active');
-      }
-      var target = document.getElementById(id);
-      if (target) target.classList.add('active');
-    }
-
-    function showMessage(elId, text, type) {
-      var el = document.getElementById(elId);
-      el.className = 'message ' + (type === 'success' ? 'msg-success' : type === 'error' ? 'msg-error' : 'msg-info');
-      el.innerText = text;
-    }
-
-    // ============ API با cache-busting ============
-    function apiCall(payload, retries) {
-      if (payload.action === 'createWorkOrder') retries = 0;
-      else if (retries === undefined) retries = 2;
-
-      payload._v = APP_VERSION;
-      payload._t = Date.now();
-
-      var body = JSON.stringify(payload);
-      return fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: body,
-        redirect: 'follow',
-        cache: 'no-store'
-      })
-      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-      .then(function(text) {
-        try { return JSON.parse(text); }
-        catch (e) { throw new Error('پاسخ نامعتبر: ' + text.substring(0, 300)); }
-      })
-      .catch(function(err) {
-        if (retries > 0) {
-          return new Promise(function(resolve) { setTimeout(resolve, 800); })
-            .then(function() { return apiCall(payload, retries - 1); });
-        }
-        throw err;
-      });
-    }
-
-    // ============ Jalali ============
-    function gregorianToJalali(gy, gm, gd) {
-      var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
-      var jy = (gy <= 1600) ? 0 : 979;
-      gy -= (gy <= 1600) ? 621 : 1600;
-      var gy2 = (gm > 2) ? (gy + 1) : gy;
-      var days = (365 * gy) + parseInt((gy2 + 3) / 4) - parseInt((gy2 + 99) / 100) + parseInt((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
-      jy += 33 * parseInt(days / 12053);
-      days %= 12053;
-      jy += 4 * parseInt(days / 1461);
-      days %= 1461;
-      if (days > 365) { jy += parseInt((days - 1) / 365); days = (days - 1) % 365; }
-      var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
-      var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
-      return [jy, jm, jd];
-    }
-    function jalaliToGregorian(jy, jm, jd) {
-      jy += 1595;
-      var days = -355668 + (365 * jy) + (parseInt(jy / 33) * 8) + parseInt(((jy % 33) + 3) / 4) + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
-      var gy = 400 * parseInt(days / 146097);
-      days %= 146097;
-      if (days > 36524) { gy += 100 * parseInt(--days / 36524); days %= 36524; if (days >= 365) days++; }
-      gy += 4 * parseInt(days / 1461);
-      days %= 1461;
-      if (days > 365) { gy += parseInt((days - 1) / 365); days = (days - 1) % 365; }
-      var gd = days + 1;
-      var sal_a = [0,31,((gy%4===0&&gy%100!==0)||(gy%400===0))?29:28,31,30,31,30,31,31,30,31,30,31];
-      var gm;
-      for (gm = 0; gm < 13; gm++) { var v = sal_a[gm]; if (gd <= v) break; gd -= v; }
-      return [gy, gm, gd];
-    }
-    function daysInJalaliMonth(y, m) { if (m <= 6) return 31; if (m <= 11) return 30; return 29; }
-
-    var yearSel, monthSel, daySel;
-    function buildDatePickers() {
-      yearSel = document.getElementById('woYear');
-      monthSel = document.getElementById('woMonth');
-      daySel = document.getElementById('woDay');
-      var now = new Date();
-      var todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
-      var year = todayJ[0];
-      yearSel.innerHTML = '';
-      for (var y = year - 2; y <= year + 3; y++) { var o = document.createElement('option'); o.value = y; o.textContent = y; yearSel.appendChild(o); }
-      yearSel.value = year;
-      monthSel.innerHTML = '';
-      for (var m = 1; m <= 12; m++) { var o = document.createElement('option'); o.value = m; o.textContent = MONTHS[m]; monthSel.appendChild(o); }
-      monthSel.value = todayJ[1];
-      function refreshDays() {
-        var y = parseInt(yearSel.value), m = parseInt(monthSel.value);
-        var max = daysInJalaliMonth(y, m);
-        var cur = parseInt(daySel.value) || 1;
-        daySel.innerHTML = '';
-        for (var d = 1; d <= max; d++) { var o = document.createElement('option'); o.value = d; o.textContent = d; daySel.appendChild(o); }
-        daySel.value = Math.min(cur, max);
-      }
-      yearSel.addEventListener('change', refreshDays);
-      monthSel.addEventListener('change', refreshDays);
-      refreshDays();
-      daySel.value = todayJ[2];
-    }
-    function setDateDropdowns(y, m, d) {
-      yearSel.value = y; monthSel.value = m;
-      var ev = document.createEvent('HTMLEvents'); ev.initEvent('change', true, false);
-      monthSel.dispatchEvent(ev);
-      daySel.value = d;
-    }
-    function setToday() {
-      var now = new Date();
-      var j = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
-      setDateDropdowns(j[0], j[1], j[2]);
-    }
-    function setTomorrow() {
-      var t = new Date(); t.setDate(t.getDate() + 1);
-      var j = gregorianToJalali(t.getFullYear(), t.getMonth() + 1, t.getDate());
-      setDateDropdowns(j[0], j[1], j[2]);
-    }
-
-    // ============ Searchable Select ============
-    function createSearchSelect(containerId, opts) {
-      var container = document.getElementById(containerId);
-      container.innerHTML = '';
-      container.className = 'ss-container';
-      var multi = opts.multi === true;
-      var options = (opts.options || []).slice();
-      var placeholder = opts.placeholder || 'تایپ کنید...';
-      var selectedValue = multi ? [] : '';
-      var onChangeFn = opts.onChange || null;
-
-      var input = document.createElement('input');
-      input.type = 'text'; input.className = 'ss-input'; input.placeholder = placeholder; input.autocomplete = 'off';
-      container.appendChild(input);
-      var arrow = document.createElement('span'); arrow.className = 'ss-arrow'; arrow.textContent = '▼';
-      container.appendChild(arrow);
-      var clearBtn = document.createElement('span'); clearBtn.className = 'ss-clear-btn hidden'; clearBtn.textContent = '✕';
-      container.appendChild(clearBtn);
-      var dropdown = document.createElement('div'); dropdown.className = 'ss-dropdown hidden';
-      container.appendChild(dropdown);
-      var chipsWrap = document.createElement('div'); chipsWrap.className = 'ss-chips';
-      container.appendChild(chipsWrap);
-
-      function normOpt(o) { return (typeof o === 'string') ? { value: o, label: o } : { value: o.value, label: o.label || o.value }; }
-      function labelFor(v) {
-        for (var i = 0; i < options.length; i++) { var o = normOpt(options[i]); if (o.value === v) return o.label; }
-        return v;
-      }
-      function updateClearBtn() {
-        var has = multi ? selectedValue.length > 0 : !!selectedValue;
-        if (has) clearBtn.classList.remove('hidden'); else clearBtn.classList.add('hidden');
-      }
-      function renderDropdown(filter) {
-        var q = String(filter || '').trim().toLowerCase();
-        dropdown.innerHTML = '';
-        var items = [];
-        for (var i = 0; i < options.length; i++) {
-          var o = normOpt(options[i]);
-          if (multi && selectedValue.indexOf(o.value) !== -1) continue;
-          if (!multi && selectedValue === o.value && q === '') continue;
-          if (q) {
-            var lbl = o.label.toLowerCase(), vll = o.value.toLowerCase();
-            if (lbl.indexOf(q) === -1 && vll.indexOf(q) === -1) continue;
-          }
-          items.push(o);
-        }
-        if (items.length === 0) {
-          var empty = document.createElement('div'); empty.className = 'ss-empty';
-          empty.textContent = options.length === 0 ? 'هیچ گزینه‌ای موجود نیست' : 'نتیجه‌ای یافت نشد';
-          dropdown.appendChild(empty);
-          return;
-        }
-        items.forEach(function(o) {
-          var item = document.createElement('div'); item.className = 'ss-item'; item.textContent = o.label;
-          function pick(ev) {
-            if (ev) { ev.preventDefault(); ev.stopPropagation(); }
-            if (multi) {
-              if (selectedValue.indexOf(o.value) === -1) selectedValue.push(o.value);
-              input.value = ''; renderChips(); renderDropdown(''); updateClearBtn();
-              if (onChangeFn) onChangeFn(selectedValue.slice());
-            } else {
-              selectedValue = o.value; input.value = o.label; input.readOnly = true;
-              dropdown.classList.add('hidden'); renderChips(); updateClearBtn();
-              if (onChangeFn) onChangeFn(selectedValue);
-            }
-          }
-          item.addEventListener('mousedown', pick);
-          item.addEventListener('touchstart', pick, { passive: false });
-          dropdown.appendChild(item);
-        });
-      }
-      function renderChips() {
-        chipsWrap.innerHTML = '';
+    items.forEach(function(o) {
+      var it = document.createElement('div'); it.className = 'ss-item'; it.textContent = o.label;
+      function pick(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
         if (multi) {
-          selectedValue.forEach(function(v) {
-            var chip = document.createElement('span'); chip.className = 'ss-chip';
-            var t = document.createElement('span'); t.textContent = labelFor(v);
-            var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×';
-            x.addEventListener('click', function(ev) {
-              ev.stopPropagation();
-              selectedValue = selectedValue.filter(function(s) { return s !== v; });
-              renderChips(); renderDropdown(input.value); updateClearBtn();
-              if (onChangeFn) onChangeFn(selectedValue.slice());
-            });
-            chip.appendChild(t); chip.appendChild(x); chipsWrap.appendChild(chip);
-          });
-        }
-      }
-      clearBtn.addEventListener('click', function(ev) {
-        ev.stopPropagation();
-        if (multi) selectedValue = [];
-        else { selectedValue = ''; input.value = ''; input.readOnly = false; }
-        renderChips(); renderDropdown(''); updateClearBtn();
-        if (onChangeFn) onChangeFn(multi ? [] : '');
-      });
-      input.addEventListener('focus', function() {
-        if (input.readOnly) return;
-        dropdown.classList.remove('hidden'); renderDropdown(input.value);
-      });
-      input.addEventListener('input', function() {
-        if (input.readOnly) return;
-        if (!multi) {
-          if (input.value !== labelFor(selectedValue)) { selectedValue = ''; updateClearBtn(); if (onChangeFn) onChangeFn(''); }
-        }
-        dropdown.classList.remove('hidden'); renderDropdown(input.value);
-      });
-      document.addEventListener('click', function(ev) {
-        if (!container.contains(ev.target)) dropdown.classList.add('hidden');
-      });
-      renderDropdown(''); updateClearBtn();
-
-      return {
-        getValue: function() { return multi ? selectedValue.slice() : selectedValue; },
-        getRawString: function() { return multi ? selectedValue.join(', ') : selectedValue; },
-        getDisplayString: function() { return multi ? selectedValue.join('، ') : selectedValue; },
-        getChatIds: function() {
-          if (!multi && selectedValue) {
-            for (var i = 0; i < recipientsData.length; i++) {
-              if (recipientsData[i].systemName === selectedValue) {
-                return { telegramChatId: recipientsData[i].telegramChatId || '', baleChatId: recipientsData[i].baleChatId || '' };
-              }
-            }
-          }
-          return { telegramChatId: '', baleChatId: '' };
-        },
-        setOptions: function(newOpts) { options = (newOpts || []).slice(); renderDropdown(input.value); },
-        setPlaceholder: function(p) { placeholder = p; input.placeholder = p; },
-        clear: function() {
-          if (multi) selectedValue = [];
-          else { selectedValue = ''; input.value = ''; input.readOnly = false; }
-          renderChips(); renderDropdown(''); updateClearBtn();
-        }
-      };
-    }
-
-    function init() {
-      try {
-        if (!tgUser) {
-          document.getElementById('loading').innerHTML = '<div style="padding:20px;color:#c00;text-align:center;">لطفاً از داخل تلگرام باز کنید.</div>';
-          return;
-        }
-        try { buildDatePickers(); } catch (e) {}
-
-        var safetyTimer = setTimeout(function() {
-          if (document.getElementById('loading').classList.contains('active')) show('formSection');
-        }, 15000);
-
-        apiCall({ action: 'getInitData', chatId: tgUser.id })
-          .then(function(res) { clearTimeout(safetyTimer); handleInitData(res); })
-          .catch(function(err) {
-            clearTimeout(safetyTimer);
-            apiCall({ action: 'getUserStatus', chatId: tgUser.id })
-              .then(function(res) { handleUserStatus(res); })
-              .catch(function() { show('formSection'); });
-          });
-      } catch (e) { show('formSection'); }
-    }
-
-    function handleInitData(res) {
-      if (!res || !res.ok) { show('formSection'); return; }
-      var userStatus = res.userStatus;
-      if (!userStatus || !userStatus.registered) { handleUserStatus(userStatus); return; }
-      var u = userStatus.userData || {};
-      currentAccess = String(u.access || '').trim();
-      var isActive = (u.active === true || u.active === 'TRUE' || u.active === 'true');
-      if (isActive) {
-        var box = document.getElementById('activeInfo');
-        box.innerHTML =
-          '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
-          '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-          '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
-          '<b>وضعیت:</b> <span class="badge badge-active">فعال</span><br>' +
-          '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (currentAccess || 'تعیین نشده') + '</span>';
-        if (currentAccess === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
-        show('activeSection');
-      } else {
-        var pbox = document.getElementById('pendingInfo');
-        pbox.innerHTML =
-          '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
-          '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-          '<b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
-        show('pendingSection');
-      }
-    }
-
-    function handleUserStatus(res) {
-      if (res && res.registered) {
-        var u = res.userData;
-        currentAccess = String(u.access || '').trim();
-        if (u.active === true || u.active === 'TRUE' || u.active === 'true') {
-          var box = document.getElementById('activeInfo');
-          box.innerHTML =
-            '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
-            '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-            '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
-            '<b>وضعیت:</b> <span class="badge badge-active">فعال</span><br>' +
-            '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (currentAccess || 'تعیین نشده') + '</span>';
-          if (currentAccess === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
-          show('activeSection');
+          if (val.indexOf(o.value) === -1) val.push(o.value);
+          inp.value = ''; renderChips(); renderList(''); updateClear();
+          if (onChange) onChange(val.slice());
         } else {
-          var pbox = document.getElementById('pendingInfo');
-          pbox.innerHTML = '<b>نام:</b> ' + (u.fullName || '—') + '<br><b>وضعیت:</b> <span class="badge badge-inactive">در انتظار تأیید</span>';
-          show('pendingSection');
+          val = o.value; inp.value = o.label; inp.readOnly = true;
+          list.classList.add('hidden'); updateClear();
+          if (onChange) onChange(val);
         }
-      } else {
-        var info = document.getElementById('tgInfo');
-        info.innerHTML = '<b>شناسه:</b> ' + tgUser.id + '<br><b>نام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '');
-        show('formSection');
       }
-    }
-
-    init();
-
-    document.getElementById('regForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      var btn = document.getElementById('submitBtn');
-      btn.disabled = true; btn.innerText = 'در حال ارسال...';
-      apiCall({
-        action: 'registerUser', chatId: tgUser.id, username: tgUser.username || '',
-        fullName: document.getElementById('fullName').value.trim(),
-        position: document.getElementById('position').value.trim(),
-        unit: document.getElementById('unit').value.trim()
-      })
-      .then(function(res) {
-        btn.disabled = false; btn.innerText = 'ثبت‌نام';
-        if (res && res.ok) { showMessage('formMessage', '✅ ' + res.message, 'success'); document.getElementById('regForm').reset(); setTimeout(init, 1500); }
-        else showMessage('formMessage', '❌ ' + ((res && res.message) || 'خطا'), 'error');
-      })
-      .catch(function(err) { btn.disabled = false; btn.innerText = 'ثبت‌نام'; showMessage('formMessage', '❌ خطا: ' + err.message, 'error'); });
+      it.addEventListener('mousedown', pick);
+      it.addEventListener('touchstart', pick, { passive: false });
+      list.appendChild(it);
     });
-
-    document.getElementById('adminBtn').addEventListener('click', function() {
-      show('adminSection');
-      loadAdminData();
-    });
-
-    document.getElementById('backBtn').addEventListener('click', function() { show('activeSection'); });
-
-    document.getElementById('debugRecipientsBtn').addEventListener('click', function() {
-      var msg = '🔍 تعداد مخاطبین: ' + recipientsData.length + '\n\n';
-      if (recipientsData.length > 0) {
-        var sample = recipientsData.slice(0, 10).map(function(c, i) { return (i+1) + '. ' + c.displayName; }).join('\n');
-        msg += 'نمونه:\n' + sample;
-        if (recipientsData.length > 10) msg += '\n... و ' + (recipientsData.length - 10) + ' نفر دیگر';
-      } else msg += '❌ هیچ مخاطبی لود نشده!';
-      alert(msg);
-    });
-
-    function loadAdminData() {
-      recipientSS = createSearchSelect('recipientSS', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipientChange });
-      subjectSS = createSearchSelect('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      epcSS = createSearchSelect('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      fieldSS = createSearchSelect('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
-
-      apiCall({ action: 'getRecipients' })
-        .then(function(res) {
-          recipientsData = (res && res.recipients) || [];
-          if (recipientsData.length === 0) {
-            recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد');
-          } else {
-            recipientSS.setOptions(recipientsData.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
-            recipientSS.setPlaceholder('تایپ کنید (' + recipientsData.length + ' مخاطب)');
-          }
-        })
-        .catch(function(err) { recipientSS.setPlaceholder('خطا: ' + err.message); });
-
-      apiCall({ action: 'getFormOptions' })
-        .then(function(res) { fillFormOptions(res); })
-        .catch(function(err) { console.error('FormOptions:', err); });
-    }
-
-    function fillFormOptions(res) {
-      res = res || {};
-      var subjOpts = (res.subjects && res.subjects.options) || [];
-      var epcOpts = (res.epcs && res.epcs.options) || [];
-      var fieldOpts = (res.fields && res.fields.options) || [];
-      var engOpts = (res.engagementTypes && res.engagementTypes.options) || [];
-      var addrOpts = (res.addresses && res.addresses.options) || [];
-      subjectSS.setOptions(subjOpts); subjectSS.setPlaceholder(subjOpts.length ? 'انتخاب کنید (' + subjOpts.length + ')' : 'تایپ کنید');
-      epcSS.setOptions(epcOpts); epcSS.setPlaceholder(epcOpts.length ? 'انتخاب کنید (' + epcOpts.length + ')' : 'تایپ کنید');
-      fieldSS.setOptions(fieldOpts); fieldSS.setPlaceholder(fieldOpts.length ? 'انتخاب کنید (' + fieldOpts.length + ')' : 'تایپ کنید');
-      engagementSS.setOptions(engOpts); engagementSS.setPlaceholder(engOpts.length ? 'انتخاب کنید (' + engOpts.length + ')' : 'تایپ کنید');
-      addressSS.setOptions(addrOpts); addressSS.setPlaceholder(addrOpts.length ? 'چندتایی (' + addrOpts.length + ')' : 'تایپ کنید');
-    }
-
-    function onRecipientChange(val) {
-      var chkTg = document.getElementById('chkTg'), chkBale = document.getElementById('chkBale'), chkAll = document.getElementById('chkAll');
-      var rowTg = document.getElementById('rowTg'), rowBale = document.getElementById('rowBale');
-      chkTg.checked = false; chkBale.checked = false; chkAll.checked = false;
-      rowTg.classList.remove('disabled'); rowBale.classList.remove('disabled');
-      chkTg.disabled = false; chkBale.disabled = false;
-      if (!val) return;
-      var r = null;
-      for (var i = 0; i < recipientsData.length; i++) if (recipientsData[i].systemName === val) { r = recipientsData[i]; break; }
-      if (!r) return;
-      if (r.telegramChatId) chkTg.checked = true; else { chkTg.disabled = true; rowTg.classList.add('disabled'); }
-      if (r.baleChatId) chkBale.checked = true; else { chkBale.disabled = true; rowBale.classList.add('disabled'); }
-      updateAllCheckbox();
-    }
-
-    function updateAllCheckbox() {
-      var chkTg = document.getElementById('chkTg'), chkBale = document.getElementById('chkBale'), chkAll = document.getElementById('chkAll');
-      var enabled = [];
-      if (!chkTg.disabled) enabled.push(chkTg);
-      if (!chkBale.disabled) enabled.push(chkBale);
-      if (enabled.length === 0) { chkAll.checked = false; return; }
-      chkAll.checked = enabled.every(function(c) { return c.checked; });
-    }
-
-    document.getElementById('chkAll').addEventListener('change', function() {
-      var checked = this.checked;
-      var chkTg = document.getElementById('chkTg'), chkBale = document.getElementById('chkBale');
-      if (!chkTg.disabled) chkTg.checked = checked;
-      if (!chkBale.disabled) chkBale.checked = checked;
-    });
-    document.getElementById('chkTg').addEventListener('change', updateAllCheckbox);
-    document.getElementById('chkBale').addEventListener('change', updateAllCheckbox);
-
-    document.getElementById('previewBtn').addEventListener('click', function() {
-      var recipientName = recipientSS ? recipientSS.getRawString() : '';
-      var subject = subjectSS ? subjectSS.getRawString() : '';
-      var epc = epcSS ? epcSS.getRawString() : '';
-      var field = fieldSS ? fieldSS.getRawString() : '';
-      var engagement = engagementSS ? engagementSS.getRawString() : '';
-      var addressRaw = addressSS ? addressSS.getRawString() : '';
-      var addressDisplay = addressSS ? addressSS.getDisplayString() : '';
-      var description = document.getElementById('woDescription').value.trim();
-      var startYear = document.getElementById('woYear').value;
-      var startMonth = document.getElementById('woMonth').value;
-      var startDay = document.getElementById('woDay').value;
-      var duration = document.getElementById('woDuration').value;
-      var sendTg = document.getElementById('chkTg').checked;
-      var sendBale = document.getElementById('chkBale').checked;
-
-      if (!recipientName) return showMessage('woMessage', '❌ مخاطب را انتخاب کنید', 'error');
-      if (!subject) return showMessage('woMessage', '❌ موضوع را انتخاب کنید', 'error');
-      if (!description) return showMessage('woMessage', '❌ شرح عملیات الزامی است', 'error');
-      if (!epc) return showMessage('woMessage', '❌ EPC را انتخاب کنید', 'error');
-      if (!field) return showMessage('woMessage', '❌ رشته را انتخاب کنید', 'error');
-      if (!engagement) return showMessage('woMessage', '❌ پیمانکاری/امانی را انتخاب کنید', 'error');
-      if (!addressRaw) return showMessage('woMessage', '❌ آدرس را انتخاب کنید', 'error');
-      if (!duration || parseInt(duration, 10) < 1) return showMessage('woMessage', '❌ مدت معتبر نیست', 'error');
-      if (!sendTg && !sendBale) return showMessage('woMessage', '❌ حداقل یک پلتفورم انتخاب کنید', 'error');
-
-      var sY = parseInt(startYear, 10), sM = parseInt(startMonth, 10), sD = parseInt(startDay, 10);
-      var startG = jalaliToGregorian(sY, sM, sD);
-      var startDate = new Date(startG[0], startG[1] - 1, startG[2]);
-      var dur = parseInt(duration, 10);
-      var endDate = new Date(startDate.getTime() + (dur - 1) * 24 * 60 * 60 * 1000);
-      var endJ = gregorianToJalali(endDate.getFullYear(), endDate.getMonth() + 1, endDate.getDate());
-      var endShamsi = endJ[0] + '-' + endJ[1] + '-' + endJ[2];
-      var startShamsi = sY + '-' + sM + '-' + sD;
-
-      var now = new Date();
-      var todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
-      var todayShamsi = todayJ[0] + '-' + todayJ[1] + '-' + todayJ[2];
-      var todayDayName = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'][now.getDay()];
-      var messagePreview =
-        'از: دفتر کارگاه پروژه ایگل\n' +
-        'به: آقای ' + recipientName + '\n\n' +
-        '#' + epc + ' #' + field + ' #پیمانکاری\n' +
-        'موضوع: #ابلاغ_برنامه_کاری\n\n' +
-        'ابلاغ شده در تاریخ : #' + todayShamsi + '  روز ' + todayDayName + '\n' +
-        'به آدرس: ' + addressDisplay + '\n\n' +
-        ' # ' + description + '\n' +
-        '#برنامه_زمانبندی:\n' +
-        'از تاریخ:  ' + startShamsi + 'تا تاریخ:' + endShamsi + ' به مدت ' + dur + 'روز\n' +
-        '***در صورت نیاز به هرگونه مقدمات، تدارکات و مصالح، کنترل موجودی و درخواست به موقع آنها، وظیفه پیمانکار/مسئول محترم می باشد';
-
-      document.getElementById('pvRecipient').innerText = recipientName;
-      var platformsList = [];
-      if (sendTg) platformsList.push('📱 Telegram');
-      if (sendBale) platformsList.push('📨 Bale');
-      document.getElementById('pvPlatforms').innerText = platformsList.join(' + ');
-      document.getElementById('pvSubject').innerText = subject;
-      document.getElementById('pvEpc').innerText = epc;
-      document.getElementById('pvField').innerText = field;
-      document.getElementById('pvEngagement').innerText = engagement;
-      document.getElementById('pvAddress').innerText = addressDisplay;
-      document.getElementById('pvDescription').innerText = description;
-      document.getElementById('pvStartDate').innerText = startShamsi + ' (شمسی)';
-      document.getElementById('pvDuration').innerText = dur + ' روز';
-      document.getElementById('pvEndDate').innerText = endShamsi + ' (شمسی)';
-      document.getElementById('pvMessage').innerText = messagePreview;
-
-      var chatIds = recipientSS.getChatIds ? recipientSS.getChatIds() : { telegramChatId: '', baleChatId: '' };
-
-      pendingPayload = {
-        action: 'createWorkOrder', adminChatId: String(tgUser.id),
-        recipientSystemName: recipientName,
-        recipientTelegramChatId: chatIds.telegramChatId,
-        recipientBaleChatId: chatIds.baleChatId,
-        sendTelegram: sendTg, sendBale: sendBale,
-        subject: subject, description: description, epc: epc, field: field,
-        engagementType: engagement,
-        address: addressRaw,
-        addressDisplay: addressDisplay,
-        startYear: startYear, startMonth: startMonth, startDay: startDay, duration: duration
+  }
+  function renderChips() {
+    chips.innerHTML = '';
+    if (!multi) return;
+    val.forEach(function(v) {
+      var c = document.createElement('span'); c.className = 'ss-chip';
+      var t = document.createElement('span'); t.textContent = labelOf(v);
+      var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×';
+      x.onclick = function(ev) {
+        ev.stopPropagation();
+        val = val.filter(function(s) { return s !== v; });
+        renderChips(); renderList(inp.value); updateClear();
+        if (onChange) onChange(val.slice());
       };
-
-      isSubmitting = false;
-      var finalBtn = document.getElementById('finalSubmitBtn');
-      finalBtn.disabled = false; finalBtn.style.pointerEvents = 'auto';
-      finalBtn.classList.remove('btn-locked'); finalBtn.classList.add('btn-success');
-      finalBtn.innerText = '✅ ثبت نهایی و ارسال';
-      document.getElementById('editBtn').disabled = false;
-      document.getElementById('editBtn').innerText = '← ویرایش';
-      document.getElementById('finalMessage').innerText = '';
-      document.getElementById('finalMessage').className = '';
-      show('previewSection');
+      c.appendChild(t); c.appendChild(x); chips.appendChild(c);
     });
+  }
+  clr.onclick = function(ev) {
+    ev.stopPropagation();
+    val = multi ? [] : '';
+    inp.value = ''; inp.readOnly = false;
+    renderChips(); renderList(''); updateClear();
+    if (onChange) onChange(multi ? [] : '');
+  };
+  inp.onfocus = function() { if (!inp.readOnly) { list.classList.remove('hidden'); renderList(inp.value); } };
+  inp.oninput = function() {
+    if (inp.readOnly) return;
+    if (!multi && inp.value !== labelOf(val)) { val = ''; updateClear(); if (onChange) onChange(''); }
+    list.classList.remove('hidden'); renderList(inp.value);
+  };
+  document.addEventListener('click', function(e) { if (!box.contains(e.target)) list.classList.add('hidden'); });
 
-    document.getElementById('editBtn').addEventListener('click', function() {
-      document.getElementById('finalMessage').innerText = '';
-      document.getElementById('finalMessage').className = '';
-      isSubmitting = false;
-      var btn = document.getElementById('finalSubmitBtn');
-      btn.disabled = false; btn.style.pointerEvents = 'auto';
-      btn.classList.remove('btn-locked'); btn.classList.add('btn-success');
-      btn.innerText = '✅ ثبت نهایی و ارسال';
-      document.getElementById('editBtn').innerText = '← ویرایش';
-      show('adminSection');
-    });
+  renderList(''); updateClear();
 
-    document.getElementById('finalSubmitBtn').addEventListener('click', function() {
-      if (isSubmitting) return;
-      isSubmitting = true;
-      var btn = document.getElementById('finalSubmitBtn');
-      btn.disabled = true; btn.style.pointerEvents = 'none';
-      btn.classList.remove('btn-success'); btn.classList.add('btn-locked');
-      btn.innerText = '⏳ در حال ارسال...';
-      document.getElementById('editBtn').disabled = true;
-      var fmsg = document.getElementById('finalMessage');
-      fmsg.innerText = ''; fmsg.className = '';
-
-      apiCall(pendingPayload)
-        .then(function(res) {
-          if (res && res.ok) {
-            var msg = '✅ ' + (res.message || 'ثبت شد');
-            if (res.row) msg += ' (ردیف ' + res.row + ')';
-            if (res.recipient) msg += '\nمخاطب: ' + res.recipient;
-            if (res.status) msg += '\nوضعیت: ' + res.status;
-            if (res.sends) msg += '\nارسال: ' + res.sends;
-            showMessage('finalMessage', msg, 'success');
-            btn.innerText = '✅ ثبت شد'; btn.disabled = true; btn.style.pointerEvents = 'none';
-            document.getElementById('editBtn').disabled = false;
-            document.getElementById('editBtn').innerText = '➕ دستور کار جدید';
-          } else if (res && res.duplicate) {
-            var msg2 = '⚠️ ' + res.message;
-            showMessage('finalMessage', msg2, 'error');
-            btn.innerText = '⚠️ قبلاً ثبت شده'; btn.disabled = true; btn.style.pointerEvents = 'none';
-            document.getElementById('editBtn').disabled = false;
-            document.getElementById('editBtn').innerText = '✏️ ویرایش اطلاعات';
-          } else {
-            isSubmitting = false;
-            btn.disabled = false; btn.style.pointerEvents = 'auto';
-            btn.classList.remove('btn-locked'); btn.classList.add('btn-success');
-            btn.innerText = '✅ تلاش دوباره';
-            document.getElementById('editBtn').disabled = false;
-            document.getElementById('editBtn').innerText = '← ویرایش';
-            showMessage('finalMessage', '❌ خطا\n\n' + JSON.stringify(res, null, 2), 'error');
+  return {
+    getValue: function() { return multi ? val.slice() : val; },
+    getStr: function() { return multi ? val.join(', ') : val; },
+    getDisplay: function() { return multi ? val.join('، ') : val; },
+    getChatIds: function() {
+      if (!multi && val) {
+        for (var i = 0; i < recipients.length; i++) {
+          if (recipients[i].systemName === val) {
+            return { tg: recipients[i].telegramChatId || '', bale: recipients[i].baleChatId || '' };
           }
-        })
-        .catch(function(err) {
-          isSubmitting = false;
-          btn.disabled = false; btn.style.pointerEvents = 'auto';
-          btn.classList.remove('btn-locked'); btn.classList.add('btn-success');
-          btn.innerText = '✅ تلاش دوباره';
-          document.getElementById('editBtn').disabled = false;
-          showMessage('finalMessage',
-            '❌ خطا\n\nerr.message: ' + (err && err.message ? err.message : 'نامشخص') + '\n\nerr.name: ' + (err && err.name ? err.name : 'نامشخص'),
-            'error');
-        });
+        }
+      }
+      return { tg: '', bale: '' };
+    },
+    setOpts: function(a) { opts = (a || []).slice(); renderList(inp.value); },
+    setPh: function(p) { placeholder = p; inp.placeholder = p; }
+  };
+}
+
+// متغیرهای SS
+var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssAddr;
+
+// --- init ---
+function init() {
+  if (!tgUser) {
+    document.getElementById('loading').innerHTML = '<div style="padding:30px; text-align:center; color:#c00;">لطفاً از داخل تلگرام باز کنید</div>';
+    return;
+  }
+  try { buildDates(); } catch (e) {}
+  var safety = setTimeout(function() {
+    if (document.getElementById('loading').classList.contains('active')) show('formSection');
+  }, 10000);
+
+  api({ action: 'getUserStatus', chatId: tgUser.id })
+    .then(function(r) { clearTimeout(safety); handleStatus(r); })
+    .catch(function() { clearTimeout(safety); show('formSection'); });
+}
+
+function handleStatus(r) {
+  if (r && r.registered) {
+    var u = r.userData || {};
+    var access = String(u.access || '').trim();
+    var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
+    if (active) {
+      document.getElementById('activeInfo').innerHTML =
+        '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
+        '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
+        '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
+        '<b>سطح دسترسی:</b> ' + (access || 'تعیین نشده');
+      if (access === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
+      show('activeSection');
+    } else {
+      show('pendingSection');
+    }
+  } else {
+    document.getElementById('tgInfo').innerHTML =
+      '<b>شناسه:</b> ' + tgUser.id + '<br>' +
+      '<b>نام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '');
+    show('formSection');
+  }
+}
+
+init();
+
+// ثبت‌نام
+document.getElementById('regForm').onsubmit = function(e) {
+  e.preventDefault();
+  var b = document.getElementById('regBtn');
+  b.disabled = true; b.innerText = 'در حال ارسال...';
+  api({
+    action: 'registerUser', chatId: tgUser.id, username: tgUser.username || '',
+    fullName: document.getElementById('fullName').value.trim(),
+    position: document.getElementById('position').value.trim(),
+    unit: document.getElementById('unit').value.trim()
+  })
+  .then(function(r) {
+    b.disabled = false; b.innerText = 'ثبت‌نام';
+    if (r && r.ok) { showMsg('formMsg', '✅ ' + r.message, 'ok'); setTimeout(init, 1500); }
+    else showMsg('formMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+  })
+  .catch(function(err) { b.disabled = false; b.innerText = 'ثبت‌نام'; showMsg('formMsg', '❌ ' + err.message, 'err'); });
+};
+
+// پنل ادمین
+document.getElementById('adminBtn').onclick = function() {
+  show('adminSection');
+  loadAdmin();
+};
+document.getElementById('backBtn').onclick = function() { show('activeSection'); };
+
+function loadAdmin() {
+  ssRecipient = makeSS('recipientWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipient });
+  ssSubject = makeSS('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssEpc = makeSS('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssField = makeSS('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssEng = makeSS('engWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssAddr = makeSS('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
+
+  api({ action: 'getRecipients' }).then(function(r) {
+    recipients = (r && r.recipients) || [];
+    if (recipients.length) {
+      ssRecipient.setOpts(recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
+      ssRecipient.setPh('تایپ کنید (' + recipients.length + ' مخاطب)');
+    } else ssRecipient.setPh('هیچ مخاطبی یافت نشد');
+  }).catch(function() { ssRecipient.setPh('خطا'); });
+
+  api({ action: 'getFormOptions' }).then(function(r) {
+    r = r || {};
+    var s = (r.subjects || []), e = (r.epcs || []), f = (r.fields || []), g = (r.engagementTypes || []), a = (r.addresses || []);
+    ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب کنید (' + s.length + ')' : 'تایپ کنید');
+    ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب کنید (' + e.length + ')' : 'تایپ کنید');
+    ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب کنید (' + f.length + ')' : 'تایپ کنید');
+    ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب کنید (' + g.length + ')' : 'تایپ کنید');
+    ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ کنید');
+  }).catch(function() {});
+}
+
+function onRecipient(val) {
+  var cTg = document.getElementById('chkTg'), cBale = document.getElementById('chkBale'), cAll = document.getElementById('chkAll');
+  var rTg = document.getElementById('rowTg'), rBale = document.getElementById('rowBale');
+  cTg.checked = false; cBale.checked = false; cAll.checked = false;
+  rTg.classList.remove('dis'); rBale.classList.remove('dis');
+  cTg.disabled = false; cBale.disabled = false;
+  if (!val) return;
+  var r = null;
+  for (var i = 0; i < recipients.length; i++) if (recipients[i].systemName === val) { r = recipients[i]; break; }
+  if (!r) return;
+  if (r.telegramChatId) cTg.checked = true; else { cTg.disabled = true; rTg.classList.add('dis'); }
+  if (r.baleChatId) cBale.checked = true; else { cBale.disabled = true; rBale.classList.add('dis'); }
+  updateAll();
+}
+function updateAll() {
+  var a = document.getElementById('chkAll');
+  var on = [];
+  if (!document.getElementById('chkTg').disabled) on.push(document.getElementById('chkTg'));
+  if (!document.getElementById('chkBale').disabled) on.push(document.getElementById('chkBale'));
+  a.checked = on.length > 0 && on.every(function(c) { return c.checked; });
+}
+document.getElementById('chkAll').onchange = function() {
+  var v = this.checked;
+  if (!document.getElementById('chkTg').disabled) document.getElementById('chkTg').checked = v;
+  if (!document.getElementById('chkBale').disabled) document.getElementById('chkBale').checked = v;
+};
+document.getElementById('chkTg').onchange = updateAll;
+document.getElementById('chkBale').onchange = updateAll;
+
+// پیش‌نمایش
+document.getElementById('previewBtn').onclick = function() {
+  var rec = ssRecipient ? ssRecipient.getStr() : '';
+  var sub = ssSubject ? ssSubject.getStr() : '';
+  var epc = ssEpc ? ssEpc.getStr() : '';
+  var fld = ssField ? ssField.getStr() : '';
+  var eng = ssEng ? ssEng.getStr() : '';
+  var addr = ssAddr ? ssAddr.getStr() : '';
+  var addrD = ssAddr ? ssAddr.getDisplay() : '';
+  var desc = document.getElementById('woDesc').value.trim();
+  var y = document.getElementById('woYear').value;
+  var m = document.getElementById('woMonth').value;
+  var d = document.getElementById('woDay').value;
+  var dur = document.getElementById('woDur').value;
+  var sTg = document.getElementById('chkTg').checked;
+  var sBale = document.getElementById('chkBale').checked;
+
+  if (!rec) return showMsg('woMsg', '❌ مخاطب را انتخاب کنید', 'err');
+  if (!sub) return showMsg('woMsg', '❌ موضوع را انتخاب کنید', 'err');
+  if (!desc) return showMsg('woMsg', '❌ شرح عملیات الزامی است', 'err');
+  if (!epc) return showMsg('woMsg', '❌ EPC را انتخاب کنید', 'err');
+  if (!fld) return showMsg('woMsg', '❌ رشته را انتخاب کنید', 'err');
+  if (!eng) return showMsg('woMsg', '❌ پیمانکاری/امانی را انتخاب کنید', 'err');
+  if (!addr) return showMsg('woMsg', '❌ آدرس را انتخاب کنید', 'err');
+  if (!dur || parseInt(dur, 10) < 1) return showMsg('woMsg', '❌ مدت معتبر نیست', 'err');
+  if (!sTg && !sBale) return showMsg('woMsg', '❌ حداقل یک پلتفورم انتخاب کنید', 'err');
+
+  var sY = parseInt(y), sM = parseInt(m), sD = parseInt(d), n = parseInt(dur);
+  var sg = j2g(sY, sM, sD);
+  var sdt = new Date(sg[0], sg[1]-1, sg[2]);
+  var edt = new Date(sdt.getTime() + (n-1)*86400000);
+  var ej = g2j(edt.getFullYear(), edt.getMonth()+1, edt.getDate());
+  var endSh = ej[0] + '-' + ej[1] + '-' + ej[2];
+  var startSh = sY + '-' + sM + '-' + sD;
+
+  var now = new Date();
+  var tj = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
+  var todaySh = tj[0] + '-' + tj[1] + '-' + tj[2];
+  var dn = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'][now.getDay()];
+
+  var msg =
+    'از: دفتر کارگاه پروژه ایگل\n' +
+    'به: آقای ' + rec + '\n\n' +
+    '#' + epc + ' #' + fld + ' #پیمانکاری\n' +
+    'موضوع: #ابلاغ_برنامه_کاری\n\n' +
+    'ابلاغ شده در تاریخ : #' + todaySh + '  روز ' + dn + '\n' +
+    'به آدرس: ' + addrD + '\n\n' +
+    ' # ' + desc + '\n' +
+    '#برنامه_زمانبندی:\n' +
+    'از تاریخ:  ' + startSh + 'تا تاریخ:' + endSh + ' به مدت ' + n + 'روز\n' +
+    '***در صورت نیاز به هرگونه مقدمات، تدارکات و مصالح، کنترل موجودی و درخواست به موقع آنها، وظیفه پیمانکار/مسئول محترم می باشد';
+
+  document.getElementById('pvRecipient').innerText = rec;
+  var pl = [];
+  if (sTg) pl.push('📱 Telegram');
+  if (sBale) pl.push('📨 Bale');
+  document.getElementById('pvPlatforms').innerText = pl.join(' + ');
+  document.getElementById('pvSubject').innerText = sub;
+  document.getElementById('pvEpc').innerText = epc;
+  document.getElementById('pvField').innerText = fld;
+  document.getElementById('pvEng').innerText = eng;
+  document.getElementById('pvAddr').innerText = addrD;
+  document.getElementById('pvDesc').innerText = desc;
+  document.getElementById('pvStart').innerText = startSh;
+  document.getElementById('pvDur').innerText = n + ' روز';
+  document.getElementById('pvEnd').innerText = endSh;
+  document.getElementById('pvMsg').innerText = msg;
+
+  var ci = ssRecipient.getChatIds();
+  payload = {
+    action: 'createWorkOrder', adminChatId: String(tgUser.id),
+    recipientSystemName: rec,
+    recipientTelegramChatId: ci.tg,
+    recipientBaleChatId: ci.bale,
+    sendTelegram: sTg, sendBale: sBale,
+    subject: sub, description: desc, epc: epc, field: fld,
+    engagementType: eng, address: addr,
+    startYear: y, startMonth: m, startDay: d, duration: dur
+  };
+
+  submitting = false;
+  var sb = document.getElementById('submitBtn');
+  sb.disabled = false; sb.innerText = '✅ ثبت و ارسال';
+  document.getElementById('finalMsg').innerText = '';
+  show('previewSection');
+};
+
+document.getElementById('editBtn').onclick = function() { show('adminSection'); };
+
+document.getElementById('submitBtn').onclick = function() {
+  if (submitting) return;
+  submitting = true;
+  var b = this;
+  b.disabled = true; b.innerText = '⏳ در حال ارسال...';
+  document.getElementById('editBtn').disabled = true;
+  document.getElementById('finalMsg').innerText = '';
+
+  api(payload)
+    .then(function(r) {
+      if (r && r.ok) {
+        var m = '✅ ' + (r.message || 'ثبت شد');
+        if (r.row) m += ' (ردیف ' + r.row + ')';
+        if (r.sends) m += '\nارسال: ' + r.sends;
+        showMsg('finalMsg', m, 'ok');
+        b.innerText = '✅ ثبت شد';
+      } else if (r && r.duplicate) {
+        showMsg('finalMsg', '⚠️ ' + r.message, 'err');
+        b.innerText = '⚠️ قبلاً ثبت شده';
+      } else {
+        submitting = false;
+        b.disabled = false; b.innerText = '✅ تلاش دوباره';
+        showMsg('finalMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+      }
+      document.getElementById('editBtn').disabled = false;
+    })
+    .catch(function(err) {
+      submitting = false;
+      b.disabled = false; b.innerText = '✅ تلاش دوباره';
+      document.getElementById('editBtn').disabled = false;
+      showMsg('finalMsg', '❌ ' + (err.message || 'خطا'), 'err');
     });
-  </script>
+};
+</script>
 </body>
 </html>

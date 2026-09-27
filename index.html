@@ -20,7 +20,7 @@
     h2 { text-align: center; color: var(--tg-theme-button-color, #229ED9); margin-bottom: 20px; }
     h3 { color: var(--tg-theme-button-color, #229ED9); margin: 22px 0 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
     .info-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 13px; line-height: 1.8; }
-    .debug-box { background: #fee2e2; color: #7f1d1d; padding: 10px; border-radius: 6px; font-size: 11px; direction: ltr; text-align: left; word-break: break-all; margin-bottom: 10px; font-family: monospace; }
+    .debug-box { background: #fee2e2; color: #7f1d1d; padding: 10px; border-radius: 6px; font-size: 11px; direction: ltr; text-align: left; word-break: break-all; margin-bottom: 10px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
     label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 14px; font-weight: bold; }
     input, select, textarea {
       width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;
@@ -39,6 +39,7 @@
     .btn-secondary { background: var(--tg-theme-secondary-bg-color, #e2e8f0); color: var(--tg-theme-text-color, #000); margin-bottom: 12px; }
     .btn-success { background: #10b981 !important; color: white !important; }
     .btn-locked { background: #9ca3af !important; color: white !important; }
+    .btn-debug { background: #dc2626 !important; color: white !important; margin-bottom: 12px; }
 
     .message { margin-top: 16px; padding: 12px; border-radius: 10px; text-align: center; font-size: 14px; white-space: pre-line; }
     .msg-success { background: #d1fae5; color: #065f46; }
@@ -208,6 +209,7 @@
 
   <div id="formSection" class="screen">
     <h2>فرم ثبت‌نام</h2>
+    <button type="button" class="btn-debug" onclick="runDebug()">🐞 نمایش اطلاعات دیباگ</button>
     <div id="debugBox" class="debug-box hidden"></div>
     <div class="info-box" id="tgInfo"></div>
     <form id="regForm">
@@ -224,12 +226,16 @@
 
   <div id="pendingSection" class="screen">
     <h2>در انتظار تأیید ادمین ⏳</h2>
+    <button type="button" class="btn-debug" onclick="runDebug()">🐞 نمایش اطلاعات دیباگ</button>
+    <div id="debugBox2" class="debug-box hidden"></div>
     <div class="info-box" id="pendingInfo"></div>
     <div class="message msg-warning">ثبت‌نام شما انجام شد و در انتظار تأیید ادمین است.</div>
   </div>
 
   <div id="activeSection" class="screen">
     <h2>خوش آمدید ✅</h2>
+    <button type="button" class="btn-debug" onclick="runDebug()">🐞 نمایش اطلاعات دیباگ</button>
+    <div id="debugBox3" class="debug-box hidden"></div>
     <div class="info-box" id="activeInfo"></div>
     <div class="message msg-success">دسترسی شما فعال است.</div>
     <button id="adminBtn" class="hidden" style="margin-top: 16px;">🛠 پنل ادمین</button>
@@ -362,11 +368,69 @@
       if (target) target.classList.add('active');
     }
 
-    function setDebug(txt) {
-      var dbg = document.getElementById('debugBox');
+    function setDebug(txt, boxId) {
+      boxId = boxId || 'debugBox';
+      var dbg = document.getElementById(boxId);
+      if (!dbg) dbg = document.getElementById('debugBox');
       if (!dbg) return;
       dbg.classList.remove('hidden');
       dbg.innerText = txt;
+    }
+
+    // 🐞 تابع دیباگ - اطلاعات کامل رو نشون می‌ده
+    function runDebug() {
+      var out = '';
+      out += '=== DEBUG INFO ===\n\n';
+      out += 'tgUser:\n' + JSON.stringify(tgUser, null, 2) + '\n\n';
+      out += 'API_URL:\n' + API_URL + '\n\n';
+      out += 'initData length: ' + ((tg && tg.initData) ? tg.initData.length : 'NULL') + '\n';
+      out += 'initData sample: ' + ((tg && tg.initData) ? tg.initData.substring(0, 150) : 'EMPTY') + '\n\n';
+
+      // کدوم باکس دیباگ فعاله؟
+      var activeBox = 'debugBox';
+      if (document.getElementById('pendingSection').classList.contains('active')) activeBox = 'debugBox2';
+      if (document.getElementById('activeSection').classList.contains('active')) activeBox = 'debugBox3';
+
+      setDebug(out + 'در حال دریافت...', activeBox);
+
+      // مرحله ۱
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getUserStatus', chatId: tgUser.id }),
+        redirect: 'follow'
+      })
+      .then(function(r) { return r.text(); })
+      .then(function(t) {
+        out += '--- getUserStatus ---\n';
+        out += 'Status: 200\n';
+        out += 'Response text (first 400):\n' + t.substring(0, 400) + '\n\n';
+        return fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getRecipients' }),
+          redirect: 'follow'
+        }).then(function(r) { return r.text(); });
+      })
+      .then(function(t) {
+        out += '--- getRecipients ---\n';
+        out += 'Response (first 400):\n' + t.substring(0, 400) + '\n\n';
+        return fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getFormOptions' }),
+          redirect: 'follow'
+        }).then(function(r) { return r.text(); });
+      })
+      .then(function(t) {
+        out += '--- getFormOptions ---\n';
+        out += 'Response (first 400):\n' + t.substring(0, 400) + '\n';
+        setDebug(out, activeBox);
+      })
+      .catch(function(err) {
+        out += '\n\n❌ ERROR: ' + err.message;
+        setDebug(out, activeBox);
+      });
     }
 
     function showMessage(elId, text, type) {
@@ -722,16 +786,11 @@
     }
 
     function checkStatus(onDone) {
-      // نمایش دیباگ اولیه
-      setDebug('Sending: {action: getUserStatus, chatId: ' + tgUser.id + '}');
-
       apiCall({ action: 'getUserStatus', chatId: tgUser.id })
         .then(function(res) {
           try {
-            setDebug('Response: ' + JSON.stringify(res));
-
-            if (res && res.registered) {
-              var u = res.userData;
+            if (res && res.registered === true) {
+              var u = res.userData || {};
               currentAccess = String(u.access || '').trim();
               if (u.active === true || u.active === 'TRUE' || u.active === 'true') {
                 var box = document.getElementById('activeInfo');
@@ -761,14 +820,12 @@
             }
           } catch (e) {
             console.error('render error:', e);
-            setDebug('Render error: ' + e.message + ' | res=' + JSON.stringify(res));
             show('formSection');
           }
           if (onDone) onDone();
         })
         .catch(function(err) {
           console.error('checkStatus error:', err);
-          setDebug('API Error: ' + err.message);
           show('formSection');
           if (onDone) onDone();
         });
@@ -790,12 +847,12 @@
       })
       .then(function(res) {
         btn.disabled = false; btn.innerText = 'ثبت‌نام';
-        if (res.ok) {
-          showMessage('formMessage', '✅ ' + res.message, 'success');
+        if (res && res.ok) {
+          showMessage('formMessage', '✅ ' + (res.message || 'انجام شد'), 'success');
           document.getElementById('regForm').reset();
           setTimeout(function() { checkStatus(); }, 1500);
         } else {
-          showMessage('formMessage', '❌ ' + res.message, 'error');
+          showMessage('formMessage', '❌ ' + ((res && res.message) || 'خطای نامشخص'), 'error');
         }
       })
       .catch(function(err) {
@@ -823,7 +880,7 @@
       });
       apiCall({ action: 'getRecipients' })
         .then(function(res) {
-          recipientsData = res.recipients || [];
+          recipientsData = (res && res.recipients) || [];
           if (recipientsData.length === 0) {
             recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد');
             return;
@@ -889,6 +946,7 @@
 
       apiCall({ action: 'getFormOptions' })
         .then(function(res) {
+          res = res || {};
           var subjOpts = (res.subjects && res.subjects.options) || [];
           var epcOpts = (res.epcs && res.epcs.options) || [];
           var fieldOpts = (res.fields && res.fields.options) || [];
@@ -1028,8 +1086,8 @@
 
       apiCall(pendingPayload)
         .then(function(res) {
-          if (res.ok) {
-            var msg = '✅ ' + res.message;
+          if (res && res.ok) {
+            var msg = '✅ ' + (res.message || 'ثبت شد');
             if (res.recipient) msg += '\nمخاطب: ' + res.recipient;
             if (res.status) msg += '\nوضعیت: ' + res.status;
             if (res.sends) msg += '\nارسال: ' + res.sends;
@@ -1042,7 +1100,7 @@
             btn.classList.remove('btn-locked');
             btn.classList.add('btn-success');
             btn.innerText = '✅ تلاش دوباره';
-            showMessage('finalMessage', '❌ ' + res.message, 'error');
+            showMessage('finalMessage', '❌ ' + ((res && res.message) || 'خطای نامشخص'), 'error');
           }
         })
         .catch(function(err) {

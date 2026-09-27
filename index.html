@@ -111,7 +111,7 @@
 </head>
 <body>
 
-  <div class="version-badge">V6</div>
+  <div class="version-badge">V7</div>
 
   <div id="loading" class="screen active">
     <div class="spinner"></div>
@@ -241,14 +241,13 @@
 
   <script>
     var API_URL = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
-    var APP_VERSION = 'V6-' + Date.now();
+    var APP_VERSION = 'V7-' + Date.now();
     var tg = window.Telegram && window.Telegram.WebApp;
     var tgUser = null;
     var currentAccess = '';
     var recipientsData = [];
     var pendingPayload = null;
     var isSubmitting = false;
-    var dataLoaded = false;
 
     var recipientSS = null, subjectSS = null, epcSS = null, fieldSS = null, addressSS = null, engagementSS = null;
 
@@ -276,17 +275,21 @@
       el.innerText = text;
     }
 
+    // ============ API با cache-busting ============
     function apiCall(payload, retries) {
       if (payload.action === 'createWorkOrder') retries = 0;
       else if (retries === undefined) retries = 2;
 
       payload._v = APP_VERSION;
+      payload._t = Date.now();
+
       var body = JSON.stringify(payload);
       return fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: body,
-        redirect: 'follow'
+        redirect: 'follow',
+        cache: 'no-store'
       })
       .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
       .then(function(text) {
@@ -302,6 +305,7 @@
       });
     }
 
+    // ============ Jalali ============
     function gregorianToJalali(gy, gm, gd) {
       var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
       var jy = (gy <= 1600) ? 0 : 979;
@@ -379,7 +383,6 @@
     }
 
     // ============ Searchable Select ============
-    // multi-select با ', ' جدا می‌شه (استاندارد Google Sheets)
     function createSearchSelect(containerId, opts) {
       var container = document.getElementById(containerId);
       container.innerHTML = '';
@@ -492,7 +495,6 @@
 
       return {
         getValue: function() { return multi ? selectedValue.slice() : selectedValue; },
-        // ⚡ multi-select با ', ' جدا می‌شه — استاندارد Google Sheets
         getRawString: function() { return multi ? selectedValue.join(', ') : selectedValue; },
         getDisplayString: function() { return multi ? selectedValue.join('، ') : selectedValue; },
         getChatIds: function() {
@@ -553,13 +555,8 @@
           '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
           '<b>وضعیت:</b> <span class="badge badge-active">فعال</span><br>' +
           '<b>سطح دسترسی:</b> <span class="badge badge-access">' + (currentAccess || 'تعیین نشده') + '</span>';
-        if (currentAccess === 'ادمین') {
-          document.getElementById('adminBtn').classList.remove('hidden');
-          if (res.recipients && res.recipients.length > 0) recipientsData = res.recipients;
-          if (res.formOptions) window._formOptionsCache = res.formOptions;
-        }
+        if (currentAccess === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
         show('activeSection');
-        dataLoaded = true;
       } else {
         var pbox = document.getElementById('pendingInfo');
         pbox.innerHTML =
@@ -618,8 +615,7 @@
 
     document.getElementById('adminBtn').addEventListener('click', function() {
       show('adminSection');
-      if (dataLoaded && recipientsData.length > 0) populateAdminPanel();
-      else loadAdminData();
+      loadAdminData();
     });
 
     document.getElementById('backBtn').addEventListener('click', function() { show('activeSection'); });
@@ -642,38 +638,21 @@
       engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
       addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
-      Promise.all([
-        apiCall({ action: 'getRecipients' }),
-        apiCall({ action: 'getFormOptions' })
-      ]).then(function(results) {
-        recipientsData = (results[0] && results[0].recipients) || [];
-        fillRecipients(recipientsData);
-        fillFormOptions(results[1]);
-        dataLoaded = true;
-      }).catch(function(err) { console.error('loadAdminData:', err); });
-    }
+      apiCall({ action: 'getRecipients' })
+        .then(function(res) {
+          recipientsData = (res && res.recipients) || [];
+          if (recipientsData.length === 0) {
+            recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد');
+          } else {
+            recipientSS.setOptions(recipientsData.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
+            recipientSS.setPlaceholder('تایپ کنید (' + recipientsData.length + ' مخاطب)');
+          }
+        })
+        .catch(function(err) { recipientSS.setPlaceholder('خطا: ' + err.message); });
 
-    function populateAdminPanel() {
-      recipientSS = createSearchSelect('recipientSS', {
-        multi: false,
-        options: recipientsData.map(function(c) { return { value: c.systemName, label: c.displayName }; }),
-        placeholder: 'تایپ کنید (' + recipientsData.length + ' مخاطب)',
-        onChange: onRecipientChange
-      });
-      subjectSS = createSearchSelect('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      epcSS = createSearchSelect('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      fieldSS = createSearchSelect('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      engagementSS = createSearchSelect('engagementWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-      addressSS = createSearchSelect('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
-
-      if (window._formOptionsCache) fillFormOptions(window._formOptionsCache);
-      else apiCall({ action: 'getFormOptions' }).then(fillFormOptions);
-    }
-
-    function fillRecipients(data) {
-      if (!data || data.length === 0) { recipientSS.setPlaceholder('هیچ مخاطبی یافت نشد'); return; }
-      recipientSS.setOptions(data.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
-      recipientSS.setPlaceholder('تایپ کنید (' + data.length + ' مخاطب)');
+      apiCall({ action: 'getFormOptions' })
+        .then(function(res) { fillFormOptions(res); })
+        .catch(function(err) { console.error('FormOptions:', err); });
     }
 
     function fillFormOptions(res) {
@@ -852,7 +831,6 @@
             btn.innerText = '✅ ثبت شد'; btn.disabled = true; btn.style.pointerEvents = 'none';
             document.getElementById('editBtn').disabled = false;
             document.getElementById('editBtn').innerText = '➕ دستور کار جدید';
-            dataLoaded = false;
           } else if (res && res.duplicate) {
             var msg2 = '⚠️ ' + res.message;
             showMessage('finalMessage', msg2, 'error');

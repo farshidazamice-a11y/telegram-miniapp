@@ -41,7 +41,6 @@ button:disabled { opacity: 0.5; }
 .plat-row.all { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 6px; }
 .plat-row.all label { font-weight: bold; }
 
-/* searchable multi-select */
 .ss-box { position: relative; margin-top: 6px; }
 .ss-in { width: 100%; padding: 12px 36px 12px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; background: #fff; }
 .ss-in[readonly] { background: #e8f5e9; border-color: #10b981; font-weight: bold; }
@@ -50,6 +49,8 @@ button:disabled { opacity: 0.5; }
 .ss-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 100; }
 .ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #222; }
 .ss-item:last-child { border-bottom: none; }
+.ss-item-main { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ss-item-summary { direction: ltr; font-size: 11px; color: #9333ea; font-weight: bold; background: #f3e8ff; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
 .ss-empty { padding: 14px; color: #888; text-align: center; font-size: 13px; }
 .ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #229ED9; color: #fff; border-radius: 20px; font-size: 13px; }
@@ -64,6 +65,17 @@ button:disabled { opacity: 0.5; }
 .preview-msg { background: #fff; border-radius: 8px; padding: 12px; font-size: 13px; white-space: pre-line; line-height: 1.7; border: 1px solid #ddd; max-height: 280px; overflow-y: auto; }
 .btn-row { display: flex; gap: 8px; margin-top: 18px; }
 .btn-row button { flex: 1; margin-top: 0; }
+
+/* نمایش وضعیت ارسال */
+.send-status-box { background: #fff; border-radius: 10px; padding: 14px; margin-top: 14px; border: 1px solid #d1d5db; }
+.send-status-title { font-weight: bold; font-size: 13px; color: #555; margin-bottom: 10px; text-align: center; }
+.send-status-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; border-bottom: 1px solid #f1f5f9; }
+.send-status-row:last-child { border-bottom: none; }
+.send-status-name { font-size: 14px; }
+.send-status-icon { font-size: 22px; font-weight: bold; }
+.send-status-ok { color: #10b981; }
+.send-status-fail { color: #dc2626; }
+.send-status-skip { color: #9ca3af; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -140,6 +152,9 @@ button:disabled { opacity: 0.5; }
     <label>پیمانکاری / امانی *</label>
     <div id="engWrap"></div>
 
+    <label>در ارتباط با کدام ردیف برنامه کلی *</label>
+    <div id="relatedWrap"></div>
+
     <label>آدرس / محل *</label>
     <div id="addrWrap"></div>
 
@@ -172,6 +187,7 @@ button:disabled { opacity: 0.5; }
     <div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value" id="pvEpc">—</div></div>
     <div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value" id="pvField">—</div></div>
     <div class="preview-row"><div class="preview-label">پیمانکاری:</div><div class="preview-value" id="pvEng">—</div></div>
+    <div class="preview-row"><div class="preview-label">ردیف مرتبط:</div><div class="preview-value" id="pvRelated">—</div></div>
     <div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value" id="pvAddr">—</div></div>
     <div class="preview-row"><div class="preview-label">شرح:</div><div class="preview-value" id="pvDesc">—</div></div>
     <div class="preview-row"><div class="preview-label">شروع:</div><div class="preview-value" id="pvStart">—</div></div>
@@ -194,6 +210,7 @@ var tgUser = null;
 var recipients = [];
 var payload = null;
 var submitting = false;
+var relatedMap = {};
 
 var MONTHS = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 
@@ -210,6 +227,10 @@ function showMsg(el, text, type) {
   var e = document.getElementById(el);
   e.className = 'msg ' + (type === 'ok' ? 'msg-ok' : type === 'err' ? 'msg-err' : 'msg-info');
   e.innerText = text;
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function api(data, retries) {
@@ -302,7 +323,7 @@ function setTomorrow() {
   setD(j[0], j[1], j[2]);
 }
 
-// --- searchable select ---
+// --- searchable select (با پشتیبانی از summary) ---
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId);
   box.innerHTML = '';
@@ -317,14 +338,14 @@ function makeSS(boxId, opt) {
   inp.type = 'text'; inp.className = 'ss-in'; inp.placeholder = placeholder; inp.autocomplete = 'off';
   box.appendChild(inp);
   var ar = document.createElement('span'); ar.className = 'ss-arrow'; ar.textContent = '▼'; box.appendChild(ar);
-  var clr = document.createElement('span'); clr.className = 'ss-clear hidden'; clr.textContent = '✕'; clr.style.position = 'absolute'; clr.style.top = '50%'; clr.style.right = '12px'; clr.style.transform = 'translateY(-50%)'; clr.style.cursor = 'pointer'; clr.style.color = '#c00'; clr.style.fontWeight = 'bold'; clr.style.fontSize = '18px'; box.appendChild(clr);
+  var clr = document.createElement('span'); clr.className = 'ss-clear hidden'; clr.textContent = '✕'; box.appendChild(clr);
   var list = document.createElement('div'); list.className = 'ss-list hidden'; box.appendChild(list);
   var chips = document.createElement('div'); chips.className = 'ss-chips'; box.appendChild(chips);
 
-  function norm(o) { return typeof o === 'string' ? { value: o, label: o } : { value: o.value, label: o.label || o.value }; }
-  function labelOf(v) {
-    for (var i = 0; i < opts.length; i++) { if (norm(opts[i]).value === v) return norm(opts[i]).label; }
-    return v;
+  function norm(o) { return typeof o === 'string' ? { value: o, label: o, summary: '' } : { value: o.value, label: o.label || o.value, summary: o.summary || '' }; }
+  function objFor(v) {
+    for (var i = 0; i < opts.length; i++) { if (norm(opts[i]).value === v) return norm(opts[i]); }
+    return { value: v, label: v, summary: '' };
   }
   function updateClear() { clr.classList.toggle('hidden', multi ? val.length === 0 : !val); }
 
@@ -345,7 +366,15 @@ function makeSS(boxId, opt) {
       list.appendChild(e); return;
     }
     items.forEach(function(o) {
-      var it = document.createElement('div'); it.className = 'ss-item'; it.textContent = o.label;
+      var it = document.createElement('div'); it.className = 'ss-item';
+      if (o.summary) {
+        it.innerHTML = '<div class="ss-item-main">' +
+          '<span>' + escHtml(o.label) + '</span>' +
+          '<span class="ss-item-summary">' + escHtml(o.summary) + '</span>' +
+          '</div>';
+      } else {
+        it.textContent = o.label;
+      }
       function pick(ev) {
         if (ev) { ev.preventDefault(); ev.stopPropagation(); }
         if (multi) {
@@ -367,8 +396,9 @@ function makeSS(boxId, opt) {
     chips.innerHTML = '';
     if (!multi) return;
     val.forEach(function(v) {
+      var o = objFor(v);
       var c = document.createElement('span'); c.className = 'ss-chip';
-      var t = document.createElement('span'); t.textContent = labelOf(v);
+      var t = document.createElement('span'); t.textContent = o.label;
       var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×';
       x.onclick = function(ev) {
         ev.stopPropagation();
@@ -389,7 +419,7 @@ function makeSS(boxId, opt) {
   inp.onfocus = function() { if (!inp.readOnly) { list.classList.remove('hidden'); renderList(inp.value); } };
   inp.oninput = function() {
     if (inp.readOnly) return;
-    if (!multi && inp.value !== labelOf(val)) { val = ''; updateClear(); if (onChange) onChange(''); }
+    if (!multi && inp.value !== objFor(val).label) { val = ''; updateClear(); if (onChange) onChange(''); }
     list.classList.remove('hidden'); renderList(inp.value);
   };
   document.addEventListener('click', function(e) { if (!box.contains(e.target)) list.classList.add('hidden'); });
@@ -399,7 +429,7 @@ function makeSS(boxId, opt) {
   return {
     getValue: function() { return multi ? val.slice() : val; },
     getStr: function() { return multi ? val.join(', ') : val; },
-    getDisplay: function() { return multi ? val.join('، ') : val; },
+    getDisplay: function() { return multi ? val.map(function(v) { return objFor(v).label; }).join('، ') : (val ? objFor(val).label : ''); },
     getChatIds: function() {
       if (!multi && val) {
         for (var i = 0; i < recipients.length; i++) {
@@ -415,10 +445,8 @@ function makeSS(boxId, opt) {
   };
 }
 
-// متغیرهای SS
-var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssAddr;
+var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 
-// --- init ---
 function init() {
   if (!tgUser) {
     document.getElementById('loading').innerHTML = '<div style="padding:30px; text-align:center; color:#c00;">لطفاً از داخل تلگرام باز کنید</div>';
@@ -441,10 +469,10 @@ function handleStatus(r) {
     var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
     if (active) {
       document.getElementById('activeInfo').innerHTML =
-        '<b>نام:</b> ' + (u.fullName || '—') + '<br>' +
-        '<b>سمت:</b> ' + (u.position || '—') + '<br>' +
-        '<b>واحد:</b> ' + (u.unit || '—') + '<br>' +
-        '<b>سطح دسترسی:</b> ' + (access || 'تعیین نشده');
+        '<b>نام:</b> ' + escHtml(u.fullName || '—') + '<br>' +
+        '<b>سمت:</b> ' + escHtml(u.position || '—') + '<br>' +
+        '<b>واحد:</b> ' + escHtml(u.unit || '—') + '<br>' +
+        '<b>سطح دسترسی:</b> ' + escHtml(access || 'تعیین نشده');
       if (access === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
       show('activeSection');
     } else {
@@ -453,14 +481,13 @@ function handleStatus(r) {
   } else {
     document.getElementById('tgInfo').innerHTML =
       '<b>شناسه:</b> ' + tgUser.id + '<br>' +
-      '<b>نام:</b> ' + tgUser.first_name + ' ' + (tgUser.last_name || '');
+      '<b>نام:</b> ' + escHtml(tgUser.first_name + ' ' + (tgUser.last_name || ''));
     show('formSection');
   }
 }
 
 init();
 
-// ثبت‌نام
 document.getElementById('regForm').onsubmit = function(e) {
   e.preventDefault();
   var b = document.getElementById('regBtn');
@@ -479,7 +506,6 @@ document.getElementById('regForm').onsubmit = function(e) {
   .catch(function(err) { b.disabled = false; b.innerText = 'ثبت‌نام'; showMsg('formMsg', '❌ ' + err.message, 'err'); });
 };
 
-// پنل ادمین
 document.getElementById('adminBtn').onclick = function() {
   show('adminSection');
   loadAdmin();
@@ -492,6 +518,7 @@ function loadAdmin() {
   ssEpc = makeSS('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssField = makeSS('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssEng = makeSS('engWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssRelated = makeSS('relatedWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssAddr = makeSS('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
   api({ action: 'getRecipients' }).then(function(r) {
@@ -504,12 +531,13 @@ function loadAdmin() {
 
   api({ action: 'getFormOptions' }).then(function(r) {
     r = r || {};
-    var s = (r.subjects || []), e = (r.epcs || []), f = (r.fields || []), g = (r.engagementTypes || []), a = (r.addresses || []);
+    var s = (r.subjects || []), e = (r.epcs || []), f = (r.fields || []), g = (r.engagementTypes || []), a = (r.addresses || []), rr = (r.relatedRows || []);
     ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب کنید (' + s.length + ')' : 'تایپ کنید');
     ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب کنید (' + e.length + ')' : 'تایپ کنید');
     ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب کنید (' + f.length + ')' : 'تایپ کنید');
     ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب کنید (' + g.length + ')' : 'تایپ کنید');
     ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ کنید');
+    ssRelated.setOpts(rr); ssRelated.setPh(rr.length ? 'جستجو کنید (' + rr.length + ')' : 'گزینه‌ای موجود نیست');
   }).catch(function() {});
 }
 
@@ -542,13 +570,14 @@ document.getElementById('chkAll').onchange = function() {
 document.getElementById('chkTg').onchange = updateAll;
 document.getElementById('chkBale').onchange = updateAll;
 
-// پیش‌نمایش
 document.getElementById('previewBtn').onclick = function() {
   var rec = ssRecipient ? ssRecipient.getStr() : '';
   var sub = ssSubject ? ssSubject.getStr() : '';
   var epc = ssEpc ? ssEpc.getStr() : '';
   var fld = ssField ? ssField.getStr() : '';
   var eng = ssEng ? ssEng.getStr() : '';
+  var rel = ssRelated ? ssRelated.getStr() : '';
+  var relDisp = ssRelated ? ssRelated.getDisplay() : '';
   var addr = ssAddr ? ssAddr.getStr() : '';
   var addrD = ssAddr ? ssAddr.getDisplay() : '';
   var desc = document.getElementById('woDesc').value.trim();
@@ -565,6 +594,7 @@ document.getElementById('previewBtn').onclick = function() {
   if (!epc) return showMsg('woMsg', '❌ EPC را انتخاب کنید', 'err');
   if (!fld) return showMsg('woMsg', '❌ رشته را انتخاب کنید', 'err');
   if (!eng) return showMsg('woMsg', '❌ پیمانکاری/امانی را انتخاب کنید', 'err');
+  if (!rel) return showMsg('woMsg', '❌ ردیف مرتبط را انتخاب کنید', 'err');
   if (!addr) return showMsg('woMsg', '❌ آدرس را انتخاب کنید', 'err');
   if (!dur || parseInt(dur, 10) < 1) return showMsg('woMsg', '❌ مدت معتبر نیست', 'err');
   if (!sTg && !sBale) return showMsg('woMsg', '❌ حداقل یک پلتفورم انتخاب کنید', 'err');
@@ -603,6 +633,7 @@ document.getElementById('previewBtn').onclick = function() {
   document.getElementById('pvEpc').innerText = epc;
   document.getElementById('pvField').innerText = fld;
   document.getElementById('pvEng').innerText = eng;
+  document.getElementById('pvRelated').innerText = relDisp;
   document.getElementById('pvAddr').innerText = addrD;
   document.getElementById('pvDesc').innerText = desc;
   document.getElementById('pvStart').innerText = startSh;
@@ -619,13 +650,17 @@ document.getElementById('previewBtn').onclick = function() {
     sendTelegram: sTg, sendBale: sBale,
     subject: sub, description: desc, epc: epc, field: fld,
     engagementType: eng, address: addr,
-    startYear: y, startMonth: m, startDay: d, duration: dur
+    relatedRow: rel,
+    startYear: y, startMonth: m, startDay: d, duration: dur,
+    _hasTg: !!ci.tg,
+    _hasBale: !!ci.bale
   };
 
   submitting = false;
   var sb = document.getElementById('submitBtn');
   sb.disabled = false; sb.innerText = '✅ ثبت و ارسال';
   document.getElementById('finalMsg').innerText = '';
+  document.getElementById('finalMsg').className = '';
   show('previewSection');
 };
 
@@ -638,14 +673,59 @@ document.getElementById('submitBtn').onclick = function() {
   b.disabled = true; b.innerText = '⏳ در حال ارسال...';
   document.getElementById('editBtn').disabled = true;
   document.getElementById('finalMsg').innerText = '';
+  document.getElementById('finalMsg').className = '';
 
   api(payload)
     .then(function(r) {
       if (r && r.ok) {
-        var m = '✅ ' + (r.message || 'ثبت شد');
-        if (r.row) m += ' (ردیف ' + r.row + ')';
-        if (r.sends) m += '\nارسال: ' + r.sends;
-        showMsg('finalMsg', m, 'ok');
+        // ساخت HTML رنگی برای نمایش وضعیت ارسال
+        var sendHtml = '<div class="send-status-box">' +
+          '<div class="send-status-title">📤 وضعیت ارسال</div>';
+
+        if (payload.sendTelegram) {
+          var tgOk = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.ok;
+          var tgSent = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.sent;
+          if (!payload._hasTg) {
+            sendHtml += '<div class="send-status-row">' +
+              '<span class="send-status-name">📱 Telegram</span>' +
+              '<span class="send-status-skip">بدون شناسه</span></div>';
+          } else if (tgSent && tgOk) {
+            sendHtml += '<div class="send-status-row">' +
+              '<span class="send-status-name">📱 Telegram</span>' +
+              '<span class="send-status-icon send-status-ok">✅</span></div>';
+          } else {
+            sendHtml += '<div class="send-status-row">' +
+              '<span class="send-status-name">📱 Telegram</span>' +
+              '<span class="send-status-icon send-status-fail">❌</span></div>';
+          }
+        }
+
+        if (payload.sendBale) {
+          var baleOk = r.sendResult && r.sendResult.bale && r.sendResult.bale.ok;
+          if (!payload._hasBale) {
+            sendHtml += '<div class="send-status-row">' +
+              '<span class="send-status-name">📨 Bale</span>' +
+              '<span class="send-status-skip">بدون شناسه</span></div>';
+          } else if (baleOk) {
+            sendHtml += '<div class="send-status-row">' +
+              '<span class="send-status-name">📨 Bale</span>' +
+              '<span class="send-status-icon send-status-ok">✅</span></div>';
+          } else {
+            sendHtml += '<div class="send-status-row">' +
+              '<span class="send-status-name">📨 Bale</span>' +
+              '<span class="send-status-icon send-status-fail">❌</span></div>';
+          }
+        }
+
+        sendHtml += '</div>';
+
+        var finalEl = document.getElementById('finalMsg');
+        finalEl.className = 'msg msg-ok';
+        finalEl.innerHTML =
+          '<div style="text-align:center;font-size:16px;font-weight:bold;">✅ ' + escHtml(r.message || 'ثبت شد') + '</div>' +
+          (r.row ? '<div style="text-align:center;font-size:13px;margin-top:4px;">ردیف ' + r.row + '</div>' : '') +
+          sendHtml;
+
         b.innerText = '✅ ثبت شد';
       } else if (r && r.duplicate) {
         showMsg('finalMsg', '⚠️ ' + r.message, 'err');

@@ -20,6 +20,7 @@
     h2 { text-align: center; color: var(--tg-theme-button-color, #229ED9); margin-bottom: 20px; }
     h3 { color: var(--tg-theme-button-color, #229ED9); margin: 22px 0 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
     .info-box { background: var(--tg-theme-secondary-bg-color, #f1f5f9); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 13px; line-height: 1.8; }
+    .debug-box { background: #fee2e2; color: #7f1d1d; padding: 10px; border-radius: 6px; font-size: 11px; direction: ltr; text-align: left; word-break: break-all; margin-bottom: 10px; font-family: monospace; }
     label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 14px; font-weight: bold; }
     input, select, textarea {
       width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;
@@ -207,6 +208,7 @@
 
   <div id="formSection" class="screen">
     <h2>فرم ثبت‌نام</h2>
+    <div id="debugBox" class="debug-box hidden"></div>
     <div class="info-box" id="tgInfo"></div>
     <form id="regForm">
       <label>نام و نام خانوادگی *</label>
@@ -358,7 +360,13 @@
       }
       var target = document.getElementById(id);
       if (target) target.classList.add('active');
-      console.log('[show]', id);
+    }
+
+    function setDebug(txt) {
+      var dbg = document.getElementById('debugBox');
+      if (!dbg) return;
+      dbg.classList.remove('hidden');
+      dbg.innerText = txt;
     }
 
     function showMessage(elId, text, type) {
@@ -382,7 +390,7 @@
       })
       .then(function(text) {
         try { return JSON.parse(text); }
-        catch (e) { throw new Error('پاسخ نامعتبر از سرور'); }
+        catch (e) { throw new Error('پاسخ نامعتبر از سرور: ' + text.substring(0,200)); }
       })
       .catch(function(err) {
         if (retries > 0) {
@@ -701,7 +709,6 @@
         try { buildDatePickers(); } catch (e) { console.error('datePicker:', e); }
 
         var safetyTimer = setTimeout(function() {
-          console.log('Safety timeout fired');
           if (document.getElementById('loading').classList.contains('active')) {
             show('formSection');
           }
@@ -715,9 +722,14 @@
     }
 
     function checkStatus(onDone) {
+      // نمایش دیباگ اولیه
+      setDebug('Sending: {action: getUserStatus, chatId: ' + tgUser.id + '}');
+
       apiCall({ action: 'getUserStatus', chatId: tgUser.id })
         .then(function(res) {
           try {
+            setDebug('Response: ' + JSON.stringify(res));
+
             if (res && res.registered) {
               var u = res.userData;
               currentAccess = String(u.access || '').trim();
@@ -749,12 +761,14 @@
             }
           } catch (e) {
             console.error('render error:', e);
+            setDebug('Render error: ' + e.message + ' | res=' + JSON.stringify(res));
             show('formSection');
           }
           if (onDone) onDone();
         })
         .catch(function(err) {
           console.error('checkStatus error:', err);
+          setDebug('API Error: ' + err.message);
           show('formSection');
           if (onDone) onDone();
         });

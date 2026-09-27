@@ -111,7 +111,7 @@
 </head>
 <body>
 
-  <div class="version-badge">V5</div>
+  <div class="version-badge">V6</div>
 
   <div id="loading" class="screen active">
     <div class="spinner"></div>
@@ -241,7 +241,7 @@
 
   <script>
     var API_URL = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
-    var APP_VERSION = 'V5-' + Date.now();
+    var APP_VERSION = 'V6-' + Date.now();
     var tg = window.Telegram && window.Telegram.WebApp;
     var tgUser = null;
     var currentAccess = '';
@@ -276,9 +276,7 @@
       el.innerText = text;
     }
 
-    // ============ API با retry — بدون retry برای createWorkOrder ============
     function apiCall(payload, retries) {
-      // برای ثبت، retry نکن — جلوگیری از ردیف تکراری
       if (payload.action === 'createWorkOrder') retries = 0;
       else if (retries === undefined) retries = 2;
 
@@ -304,7 +302,6 @@
       });
     }
 
-    // ============ Jalali ============
     function gregorianToJalali(gy, gm, gd) {
       var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
       var jy = (gy <= 1600) ? 0 : 979;
@@ -382,7 +379,7 @@
     }
 
     // ============ Searchable Select ============
-    // multi-select با \n جدا می‌شه (استاندارد Google Sheets برای آدرس چندتایی)
+    // multi-select با ', ' جدا می‌شه (استاندارد Google Sheets)
     function createSearchSelect(containerId, opts) {
       var container = document.getElementById(containerId);
       container.innerHTML = '';
@@ -495,9 +492,8 @@
 
       return {
         getValue: function() { return multi ? selectedValue.slice() : selectedValue; },
-        // ⚡ multi-select با \n جدا می‌شه (استاندارد Sheets برای multi-select)
-        getRawString: function() { return multi ? selectedValue.join('\n') : selectedValue; },
-        // نسخه نمایشی برای پیام — با ویرگول
+        // ⚡ multi-select با ', ' جدا می‌شه — استاندارد Google Sheets
+        getRawString: function() { return multi ? selectedValue.join(', ') : selectedValue; },
         getDisplayString: function() { return multi ? selectedValue.join('، ') : selectedValue; },
         getChatIds: function() {
           if (!multi && selectedValue) {

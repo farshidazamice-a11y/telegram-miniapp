@@ -20,15 +20,49 @@ button { width: 100%; margin-top: 18px; padding: 14px; border: none; border-radi
 button:disabled { opacity: 0.5; }
 .btn-sec { background: #e2e8f0; color: #000; margin-bottom: 12px; }
 .btn-ok { background: #10b981; }
+.btn-warn { background: #f59e0b; }
 .msg { margin-top: 16px; padding: 12px; border-radius: 10px; text-align: center; font-size: 14px; white-space: pre-line; }
 .msg-ok { background: #d1fae5; color: #065f46; }
 .msg-err { background: #fee2e2; color: #991b1b; }
 .msg-info { background: #dbeafe; color: #1e40af; }
 .msg-warn { background: #fef3c7; color: #92400e; }
 .hidden { display: none !important; }
+
+/* Spinner */
 #loading { flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; min-height: 60vh; }
 .spinner { width: 50px; height: 50px; border: 5px solid #e0e0e0; border-top-color: #229ED9; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Welcome Screen */
+#welcome.active { display: block; }
+.welcome-box {
+  max-width: 500px; margin: 20px auto;
+  background: #f1f5f9; border-radius: 16px;
+  padding: 28px 20px; text-align: center;
+  border: 2px solid #e2e8f0;
+}
+.welcome-icon { font-size: 60px; margin-bottom: 16px; line-height: 1; }
+.welcome-title { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 10px; }
+.welcome-sub { font-size: 14px; color: #64748b; line-height: 1.8; margin-bottom: 20px; }
+.welcome-user {
+  background: #fff; border-radius: 10px; padding: 14px;
+  margin-bottom: 20px; text-align: right; font-size: 13px;
+  line-height: 2; color: #334155;
+  border: 1px solid #e2e8f0;
+}
+.welcome-user b { color: #0f172a; }
+.welcome-btn {
+  width: 100%; padding: 16px; border: none; border-radius: 12px;
+  font-size: 16px; font-weight: bold; cursor: pointer;
+  background: #229ED9; color: #fff;
+  transition: opacity 0.2s;
+}
+.welcome-btn:active { opacity: 0.85; }
+.welcome-btn-green { background: #10b981; }
+.welcome-btn-orange { background: #f59e0b; }
+.welcome-btn-refresh { background: #64748b; margin-top: 10px; font-size: 14px; padding: 12px; }
+
+/* سایر استایل‌ها */
 .date-row { display: flex; gap: 8px; }
 .date-row .col { flex: 1; }
 .quick-row { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -40,7 +74,6 @@ button:disabled { opacity: 0.5; }
 .plat-row.dis { opacity: 0.4; }
 .plat-row.all { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 6px; }
 .plat-row.all label { font-weight: bold; }
-
 .ss-box { position: relative; margin-top: 6px; }
 .ss-in { width: 100%; padding: 12px 36px 12px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; background: #fff; }
 .ss-in[readonly] { background: #e8f5e9; border-color: #10b981; font-weight: bold; }
@@ -55,7 +88,6 @@ button:disabled { opacity: 0.5; }
 .ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #229ED9; color: #fff; border-radius: 20px; font-size: 13px; }
 .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; }
-
 .preview-card { background: #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 2px solid #229ED9; }
 .preview-title { font-weight: bold; color: #229ED9; text-align: center; margin-bottom: 14px; }
 .preview-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
@@ -65,8 +97,6 @@ button:disabled { opacity: 0.5; }
 .preview-msg { background: #fff; border-radius: 8px; padding: 12px; font-size: 13px; white-space: pre-line; line-height: 1.7; border: 1px solid #ddd; max-height: 280px; overflow-y: auto; }
 .btn-row { display: flex; gap: 8px; margin-top: 18px; }
 .btn-row button { flex: 1; margin-top: 0; }
-
-/* نمایش وضعیت ارسال */
 .send-status-box { background: #fff; border-radius: 10px; padding: 14px; margin-top: 14px; border: 1px solid #d1d5db; }
 .send-status-title { font-weight: bold; font-size: 13px; color: #555; margin-bottom: 10px; text-align: center; }
 .send-status-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; border-bottom: 1px solid #f1f5f9; }
@@ -80,13 +110,27 @@ button:disabled { opacity: 0.5; }
 </head>
 <body>
 
+<!-- 🌀 صفحه بارگذاری -->
 <div id="loading" class="screen active">
   <div class="spinner"></div>
   <p style="color:#666; margin-top:16px;">در حال بارگذاری...</p>
 </div>
 
+<!-- 🏠 صفحه خوش‌آمد -->
+<div id="welcomeSection" class="screen">
+  <div class="welcome-box">
+    <div class="welcome-icon" id="welcomeIcon">👋</div>
+    <div class="welcome-title" id="welcomeTitle">خوش آمدید</div>
+    <div class="welcome-sub" id="welcomeSub">لطفاً منتظر بمانید...</div>
+    <div id="welcomeUserBox"></div>
+    <div id="welcomeActions"></div>
+  </div>
+</div>
+
+<!-- 📝 فرم ثبت‌نام -->
 <div id="formSection" class="screen">
   <h2>فرم ثبت‌نام</h2>
+  <button id="formBackBtn" class="btn-sec" style="margin-bottom:16px;">→ بازگشت</button>
   <div class="msg msg-info" id="tgInfo"></div>
   <form id="regForm">
     <label>نام و نام خانوادگی *</label>
@@ -100,20 +144,10 @@ button:disabled { opacity: 0.5; }
   <div id="formMsg"></div>
 </div>
 
-<div id="pendingSection" class="screen">
-  <h2>در انتظار تأیید ادمین ⏳</h2>
-  <div class="msg msg-warn">ثبت‌نام شما انجام شد و در انتظار تأیید ادمین است.</div>
-</div>
-
-<div id="activeSection" class="screen">
-  <h2>خوش آمدید ✅</h2>
-  <div class="msg msg-info" id="activeInfo"></div>
-  <button id="adminBtn" class="hidden">🛠 پنل ادمین</button>
-</div>
-
-<div id="adminSection" class="screen">
-  <h2>🛠 پنل ادمین</h2>
-  <button id="backBtn" class="btn-sec">→ بازگشت</button>
+<!-- 🛠 پنل — ثبت دستور کار -->
+<div id="panelSection" class="screen">
+  <h2>📋 ثبت دستور کار</h2>
+  <button id="panelBackBtn" class="btn-sec">→ بازگشت به صفحه اصلی</button>
 
   <h3>مخاطب</h3>
   <label>مخاطب *</label>
@@ -177,6 +211,7 @@ button:disabled { opacity: 0.5; }
   <div id="woMsg"></div>
 </div>
 
+<!-- 👁 پیش‌نمایش -->
 <div id="previewSection" class="screen">
   <h2>👁 پیش‌نمایش</h2>
   <div class="preview-card">
@@ -210,14 +245,13 @@ var tgUser = null;
 var recipients = [];
 var payload = null;
 var submitting = false;
-var relatedMap = {};
 
 var MONTHS = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 
 if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user; }
 
 function show(id) {
-  ['loading','formSection','pendingSection','activeSection','adminSection','previewSection'].forEach(function(x) {
+  ['loading','welcomeSection','formSection','panelSection','previewSection'].forEach(function(x) {
     document.getElementById(x).classList.remove('active');
   });
   document.getElementById(id).classList.add('active');
@@ -323,7 +357,7 @@ function setTomorrow() {
   setD(j[0], j[1], j[2]);
 }
 
-// --- searchable select (با پشتیبانی از summary) ---
+// --- searchable select ---
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId);
   box.innerHTML = '';
@@ -447,12 +481,85 @@ function makeSS(boxId, opt) {
 
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 
+// ============================================
+// 🏠 صفحه خوش‌آمد
+// ============================================
+function showWelcome(userData) {
+  var iconEl = document.getElementById('welcomeIcon');
+  var titleEl = document.getElementById('welcomeTitle');
+  var subEl = document.getElementById('welcomeSub');
+  var userBox = document.getElementById('welcomeUserBox');
+  var actions = document.getElementById('welcomeActions');
+
+  userBox.innerHTML = '';
+  actions.innerHTML = '';
+
+  if (!userData) {
+    // ثبت‌نام نشده
+    iconEl.textContent = '🚫';
+    titleEl.textContent = 'شما ثبت‌نام نشده‌اید';
+    subEl.textContent = 'برای استفاده از سیستم، ابتدا باید ثبت‌نام کنید. پس از ثبت‌نام، منتظر تأیید ادمین بمانید.';
+    actions.innerHTML = '<button class="welcome-btn" id="goToRegister">📝 ثبت‌نام</button>';
+    document.getElementById('goToRegister').onclick = function() { show('formSection'); };
+  } else {
+    var u = userData;
+    var access = String(u.access || '').trim();
+    var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
+
+    if (active) {
+      // ✅ فعال
+      iconEl.textContent = '✅';
+      titleEl.textContent = 'خوش آمدید';
+      subEl.textContent = 'به سیستم مدیریت دستور کار خوش آمدید';
+      userBox.innerHTML =
+        '<div><b>نام:</b> ' + escHtml(u.fullName || '—') + '</div>' +
+        '<div><b>سمت:</b> ' + escHtml(u.position || '—') + '</div>' +
+        '<div><b>واحد:</b> ' + escHtml(u.unit || '—') + '</div>' +
+        '<div><b>سطح دسترسی:</b> ' + escHtml(access || 'تعیین نشده') + '</div>';
+
+      if (access === 'ادمین') {
+        actions.innerHTML =
+          '<button class="welcome-btn welcome-btn-green" id="goToPanel">🛠 ورود به پنل کاربری</button>' +
+          '<button class="welcome-btn welcome-btn-refresh" id="refreshBtn">🔄 بررسی مجدد</button>';
+        document.getElementById('goToPanel').onclick = function() {
+          show('panelSection');
+          loadPanel();
+        };
+        document.getElementById('refreshBtn').onclick = function() { reload(); };
+      } else {
+        actions.innerHTML =
+          '<div class="msg msg-info" style="margin-top:10px;">دسترسی شما فعال است اما دسترسی ادمین ندارید.</div>' +
+          '<button class="welcome-btn welcome-btn-refresh" id="refreshBtn">🔄 بررسی مجدد</button>';
+        document.getElementById('refreshBtn').onclick = function() { reload(); };
+      }
+    } else {
+      // ⏳ در انتظار تأیید
+      iconEl.textContent = '⏳';
+      titleEl.textContent = 'در انتظار تأیید ادمین';
+      subEl.textContent = 'ثبت‌نام شما با موفقیت انجام شد. پس از تأیید ادمین، به سیستم دسترسی خواهید داشت.';
+      userBox.innerHTML =
+        '<div><b>نام:</b> ' + escHtml(u.fullName || '—') + '</div>' +
+        '<div><b>سمت:</b> ' + escHtml(u.position || '—') + '</div>' +
+        '<div><b>واحد:</b> ' + escHtml(u.unit || '—') + '</div>' +
+        '<div style="margin-top:6px;color:#b45309;"><b>وضعیت:</b> در انتظار تأیید</div>';
+      actions.innerHTML = '<button class="welcome-btn welcome-btn-orange" id="refreshBtn">🔄 بررسی مجدد</button>';
+      document.getElementById('refreshBtn').onclick = function() { reload(); };
+    }
+  }
+
+  show('welcomeSection');
+}
+
+// ============================================
+// 🚀 لود اولیه
+// ============================================
 function init() {
   if (!tgUser) {
     document.getElementById('loading').innerHTML = '<div style="padding:30px; text-align:center; color:#c00;">لطفاً از داخل تلگرام باز کنید</div>';
     return;
   }
   try { buildDates(); } catch (e) {}
+
   var safety = setTimeout(function() {
     if (document.getElementById('loading').classList.contains('active')) show('formSection');
   }, 10000);
@@ -463,30 +570,30 @@ function init() {
 }
 
 function handleStatus(r) {
-  if (r && r.registered) {
-    var u = r.userData || {};
-    var access = String(u.access || '').trim();
-    var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
-    if (active) {
-      document.getElementById('activeInfo').innerHTML =
-        '<b>نام:</b> ' + escHtml(u.fullName || '—') + '<br>' +
-        '<b>سمت:</b> ' + escHtml(u.position || '—') + '<br>' +
-        '<b>واحد:</b> ' + escHtml(u.unit || '—') + '<br>' +
-        '<b>سطح دسترسی:</b> ' + escHtml(access || 'تعیین نشده');
-      if (access === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
-      show('activeSection');
-    } else {
-      show('pendingSection');
-    }
+  if (r && r.registered && r.userData) {
+    showWelcome(r.userData);
   } else {
+    // کاربر جدید — ثبت‌نام نشده
     document.getElementById('tgInfo').innerHTML =
       '<b>شناسه:</b> ' + tgUser.id + '<br>' +
       '<b>نام:</b> ' + escHtml(tgUser.first_name + ' ' + (tgUser.last_name || ''));
-    show('formSection');
+    showWelcome(null);
   }
 }
 
+function reload() {
+  show('loading');
+  api({ action: 'getUserStatus', chatId: tgUser.id })
+    .then(function(r) { handleStatus(r); })
+    .catch(function() { show('welcomeSection'); });
+}
+
 init();
+
+// ============================================
+// 📝 فرم ثبت‌نام
+// ============================================
+document.getElementById('formBackBtn').onclick = function() { showWelcome(null); };
 
 document.getElementById('regForm').onsubmit = function(e) {
   e.preventDefault();
@@ -500,19 +607,22 @@ document.getElementById('regForm').onsubmit = function(e) {
   })
   .then(function(r) {
     b.disabled = false; b.innerText = 'ثبت‌نام';
-    if (r && r.ok) { showMsg('formMsg', '✅ ' + r.message, 'ok'); setTimeout(init, 1500); }
-    else showMsg('formMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+    if (r && r.ok) {
+      showMsg('formMsg', '✅ ' + r.message, 'ok');
+      setTimeout(reload, 1500);
+    } else {
+      showMsg('formMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+    }
   })
   .catch(function(err) { b.disabled = false; b.innerText = 'ثبت‌نام'; showMsg('formMsg', '❌ ' + err.message, 'err'); });
 };
 
-document.getElementById('adminBtn').onclick = function() {
-  show('adminSection');
-  loadAdmin();
-};
-document.getElementById('backBtn').onclick = function() { show('activeSection'); };
+// ============================================
+// 🛠 پنل — ثبت دستور کار
+// ============================================
+document.getElementById('panelBackBtn').onclick = function() { reload(); };
 
-function loadAdmin() {
+function loadPanel() {
   ssRecipient = makeSS('recipientWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipient });
   ssSubject = makeSS('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssEpc = makeSS('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
@@ -570,6 +680,9 @@ document.getElementById('chkAll').onchange = function() {
 document.getElementById('chkTg').onchange = updateAll;
 document.getElementById('chkBale').onchange = updateAll;
 
+// ============================================
+// 👁 پیش‌نمایش
+// ============================================
 document.getElementById('previewBtn').onclick = function() {
   var rec = ssRecipient ? ssRecipient.getStr() : '';
   var sub = ssSubject ? ssSubject.getStr() : '';
@@ -664,8 +777,11 @@ document.getElementById('previewBtn').onclick = function() {
   show('previewSection');
 };
 
-document.getElementById('editBtn').onclick = function() { show('adminSection'); };
+document.getElementById('editBtn').onclick = function() { show('panelSection'); };
 
+// ============================================
+// ✅ ثبت و ارسال
+// ============================================
 document.getElementById('submitBtn').onclick = function() {
   if (submitting) return;
   submitting = true;
@@ -678,7 +794,6 @@ document.getElementById('submitBtn').onclick = function() {
   api(payload)
     .then(function(r) {
       if (r && r.ok) {
-        // ساخت HTML رنگی برای نمایش وضعیت ارسال
         var sendHtml = '<div class="send-status-box">' +
           '<div class="send-status-title">📤 وضعیت ارسال</div>';
 
@@ -686,34 +801,22 @@ document.getElementById('submitBtn').onclick = function() {
           var tgOk = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.ok;
           var tgSent = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.sent;
           if (!payload._hasTg) {
-            sendHtml += '<div class="send-status-row">' +
-              '<span class="send-status-name">📱 Telegram</span>' +
-              '<span class="send-status-skip">بدون شناسه</span></div>';
+            sendHtml += '<div class="send-status-row"><span class="send-status-name">📱 Telegram</span><span class="send-status-skip">بدون شناسه</span></div>';
           } else if (tgSent && tgOk) {
-            sendHtml += '<div class="send-status-row">' +
-              '<span class="send-status-name">📱 Telegram</span>' +
-              '<span class="send-status-icon send-status-ok">✅</span></div>';
+            sendHtml += '<div class="send-status-row"><span class="send-status-name">📱 Telegram</span><span class="send-status-icon send-status-ok">✅</span></div>';
           } else {
-            sendHtml += '<div class="send-status-row">' +
-              '<span class="send-status-name">📱 Telegram</span>' +
-              '<span class="send-status-icon send-status-fail">❌</span></div>';
+            sendHtml += '<div class="send-status-row"><span class="send-status-name">📱 Telegram</span><span class="send-status-icon send-status-fail">❌</span></div>';
           }
         }
 
         if (payload.sendBale) {
           var baleOk = r.sendResult && r.sendResult.bale && r.sendResult.bale.ok;
           if (!payload._hasBale) {
-            sendHtml += '<div class="send-status-row">' +
-              '<span class="send-status-name">📨 Bale</span>' +
-              '<span class="send-status-skip">بدون شناسه</span></div>';
+            sendHtml += '<div class="send-status-row"><span class="send-status-name">📨 Bale</span><span class="send-status-skip">بدون شناسه</span></div>';
           } else if (baleOk) {
-            sendHtml += '<div class="send-status-row">' +
-              '<span class="send-status-name">📨 Bale</span>' +
-              '<span class="send-status-icon send-status-ok">✅</span></div>';
+            sendHtml += '<div class="send-status-row"><span class="send-status-name">📨 Bale</span><span class="send-status-icon send-status-ok">✅</span></div>';
           } else {
-            sendHtml += '<div class="send-status-row">' +
-              '<span class="send-status-name">📨 Bale</span>' +
-              '<span class="send-status-icon send-status-fail">❌</span></div>';
+            sendHtml += '<div class="send-status-row"><span class="send-status-name">📨 Bale</span><span class="send-status-icon send-status-fail">❌</span></div>';
           }
         }
 

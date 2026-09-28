@@ -36,7 +36,6 @@ body {
 
 .container { max-width: 720px; margin: 0 auto; padding: 12px 14px 40px; }
 
-/* ============ Top Navigation ============ */
 .topbar {
   position: sticky; top: 0; z-index: 500;
   background: rgba(255, 255, 255, 0.95);
@@ -63,7 +62,6 @@ body {
   text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* ============ User Header Card ============ */
 .user-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff; border-radius: var(--radius);
@@ -87,7 +85,6 @@ body {
 .uh-item .ico { font-size: 15px; }
 .uh-event { grid-column: 1 / -1; background: rgba(255, 235, 59, 0.22); color: #fff9c4; text-align: center; font-weight: bold; padding: 8px 12px; border-radius: 8px; }
 
-/* ============ Screens ============ */
 .screen { display: none; }
 .screen.active { display: block; }
 #loading.active { display: flex; }
@@ -95,7 +92,6 @@ body {
 .spinner { width: 54px; height: 54px; border: 5px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ============ Form Loader ============ */
 .form-loader {
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
   border: 1.5px solid #bfdbfe;
@@ -197,7 +193,6 @@ body {
   30% { opacity: 1; }
 }
 
-/* ============ Welcome ============ */
 .welcome-box {
   background: var(--card); border-radius: 18px;
   padding: 26px 20px; text-align: center;
@@ -223,7 +218,6 @@ body {
 .welcome-btn.orange { background: var(--warn); }
 .welcome-btn.gray { background: #64748b; }
 
-/* ============ Panel Menu ============ */
 .panel-menu-title { text-align: center; font-size: 18px; font-weight: bold; margin: 16px 0 6px; }
 .panel-menu-sub { text-align: center; font-size: 13px; color: var(--hint); margin-bottom: 20px; }
 .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
@@ -234,7 +228,6 @@ body {
 .menu-card .desc { font-size: 11.5px; color: var(--hint); }
 .menu-card.disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ============ Forms ============ */
 .card { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
 h2.section-title { text-align: center; color: var(--primary); margin: 8px 0 18px; font-size: 20px; }
 h3.section-h { color: var(--primary); margin: 20px 0 10px; font-size: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0f2fe; }
@@ -250,14 +243,12 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-ok { background: var(--success); }
 .btn-warn { background: var(--warn); }
 
-/* ============ Messages ============ */
 .msg { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 13.5px; line-height: 1.7; }
 .msg-ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .msg-err { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .msg-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
 .msg-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 
-/* ============ Date Picker ============ */
 .date-row { display: flex; gap: 8px; }
 .date-row .col { flex: 1; position: relative; }
 .date-row .col select { text-align: center; font-weight: bold; padding: 14px 8px; }
@@ -266,7 +257,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-q { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: 10px; background: #f8fafc; color: #334155; font-size: 13.5px; font-weight: bold; cursor: pointer; margin: 0; }
 .btn-q:hover { background: #e0f2fe; border-color: var(--primary); }
 
-/* ============ Platform ============ */
 .plat-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
 .plat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
 .plat-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
@@ -275,7 +265,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .plat-row.all { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 4px; }
 .plat-row.all label { font-weight: bold; }
 
-/* ============ Searchable Select ============ */
 .ss-box { position: relative; margin-top: 6px; }
 .ss-in { width: 100%; padding: 12px 40px 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; background: #fff; color: var(--text); }
 .ss-in:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(34,158,217,0.1); }
@@ -297,7 +286,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.9; }
 .ss-chip-x:hover { opacity: 1; }
 
-/* ============ Preview ============ */
 .preview-card { background: linear-gradient(135deg, #f0f9ff, #f8fafc); border: 2px solid var(--primary); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
 .preview-title { font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 14px; font-size: 15px; padding-bottom: 10px; border-bottom: 1px dashed #bfdbfe; }
 .preview-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 13.5px; gap: 8px; }
@@ -308,7 +296,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-row { display: flex; gap: 8px; margin-top: 16px; }
 .btn-row button { flex: 1; margin-top: 0; }
 
-/* ============ Send Status ============ */
 .send-status-box { background: #fff; border-radius: 12px; padding: 14px; margin-top: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); }
 .send-status-title { font-weight: bold; font-size: 13px; color: #475569; margin-bottom: 10px; text-align: center; }
 .send-status-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 4px; border-bottom: 1px solid #f1f5f9; }
@@ -319,7 +306,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .send-status-fail { color: var(--danger); }
 .send-status-skip { color: #94a3b8; font-size: 13px; }
 
-/* ============ Responsive ============ */
 @media (max-width: 480px) {
   .container { padding: 10px 12px 30px; }
   .user-header { padding: 12px 14px; }
@@ -545,9 +531,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 </div>
 
 <script>
-// ============================================
-// Constants
-// ============================================
 var API = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
 var PROJECT_NAME = 'پروژه ویلایی ایگل';
 var WEATHER_LAT = 35.91183529343982;
@@ -598,14 +581,10 @@ var WEATHER_CODES = {
 
 if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user; }
 
-// ============================================
-// Form Loader
-// ============================================
 function setLoaderState(state, msg) {
   var loader = document.getElementById('formLoader');
   var countEl = document.getElementById('flCount');
   if (!loader) return;
-
   if (state === 'loading') {
     loader.classList.remove('ready', 'hide');
     document.querySelector('.fl-text').innerHTML = msg + '<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-count" id="flCount">در حال بارگذاری داده‌ها</span>';
@@ -623,17 +602,10 @@ function updateLoaderCount(text) {
   if (countEl) countEl.textContent = text;
 }
 
-// ============================================
-// Navigation
-// ============================================
 function navigateTo(screenId, options) {
   options = options || {};
-  if (navIndex < navStack.length - 1) {
-    navStack = navStack.slice(0, navIndex + 1);
-  }
-  if (navStack.length > 0 && navStack[navStack.length - 1].id === screenId) {
-    return;
-  }
+  if (navIndex < navStack.length - 1) navStack = navStack.slice(0, navIndex + 1);
+  if (navStack.length > 0 && navStack[navStack.length - 1].id === screenId) return;
   navStack.push({ id: screenId, opts: options });
   navIndex = navStack.length - 1;
   renderScreen(screenId, options);
@@ -668,9 +640,7 @@ function renderScreen(screenId, options) {
   else if (currentUser) uh.classList.remove('hidden');
   else uh.classList.add('hidden');
 
-  if (screenId === 'workOrderSection') {
-    if (!panelLoaded) loadPanel();
-  }
+  if (screenId === 'workOrderSection' && !panelLoaded) loadPanel();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -707,13 +677,8 @@ document.getElementById('navHome').onclick = goHome;
 document.getElementById('navBack').onclick = goBack;
 document.getElementById('navForward').onclick = goForward;
 
-if (tg && tg.BackButton) {
-  tg.BackButton.onClick(function() { goBack(); });
-}
+if (tg && tg.BackButton) tg.BackButton.onClick(function() { goBack(); });
 
-// ============================================
-// Utils
-// ============================================
 function escHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -736,9 +701,6 @@ function api(data, retries) {
   });
 }
 
-// ============================================
-// Jalali Date
-// ============================================
 function g2j(gy, gm, gd) {
   var m = [0,31,59,90,120,151,181,212,243,273,304,334];
   var jy = gy <= 1600 ? 0 : 979;
@@ -767,9 +729,6 @@ function j2g(jy, jm, jd) {
 }
 function dim(y, m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
 
-// ============================================
-// User Header
-// ============================================
 function updateHeaderDateTime() {
   if (!currentUser) return;
   var now = new Date();
@@ -815,9 +774,6 @@ function fetchWeather() {
 
 setInterval(function() { if (currentUser) updateHeaderDateTime(); }, 60000);
 
-// ============================================
-// Welcome Screen
-// ============================================
 function showWelcome(userData) {
   var heroEl = document.getElementById('welcomeHero');
   var titleEl = document.getElementById('welcomeTitle');
@@ -876,9 +832,6 @@ function showWelcome(userData) {
   }
 }
 
-// ============================================
-// Init / Reload
-// ============================================
 function init() {
   if (!tgUser) {
     document.getElementById('loading').innerHTML = '<div style="padding:30px; text-align:center; color:#c00;">لطفاً از داخل تلگرام باز کنید</div>';
@@ -925,16 +878,10 @@ function reload(showLoading) {
     .catch(function() { navigateTo('welcomeSection'); });
 }
 
-// ============================================
-// Menu
-// ============================================
 document.getElementById('menuCreateOrder').onclick = function() {
   navigateTo('workOrderSection');
 };
 
-// ============================================
-// Register Form
-// ============================================
 document.getElementById('regForm').onsubmit = function(e) {
   e.preventDefault();
   var b = document.getElementById('regBtn');
@@ -955,9 +902,6 @@ document.getElementById('regForm').onsubmit = function(e) {
   .catch(function(err) { b.disabled = false; b.innerText = '📨 ارسال ثبت‌نام'; showMsg('formMsg', '❌ ' + err.message, 'err'); });
 };
 
-// ============================================
-// Jalali Pickers
-// ============================================
 var yS, mS, dS;
 function buildDates() {
   yS = document.getElementById('woYear');
@@ -1001,9 +945,6 @@ function setTomorrow() {
   setD(j[0], j[1], j[2]);
 }
 
-// ============================================
-// Searchable Select
-// ============================================
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId);
   box.innerHTML = '';
@@ -1122,9 +1063,6 @@ function makeSS(boxId, opt) {
 
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 
-// ============================================
-// Load Panel
-// ============================================
 function loadPanel() {
   setLoaderState('loading', 'در حال آماده‌سازی فرم');
   updateLoaderCount('در حال دریافت لیست مخاطبین و گزینه‌ها');
@@ -1169,9 +1107,16 @@ function loadPanel() {
     checkAllDone();
   });
 
+  // ✅ اصلاح: خواندن از options
   api({ action: 'getFormOptions' }).then(function(r) {
     r = r || {};
-    var s = (r.subjects || []), e = (r.epcs || []), f = (r.fields || []), g = (r.engagementTypes || []), a = (r.addresses || []), rr = (r.relatedRows || []);
+    var s = (r.subjects && r.subjects.options) || [];
+    var e = (r.epcs && r.epcs.options) || [];
+    var f = (r.fields && r.fields.options) || [];
+    var g = (r.engagementTypes && r.engagementTypes.options) || [];
+    var a = (r.addresses && r.addresses.options) || [];
+    var rr = (r.relatedRows && r.relatedRows.options) || [];
+
     if (ssSubject) { ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب کنید (' + s.length + ')' : 'تایپ کنید'); }
     if (ssEpc) { ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب کنید (' + e.length + ')' : 'تایپ کنید'); }
     if (ssField) { ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب کنید (' + f.length + ')' : 'تایپ کنید'); }
@@ -1216,9 +1161,6 @@ document.getElementById('chkAll').onchange = function() {
 document.getElementById('chkTg').onchange = updateAll;
 document.getElementById('chkBale').onchange = updateAll;
 
-// ============================================
-// Preview
-// ============================================
 document.getElementById('previewBtn').onclick = function() {
   var rec = ssRecipient ? ssRecipient.getStr() : '';
   var sub = ssSubject ? ssSubject.getStr() : '';
@@ -1368,9 +1310,6 @@ document.getElementById('submitBtn').onclick = function() {
     });
 };
 
-// ============================================
-// Start
-// ============================================
 init();
 </script>
 </body>

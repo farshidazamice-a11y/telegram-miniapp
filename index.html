@@ -4,227 +4,533 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<title>پروژه ایگل</title>
+<title>سامانه مدیریت پروژه ایگل</title>
 <style>
 * { box-sizing: border-box; }
-body { font-family: Tahoma, sans-serif; margin: 0; padding: 16px; direction: rtl;
-  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
-  color: #1e293b; min-height: 100vh; }
-body.has-ticker { padding-top: 60px; }
-.screen { display: none; }
-.screen.active { display: block; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: Tahoma, sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  direction: rtl;
+  background: #f1f5f9;
+  color: #334155;
+  min-height: 100vh;
+}
+
+.app-container { max-width: 960px; margin: 0 auto; }
+
+/* ─── Top bar (sticky) ─────────────────────────── */
+.top-bar { position: sticky; top: 0; z-index: 990; }
+
+/* ─── Ticker RTL ───────────────────────────────── */
+.rain-ticker {
+  display: none;
+  height: 40px;
+  overflow: hidden;
+  background: linear-gradient(90deg, #1e40af, #2563eb, #1e40af, #2563eb, #1e40af);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(30,64,175,0.25);
+}
+.rain-ticker:not(.hidden) { display: block; }
+.rain-ticker-content {
+  position: absolute;
+  top: 20px;
+  white-space: nowrap;
+  direction: rtl;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 0 20px;
+  transform: translate(-100%, -50%);
+  animation: rainMarquee 55s linear infinite;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+@keyframes rainMarquee {
+  from { transform: translate(-100%, -50%); }
+  to   { transform: translate(100vw, -50%); }
+}
+
+/* ─── App header ───────────────────────────────── */
+.app-header {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  color: #fff;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(30,64,175,0.25);
+}
+.app-header-left {
+  display: flex; align-items: center; gap: 8px;
+  min-width: 0; flex: 1;
+}
+.app-logo { font-size: 18px; flex-shrink: 0; }
+.app-title {
+  font-size: 13px; font-weight: bold;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.app-header-weather {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: bold;
+  background: rgba(255,255,255,0.18);
+  padding: 4px 10px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.15);
+  direction: ltr;
+}
+.app-header-weather .range { opacity: 0.85; font-size: 10px; font-weight: normal; }
+
+/* ─── Screens ──────────────────────────────────── */
+.screen { display: none; padding: 12px 14px 24px 14px; }
+.screen.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 #loading.active { display: flex; }
 
-h2 { text-align: center; color: #1e40af; margin: 20px 0 24px; font-size: 20px; font-weight: bold; }
-h3 { color: #1e40af; margin: 22px 0 10px; font-size: 15px; border-bottom: 2px solid #e0f2fe; padding-bottom: 8px; }
+h2 { text-align: center; color: #1e40af; margin: 6px 0 14px 0; font-size: 15px; font-weight: bold; }
+h3 { color: #1e40af; margin: 16px 0 8px 0; font-size: 13px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
 
-label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 14px; font-weight: bold; color: #334155; }
-input, select, textarea { width: 100%; padding: 13px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-family: inherit; background: #fff; color: #1e293b; transition: all 0.2s ease; outline: none; }
-input:focus, select:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
-textarea { min-height: 90px; resize: vertical; }
+/* ─── Breadcrumb ───────────────────────────────── */
+.breadcrumb {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #1e40af;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  margin: 4px 0 10px 0;
+  border: 1px solid #bae6fd;
+}
+.breadcrumb .sep { opacity: 0.5; margin: 0 4px; }
 
-button { width: 100%; margin-top: 18px; padding: 15px; border: none; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: all 0.2s ease; }
-button:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37,99,235,0.4); }
-button:active { transform: translateY(0); }
-button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-.btn-sec { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: #1e293b; box-shadow: 0 3px 10px rgba(148,163,184,0.3); }
-.btn-ok { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16,185,129,0.3); }
-.btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 14px rgba(239,68,68,0.3); }
+/* ─── Inputs ───────────────────────────────────── */
+label { display: block; margin-top: 12px; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #475569; }
+input, select, textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid #cbd5e1; border-radius: 8px;
+  font-size: 13px; font-family: inherit;
+  background: #fff; color: #334155;
+  transition: all 0.15s; outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+textarea { min-height: 80px; resize: vertical; }
 
-/* دکمه‌های مربعی گزارش و پنل ادمین */
-.action-btn {
-  width: 100%; margin-top: 14px; padding: 20px;
+button {
+  width: 100%; margin-top: 12px; padding: 11px;
   border: none; border-radius: 8px;
-  color: #fff; font-size: 17px; font-weight: bold;
-  cursor: pointer; transition: all 0.15s ease;
-  display: block;
+  background: #3b82f6; color: #fff;
+  font-size: 14px; font-weight: bold;
+  cursor: pointer; transition: all 0.15s;
 }
-.action-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
-.action-btn:active { transform: translateY(0); }
-.action-btn-reports {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  box-shadow: 0 4px 14px rgba(139,92,246,0.35);
-}
-.action-btn-admin {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-}
+button:hover { background: #2563eb; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sec { background: #e2e8f0; color: #334155; }
+.btn-sec:hover { background: #cbd5e1; }
+.btn-ok { background: #10b981; }
+.btn-ok:hover { background: #059669; }
 
-.msg { margin-top: 16px; padding: 14px; border-radius: 12px; text-align: center; font-size: 14px; white-space: pre-line; border: 1px solid; }
+/* ─── Messages ─────────────────────────────────── */
+.msg {
+  margin-top: 12px; padding: 10px 12px;
+  border-radius: 8px; text-align: center;
+  font-size: 12px; white-space: pre-line; border: 1px solid;
+}
 .msg-ok { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 .msg-err { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
 .msg-info { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
 .msg-warn { background: #fffbeb; color: #92400e; border-color: #fde68a; }
 .hidden { display: none !important; }
 
+/* ─── Loading ──────────────────────────────────── */
 #loading { flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; min-height: 60vh; }
-.spinner { width: 54px; height: 54px; border: 5px solid #e0f2fe; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner { width: 44px; height: 44px; border: 4px solid #dbeafe; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.date-row { display: flex; gap: 8px; }
-.date-row .col { flex: 1; }
-.date-cap { font-size: 11px; color: #64748b; text-align: center; margin-bottom: 4px; font-weight: bold; }
-.quick-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-.btn-q { flex: 1; min-width: 80px; padding: 11px 8px; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; color: #334155; font-size: 13px; font-weight: bold; cursor: pointer; margin: 0; transition: all 0.2s; }
-.btn-q:hover { background: #e0f2fe; border-color: #93c5fd; color: #1e40af; }
+/* ─── Button grid (responsive) ─────────────────── */
+.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+@media (min-width: 560px) { .btn-grid { grid-template-columns: repeat(3, 1fr); } }
+.btn-grid.single { grid-template-columns: 1fr; }
 
-.plat-box { background: linear-gradient(135deg, #f8fafc, #eff6ff); border-radius: 12px; padding: 14px; margin-top: 10px; border: 1px solid #dbeafe; }
-.plat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-.plat-row input { width: 22px; height: 22px; accent-color: #2563eb; }
-.plat-row label { margin: 0; flex: 1; font-weight: normal; }
+.action-btn {
+  margin: 0; padding: 16px 10px;
+  border-radius: 12px; color: #fff;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; min-height: 92px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  transition: all 0.15s;
+}
+.action-btn:hover { transform: translateY(-2px); }
+.action-btn .icon { font-size: 28px; line-height: 1; }
+.action-btn .label { font-size: 12px; font-weight: bold; }
+.action-btn-reports { background: #8b5cf6; }
+.action-btn-reports:hover { background: #7c3aed; }
+.action-btn-admin { background: #3b82f6; }
+.action-btn-admin:hover { background: #2563eb; }
+
+/* ─── User card ────────────────────────────────── */
+.user-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex; align-items: center; gap: 10px;
+}
+.user-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: #3b82f6; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: bold; flex-shrink: 0;
+}
+.user-info-mini { flex: 1; min-width: 0; }
+.user-info-name {
+  font-size: 13px; font-weight: bold; color: #1e40af;
+  margin-bottom: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-info-sub {
+  font-size: 11px; color: #64748b;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-info-badge {
+  display: inline-block;
+  padding: 1px 6px; border-radius: 5px;
+  font-size: 10px; font-weight: bold;
+  background: #dbeafe; color: #1e40af;
+  margin-left: 3px;
+}
+
+/* ─── Date pickers ─────────────────────────────── */
+.date-row { display: flex; gap: 6px; }
+.date-row .col { flex: 1; }
+.date-cap { font-size: 10px; color: #64748b; text-align: center; margin-bottom: 3px; font-weight: bold; }
+.quick-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.btn-q {
+  flex: 1; min-width: 70px;
+  padding: 8px 6px;
+  border: 1px solid #cbd5e1; border-radius: 8px;
+  background: #f8fafc; color: #475569;
+  font-size: 11px; font-weight: bold;
+  cursor: pointer; margin: 0; transition: all 0.15s;
+}
+.btn-q:hover { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
+
+/* ─── Platform box ─────────────────────────────── */
+.plat-box {
+  background: #f8fafc; border-radius: 10px;
+  padding: 12px; margin-top: 8px;
+  border: 1px solid #e2e8f0;
+}
+.plat-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.plat-row input { width: 18px; height: 18px; accent-color: #3b82f6; }
+.plat-row label { margin: 0; flex: 1; font-weight: normal; font-size: 12px; }
 .plat-row.dis { opacity: 0.4; }
-.plat-row.all { border-bottom: 1px solid #dbeafe; padding-bottom: 12px; margin-bottom: 6px; }
+.plat-row.all { border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 4px; }
 .plat-row.all label { font-weight: bold; }
 
-.ss-box { position: relative; margin-top: 6px; }
-.ss-in { width: 100%; padding: 13px 40px 13px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: #fff; transition: all 0.2s; outline: none; }
-.ss-in:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
-.ss-in[readonly] { background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-color: #10b981; font-weight: bold; color: #065f46; }
-.ss-arrow { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); font-size: 12px; color: #94a3b8; pointer-events: none; }
-.ss-clear { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); cursor: pointer; color: #dc2626; font-weight: bold; font-size: 18px; padding: 4px 8px; }
-.ss-list { position: absolute; top: calc(100% + 6px); left: 0; right: 0;
-  max-height: 260px; overflow-y: auto; background: #fff;
-  border: 2px solid #dbeafe; border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(30,64,175,0.15); z-index: 100;
-  scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
-.ss-list::-webkit-scrollbar { width: 8px; }
-.ss-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.ss-list::-webkit-scrollbar-track { background: #f1f5f9; }
-.ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #1e293b; transition: background 0.15s; }
+/* ─── Searchable select ────────────────────────── */
+.ss-box { position: relative; margin-top: 4px; }
+.ss-in {
+  width: 100%; padding: 10px 34px 10px 12px;
+  border: 1px solid #cbd5e1; border-radius: 8px;
+  font-size: 13px; background: #fff;
+  transition: all 0.15s; outline: none;
+}
+.ss-in:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.ss-in[readonly] { background: #ecfdf5; border-color: #10b981; font-weight: bold; color: #065f46; }
+.ss-arrow { position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-size: 10px; color: #94a3b8; pointer-events: none; }
+.ss-clear { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); cursor: pointer; color: #dc2626; font-weight: bold; font-size: 15px; padding: 3px 6px; }
+.ss-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  max-height: 220px; overflow-y: auto; background: #fff;
+  border: 1px solid #cbd5e1; border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(30,64,175,0.12); z-index: 100;
+  scrollbar-width: thin; -webkit-overflow-scrolling: touch;
+}
+.ss-list::-webkit-scrollbar { width: 6px; }
+.ss-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.ss-item { padding: 9px 12px; cursor: pointer; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
 .ss-item:hover { background: #eff6ff; }
 .ss-item:last-child { border-bottom: none; }
-.ss-item-main { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.ss-item-summary { direction: ltr; font-size: 11px; color: #fff; font-weight: bold; background: linear-gradient(135deg, #dc2626, #b91c1c); padding: 3px 10px; border-radius: 10px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(220,38,38,0.3); }
-.ss-empty { padding: 16px; color: #94a3b8; text-align: center; font-size: 13px; }
-.ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border-radius: 20px; font-size: 13px; box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
-.ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; }
+.ss-item-main { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.ss-item-summary { direction: ltr; font-size: 10px; color: #fff; font-weight: bold; background: #dc2626; padding: 2px 7px; border-radius: 8px; flex-shrink: 0; }
+.ss-empty { padding: 12px; color: #94a3b8; text-align: center; font-size: 12px; }
+.ss-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.ss-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #3b82f6; color: #fff; border-radius: 14px; font-size: 11px; }
+.ss-chip-x { cursor: pointer; font-weight: bold; font-size: 14px; }
 
-.preview-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border-radius: 16px; padding: 18px; margin-bottom: 16px; border: 2px solid #dbeafe; box-shadow: 0 4px 20px rgba(30,64,175,0.08); }
-.preview-title { font-weight: bold; color: #1e40af; text-align: center; margin-bottom: 14px; font-size: 15px; }
-.preview-row { display: flex; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+/* ─── Preview card ─────────────────────────────── */
+.preview-card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
+.preview-title { font-weight: bold; color: #1e40af; text-align: center; margin-bottom: 10px; font-size: 13px; }
+.preview-row { display: flex; padding: 7px 0; border-bottom: 1px solid #f8fafc; font-size: 12px; }
 .preview-row:last-child { border-bottom: none; }
-.preview-label { font-weight: bold; width: 110px; flex-shrink: 0; color: #64748b; }
-.preview-value { flex: 1; word-break: break-word; color: #1e293b; }
-.preview-msg { background: #f8fafc; border-radius: 10px; padding: 14px; font-size: 13px; white-space: pre-line; line-height: 1.8; border: 1px solid #e2e8f0; max-height: 280px; overflow-y: auto; }
-.btn-row { display: flex; gap: 8px; margin-top: 18px; }
+.preview-label { font-weight: bold; width: 90px; flex-shrink: 0; color: #64748b; }
+.preview-value { flex: 1; word-break: break-word; color: #334155; }
+.preview-msg { background: #f8fafc; border-radius: 8px; padding: 10px; font-size: 11px; white-space: pre-line; line-height: 1.7; border: 1px solid #e2e8f0; max-height: 240px; overflow-y: auto; }
+.btn-row { display: flex; gap: 8px; margin-top: 12px; }
 .btn-row button { flex: 1; margin-top: 0; }
 
-.send-status-box { background: #fff; border-radius: 12px; padding: 14px; margin-top: 14px; border: 2px solid #e0f2fe; box-shadow: 0 2px 10px rgba(59,130,246,0.08); }
-.send-status-title { font-weight: bold; font-size: 13px; color: #1e40af; margin-bottom: 10px; text-align: center; }
-.send-status-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 1px solid #f1f5f9; }
+/* ─── Send status ──────────────────────────────── */
+.send-status-box { background: #fff; border-radius: 10px; padding: 12px; margin-top: 12px; border: 1px solid #e2e8f0; }
+.send-status-title { font-weight: bold; font-size: 12px; color: #1e40af; margin-bottom: 8px; text-align: center; }
+.send-status-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 4px; border-bottom: 1px solid #f8fafc; }
 .send-status-row:last-child { border-bottom: none; }
-.send-status-name { font-size: 14px; }
-.send-status-icon { font-size: 22px; font-weight: bold; }
+.send-status-name { font-size: 12px; }
+.send-status-icon { font-size: 18px; font-weight: bold; }
 .send-status-ok { color: #10b981; }
 .send-status-fail { color: #dc2626; }
-.send-status-skip { color: #9ca3af; font-size: 14px; }
+.send-status-skip { color: #94a3b8; font-size: 12px; }
 
-/* پنل کاربری */
-.user-panel-btn { position: fixed; top: 12px; left: 12px; z-index: 999; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; border: none; font-size: 22px; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.4); display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; transition: all 0.2s; }
-.user-panel-btn:hover { transform: scale(1.06); }
-body.has-ticker .user-panel-btn { top: 60px; }
+/* ─── Reports ──────────────────────────────────── */
+.reports-wrap { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 12px; border: 1px solid #e2e8f0; }
 
-.user-panel { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.55); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); animation: fadeIn 0.2s ease; }
-.user-panel-inner { background: #fff; border-radius: 20px; padding: 20px; width: 100%; max-width: 400px; max-height: 92vh; overflow-y: auto; direction: rtl; box-shadow: 0 20px 60px rgba(0,0,0,0.3); scrollbar-width: thin; }
-.user-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e0f2fe; }
-.user-panel-header h3 { margin: 0; border: none; padding: 0; font-size: 17px; }
-.user-panel-close { cursor: pointer; font-size: 26px; color: #94a3b8; background: none; border: none; padding: 0; width: auto; margin: 0; box-shadow: none; line-height: 1; }
-.user-panel-close:hover { color: #dc2626; transform: none; }
+.results-wrap { margin-top: 12px; }
 
-.weather-box { background: linear-gradient(135deg, #0ea5e9, #38bdf8, #0ea5e9); color: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 6px 20px rgba(14,165,233,0.35); }
-.weather-main { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.weather-temp { font-size: 36px; font-weight: bold; }
-.weather-desc { font-size: 14px; margin-top: 4px; opacity: 0.95; }
-.weather-details { display: flex; justify-content: space-around; font-size: 13px; opacity: 0.98; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; }
-
-.user-info-box { background: linear-gradient(135deg, #f8fafc, #eff6ff); border-radius: 14px; padding: 16px; margin-bottom: 14px; font-size: 14px; line-height: 1.9; border: 1px solid #dbeafe; }
-.user-main-name { font-size: 17px; font-weight: bold; color: #1e40af; margin-bottom: 4px; }
-.user-sub-info { font-size: 12px; color: #64748b; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #dbeafe; }
-.user-detail-row { padding: 4px 0; }
-
-/* ticker — بزرگ‌تر و آرام‌تر */
-.rain-ticker { position: fixed; top: 0; left: 0; right: 0; z-index: 998; height: 52px; overflow: hidden; background: linear-gradient(90deg, #1e40af, #2563eb, #1e40af, #2563eb, #1e40af); color: white; box-shadow: 0 4px 16px rgba(30,64,175,0.4); border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
-.rain-ticker-content { position: absolute; top: 50%; white-space: nowrap; direction: rtl; font-size: 17px; font-weight: bold; padding: 0 24px; transform: translate(100vw, -50%); animation: rainMarquee 65s linear infinite; letter-spacing: 0.3px; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-@keyframes rainMarquee { from { transform: translate(100vw, -50%); } to { transform: translate(-100%, -50%); } }
-
-/* گزارش‌ها */
-.reports-wrap { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 20px rgba(30,64,175,0.08); margin-bottom: 14px; }
-.quick-filters { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-.quick-filters .btn-q { flex: 1; min-width: 70px; font-size: 12px; padding: 10px 6px; }
-
-.results-wrap { max-height: 60vh; overflow-y: auto; padding: 4px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; margin-top: 14px; }
-.results-wrap::-webkit-scrollbar { width: 8px; }
-.results-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-.report-card { background: #fff; border-radius: 14px; margin-bottom: 10px; border: 2px solid #e0f2fe; overflow: hidden; box-shadow: 0 2px 10px rgba(30,64,175,0.06); transition: all 0.2s; }
+/* ─── Report card ──────────────────────────────── */
+.report-card {
+  background: #fff;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: all 0.15s;
+}
 .report-card:hover { border-color: #93c5fd; }
-.report-card-header { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; background: linear-gradient(135deg, #f8fafc, #eff6ff); }
-.report-card-header:hover { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
-.report-card-title { flex: 1; font-weight: bold; color: #1e40af; font-size: 14px; }
-.report-card-date { font-size: 12px; color: #64748b; direction: ltr; }
-.report-card-arrow { color: #3b82f6; font-size: 12px; transition: transform 0.2s; }
+.report-card.open { box-shadow: 0 4px 12px rgba(30,64,175,0.08); }
+
+.report-card-header {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #fafbfc;
+}
+.report-card-header:hover { background: #f1f5f9; }
+
+.report-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.report-card-title {
+  flex: 1;
+  font-weight: bold;
+  color: #1e40af;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.report-card-arrow {
+  color: #94a3b8;
+  font-size: 10px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
 .report-card.open .report-card-arrow { transform: rotate(180deg); }
-.report-card-body { padding: 14px 16px; background: #fff; display: none; border-top: 1px solid #f1f5f9; }
+
+.report-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+.meta-badge-row { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.meta-badge-date { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.meta-badge-status-ok { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.meta-badge-status-warn { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.meta-badge-status-info { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.meta-badge-recipient { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+
+.report-card-body {
+  padding: 12px;
+  display: none;
+  border-top: 1px solid #f1f5f9;
+  background: #fff;
+}
 .report-card.open .report-card-body { display: block; }
-.report-detail { display: flex; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f8fafc; }
-.report-detail:last-child { border-bottom: none; }
-.report-detail-label { font-weight: bold; color: #64748b; width: 110px; flex-shrink: 0; font-size: 12px; }
-.report-detail-value { flex: 1; color: #1e293b; word-break: break-word; }
-.report-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-.report-badge-ok { background: #d1fae5; color: #065f46; }
-.report-badge-warn { background: #fef3c7; color: #92400e; }
-.report-badge-info { background: #dbeafe; color: #1e40af; }
 
-.empty-state { padding: 40px 20px; text-align: center; color: #94a3b8; font-size: 14px; }
-.result-count { text-align: center; padding: 8px; font-size: 13px; color: #64748b; margin-bottom: 8px; }
+.report-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 600px) { .report-details-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 900px) { .report-details-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
-#adminSection .scroll-body { max-height: calc(100vh - 180px); overflow-y: auto; padding: 4px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
-#adminSection .scroll-body::-webkit-scrollbar { width: 8px; }
-#adminSection .scroll-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.report-detail-box {
+  background: #f8fafc;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+}
+.report-detail-label {
+  font-size: 10px;
+  font-weight: bold;
+  color: #94a3b8;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.report-detail-value {
+  font-size: 12px;
+  color: #334155;
+  word-break: break-word;
+  line-height: 1.5;
+}
+.report-detail-value.ltr { direction: ltr; text-align: left; font-family: monospace; font-size: 11px; }
+
+/* ─── Report action buttons ────────────────────── */
+.report-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+}
+.report-actions button {
+  margin: 0;
+  padding: 9px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+.btn-report { background: #10b981; }
+.btn-report:hover { background: #059669; }
+.btn-comment { background: #f59e0b; }
+.btn-comment:hover { background: #d97706; }
+
+/* ─── Empty/Count ──────────────────────────────── */
+.empty-state { padding: 30px 20px; text-align: center; color: #94a3b8; font-size: 12px; }
+.result-count { text-align: center; padding: 6px; font-size: 12px; color: #64748b; margin-bottom: 6px; font-weight: bold; }
+
+/* ─── Scroll admin ─────────────────────────────── */
+#adminSection .scroll-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding: 2px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+#adminSection .scroll-body::-webkit-scrollbar { width: 6px; }
+#adminSection .scroll-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+/* ─── Modal ────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.5);
+  z-index: 1100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.15s ease;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.modal-title { font-size: 14px; font-weight: bold; color: #1e40af; }
+.modal-close {
+  cursor: pointer; font-size: 22px; color: #94a3b8;
+  background: none; border: none; padding: 0;
+  width: auto; margin: 0; line-height: 1;
+}
+.modal-close:hover { color: #dc2626; background: none; }
+
+.modal-parent-info {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+.modal-parent-info b { color: #1e40af; }
+
+.modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+.modal-actions button { flex: 1; margin-top: 0; }
+
+/* ─── Toast ────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2000;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  animation: toastIn 0.3s ease;
+}
+.toast.ok { background: #059669; }
+.toast.err { background: #dc2626; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
 </style>
 </head>
 <body>
 
-<div class="rain-ticker hidden" id="rainTicker">
-  <div class="rain-ticker-content" id="rainTickerContent"></div>
-</div>
-
-<button class="user-panel-btn hidden" id="userPanelBtn" title="پنل کاربری">👤</button>
-
-<div class="user-panel hidden" id="userPanelModal">
-  <div class="user-panel-inner">
-    <div class="user-panel-header">
-      <h3>👤 پنل کاربری</h3>
-      <button class="user-panel-close" id="userPanelClose">×</button>
-    </div>
-    <div class="weather-box">
-      <div class="weather-main">
-        <div>
-          <div class="weather-temp" id="weatherTemp">--°</div>
-          <div class="weather-desc" id="weatherDesc">در حال بارگذاری...</div>
-        </div>
-        <div style="font-size: 40px;" id="weatherIcon">🌤️</div>
-      </div>
-      <div class="weather-details">
-        <span>⬆️ <b id="weatherMax">--°</b></span>
-        <span>⬇️ <b id="weatherMin">--°</b></span>
-        <span>💧 <b id="weatherHum">--%</b></span>
-      </div>
-    </div>
-    <div class="user-info-box" id="userInfoBox">
-      <div style="text-align:center; color:#94a3b8;">در حال بارگذاری...</div>
-    </div>
+<div class="top-bar">
+  <div class="rain-ticker hidden" id="rainTicker">
+    <div class="rain-ticker-content" id="rainTickerContent"></div>
   </div>
+  <header class="app-header">
+    <div class="app-header-left">
+      <span class="app-logo">🏗</span>
+      <span class="app-title">سامانه مدیریت پروژه ایگل</span>
+    </div>
+    <div class="app-header-weather" id="headerWeather">--°</div>
+  </header>
 </div>
+
+<div class="app-container">
 
 <div id="loading" class="screen active">
   <div class="spinner"></div>
-  <p style="color:#64748b; margin-top:16px; font-size: 15px;">در حال بارگذاری...</p>
+  <p style="color:#64748b; margin-top:14px; font-size: 13px;">در حال بارگذاری...</p>
 </div>
 
 <div id="formSection" class="screen">
+  <div class="breadcrumb">📍 خانه <span class="sep">›</span> ثبت‌نام</div>
   <h2>📝 فرم ثبت‌نام</h2>
   <div class="msg msg-info" id="tgInfo"></div>
   <form id="regForm">
@@ -240,18 +546,36 @@ body.has-ticker .user-panel-btn { top: 60px; }
 </div>
 
 <div id="pendingSection" class="screen">
+  <div class="breadcrumb">📍 خانه <span class="sep">›</span> در انتظار تأیید</div>
   <h2>⏳ در انتظار تأیید ادمین</h2>
   <div class="msg msg-warn">ثبت‌نام شما انجام شد و در انتظار تأیید ادمین است.</div>
 </div>
 
 <div id="activeSection" class="screen">
-  <h2>✅ خوش آمدید</h2>
-  <div class="msg msg-info" id="activeInfo"></div>
-  <button id="reportsBtn" class="action-btn action-btn-reports hidden">📊 گزارش‌ها</button>
-  <button id="adminBtn" class="action-btn action-btn-admin hidden">🛠 پنل ادمین</button>
+  <div class="breadcrumb">📍 خانه</div>
+  <h2>خوش آمدید</h2>
+  <div class="user-card" id="userCard">
+    <div class="user-avatar" id="userAvatar">👤</div>
+    <div class="user-info-mini">
+      <div class="user-info-name" id="userInfoName">—</div>
+      <div class="user-info-sub" id="userInfoSub">—</div>
+    </div>
+  </div>
+
+  <div class="btn-grid" id="homeBtnGrid">
+    <button id="reportsBtn" class="action-btn action-btn-reports hidden">
+      <span class="icon">📊</span>
+      <span class="label">گزارش‌ها</span>
+    </button>
+    <button id="adminBtn" class="action-btn action-btn-admin hidden">
+      <span class="icon">🛠</span>
+      <span class="label">پنل ادمین</span>
+    </button>
+  </div>
 </div>
 
 <div id="adminSection" class="screen">
+  <div class="breadcrumb">📍 خانه <span class="sep">›</span> پنل ادمین</div>
   <h2>🛠 پنل ادمین</h2>
   <button id="backBtn" class="btn-sec">→ بازگشت</button>
 
@@ -261,7 +585,7 @@ body.has-ticker .user-panel-btn { top: 60px; }
     <div id="recipientWrap"></div>
 
     <div class="plat-box">
-      <div style="font-size:13px; font-weight:bold; margin-bottom:6px; color:#1e40af;">📡 پلتفورم ارسال:</div>
+      <div style="font-size:12px; font-weight:bold; margin-bottom:6px; color:#1e40af;">📡 پلتفورم ارسال:</div>
       <div class="plat-row all">
         <input type="checkbox" id="chkAll">
         <label for="chkAll">🌐 همه</label>
@@ -311,6 +635,7 @@ body.has-ticker .user-panel-btn { top: 60px; }
 </div>
 
 <div id="previewSection" class="screen">
+  <div class="breadcrumb">📍 خانه <span class="sep">›</span> پنل ادمین <span class="sep">›</span> پیش‌نمایش</div>
   <h2>👁 پیش‌نمایش</h2>
   <div class="preview-card">
     <div class="preview-title">📋 اطلاعات دستور کار</div>
@@ -327,7 +652,7 @@ body.has-ticker .user-panel-btn { top: 60px; }
     <div class="preview-row"><div class="preview-label">مدت:</div><div class="preview-value" id="pvDur">—</div></div>
     <div class="preview-row"><div class="preview-label">پایان:</div><div class="preview-value" id="pvEnd">—</div></div>
   </div>
-  <div class="preview-title" style="text-align:right; margin-top:16px;">📩 متن پیام:</div>
+  <div class="preview-title" style="text-align:right; margin-top:12px;">📩 متن پیام:</div>
   <div class="preview-msg" id="pvMsg"></div>
   <div class="btn-row">
     <button id="editBtn" class="btn-sec">← ویرایش</button>
@@ -337,14 +662,15 @@ body.has-ticker .user-panel-btn { top: 60px; }
 </div>
 
 <div id="reportsSection" class="screen">
+  <div class="breadcrumb">📍 خانه <span class="sep">›</span> گزارش‌ها</div>
   <h2>📊 گزارش‌ها</h2>
   <button id="reportsBackBtn" class="btn-sec">→ بازگشت</button>
 
   <div class="reports-wrap">
     <div class="quick-filters">
       <button type="button" class="btn-q" onclick="setQuickFilter('today')">📅 امروز</button>
-      <button type="button" class="btn-q" onclick="setQuickFilter('week')">📅 هفته جاری</button>
-      <button type="button" class="btn-q" onclick="setQuickFilter('month')">📅 ماه جاری</button>
+      <button type="button" class="btn-q" onclick="setQuickFilter('week')">📅 هفته</button>
+      <button type="button" class="btn-q" onclick="setQuickFilter('month')">📅 ماه</button>
       <button type="button" class="btn-q" onclick="clearReportFilters()">🗑️ پاک</button>
     </div>
 
@@ -397,6 +723,26 @@ body.has-ticker .user-panel-btn { top: 60px; }
   </div>
 </div>
 
+</div><!-- /app-container -->
+
+<!-- Modal ثبت گزارش/کامنت -->
+<div class="modal-overlay hidden" id="reportModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="reportModalTitle">📝 ثبت گزارش</div>
+      <button class="modal-close" id="reportModalClose">×</button>
+    </div>
+    <div class="modal-parent-info" id="reportModalParent">—</div>
+    <label id="reportModalTextLabel">متن گزارش *</label>
+    <textarea id="reportModalText" placeholder="توضیحات خود را وارد کنید..." style="min-height:120px;"></textarea>
+    <div id="reportModalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-sec" id="reportModalCancel">انصراف</button>
+      <button class="btn-ok" id="reportModalSubmit">ثبت</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
 var tg = window.Telegram && window.Telegram.WebApp;
@@ -405,6 +751,7 @@ var recipients = [];
 var payload = null;
 var submitting = false;
 var currentUser = null;
+var currentReportTarget = null;
 
 var MONTHS = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 
@@ -412,7 +759,8 @@ if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsa
 
 function show(id) {
   ['loading','formSection','pendingSection','activeSection','adminSection','previewSection','reportsSection'].forEach(function(x) {
-    document.getElementById(x).classList.remove('active');
+    var el = document.getElementById(x);
+    if (el) el.classList.remove('active');
   });
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
@@ -426,7 +774,7 @@ function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function api(data, retries) {
-  if (data.action === 'createWorkOrder') retries = 0;
+  if (data.action === 'createWorkOrder' || data.action === 'submitReport') retries = 0;
   else if (retries === undefined) retries = 1;
   return fetch(API, {
     method: 'POST',
@@ -441,6 +789,14 @@ function api(data, retries) {
     if (retries > 0) return new Promise(function(r) { setTimeout(r, 700); }).then(function() { return api(data, retries - 1); });
     throw err;
   });
+}
+
+function toast(text, type) {
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3000);
 }
 
 function g2j(gy, gm, gd) {
@@ -624,57 +980,58 @@ function makeSS(boxId, opt) {
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 var rptSubjectSS, rptEpcSS, rptFieldSS, rptRelatedSS, rptStatusSS, rptEngSS, rptRecipientSS, rptAddrSS;
 
+function updateHeaderWeather(r) {
+  var el = document.getElementById('headerWeather');
+  if (!el) return;
+  if (!r || !r.ok) { el.textContent = '--°'; return; }
+  var icon = (r.desc || '').match(/^[^\s]+/);
+  var ico = icon ? icon[0] : '🌤️';
+  el.innerHTML = ico + ' ' + Math.round(r.temp) + '° <span class="range">' + Math.round(r.min) + '°/' + Math.round(r.max) + '°</span>';
+}
+
 function loadWeather() {
   api({ action: 'getTehranWeather' }).then(function(r) {
-    if (!r || !r.ok) { document.getElementById('weatherDesc').textContent = 'خطا'; return; }
-    document.getElementById('weatherTemp').textContent = Math.round(r.temp) + '°';
-    document.getElementById('weatherMax').textContent = Math.round(r.max) + '°';
-    document.getElementById('weatherMin').textContent = Math.round(r.min) + '°';
-    document.getElementById('weatherHum').textContent = r.humidity + '%';
-    document.getElementById('weatherDesc').textContent = r.desc || '—';
-    var icon = (r.desc || '').match(/^[^\s]+/);
-    document.getElementById('weatherIcon').textContent = icon ? icon[0] : '🌤️';
+    if (!r || !r.ok) { updateHeaderWeather(null); return; }
+    updateHeaderWeather(r);
 
     if (r.rainAlerts && r.rainAlerts.length > 0) {
       var parts = [];
       r.rainAlerts.forEach(function(a) { parts.push(a.emoji + ' ' + a.dayName + ' ' + a.jalali + ' (' + a.prob + '%)'); });
       var txt = '☔️ پیش‌بینی بارش در هفته آینده:   ' + parts.join('  ⚡  ') + '   — لطفاً هماهنگی‌های لازم را انجام دهید';
-      document.getElementById('rainTickerContent').textContent = txt + '   ' + txt;
+      document.getElementById('rainTickerContent').textContent = txt + '   ⚡   ' + txt;
       document.getElementById('rainTicker').classList.remove('hidden');
-      document.body.classList.add('has-ticker');
     } else {
       document.getElementById('rainTicker').classList.add('hidden');
-      document.body.classList.remove('has-ticker');
     }
-  }).catch(function() { document.getElementById('weatherDesc').textContent = 'خطا'; });
+  }).catch(function() { updateHeaderWeather(null); });
 }
-setTimeout(loadWeather, 1500);
+setTimeout(loadWeather, 1200);
 
-function openUserPanel() {
-  document.getElementById('userPanelModal').classList.remove('hidden');
-  loadWeather();
-  renderUserInfo();
+function renderUserCard(u) {
+  if (!u) return;
+  var nameEl = document.getElementById('userInfoName');
+  var subEl = document.getElementById('userInfoSub');
+  var avEl = document.getElementById('userAvatar');
+
+  var display = u.systemName || u.fullName || '—';
+  nameEl.textContent = display;
+  var ch = display.charAt(0);
+  if (ch && ch !== '—') avEl.textContent = ch;
+
+  var parts = [];
+  if (u.position) parts.push('<span class="user-info-badge">' + escHtml(u.position) + '</span>');
+  if (u.unit) parts.push('<span class="user-info-badge">' + escHtml(u.unit) + '</span>');
+  parts.push('<span class="user-info-badge" style="background:#fef3c7;color:#92400e;">' + escHtml(u.access || '—') + '</span>');
+  subEl.innerHTML = parts.join(' ');
 }
-function closeUserPanel() {
-  document.getElementById('userPanelModal').classList.add('hidden');
+
+function updateBtnGrid() {
+  var grid = document.getElementById('homeBtnGrid');
+  if (!grid) return;
+  var visible = grid.querySelectorAll('.action-btn:not(.hidden)');
+  if (visible.length <= 1) grid.classList.add('single');
+  else grid.classList.remove('single');
 }
-function renderUserInfo() {
-  var box = document.getElementById('userInfoBox');
-  if (!currentUser) { box.innerHTML = '<div style="text-align:center; color:#94a3b8;">اطلاعات موجود نیست</div>'; return; }
-  var u = currentUser;
-  var subParts = [];
-  if (u.position) subParts.push(escHtml(u.position));
-  if (u.unit) subParts.push(escHtml(u.unit));
-  var subLine = subParts.join(' · ');
-  box.innerHTML =
-    '<div class="user-main-name">' + escHtml(u.systemName || u.fullName || '—') + '</div>' +
-    (subLine ? '<div class="user-sub-info">' + subLine + '</div>' : '') +
-    '<div class="user-detail-row"><b>نام کامل:</b> ' + escHtml(u.fullName || '—') + '</div>' +
-    '<div class="user-detail-row"><b>سطح دسترسی:</b> ' + escHtml(u.access || 'تعیین نشده') + '</div>';
-}
-document.getElementById('userPanelBtn').onclick = openUserPanel;
-document.getElementById('userPanelClose').onclick = closeUserPanel;
-document.getElementById('userPanelModal').onclick = function(e) { if (e.target === this) closeUserPanel(); };
 
 function init() {
   if (!tgUser) {
@@ -696,20 +1053,11 @@ function handleStatus(r) {
     currentUser = u;
     var access = String(u.access || '').trim();
     var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
-    if (access !== 'پایه') document.getElementById('userPanelBtn').classList.remove('hidden');
     if (active) {
-      var subParts = [];
-      if (u.position) subParts.push(escHtml(u.position));
-      if (u.unit) subParts.push(escHtml(u.unit));
-      var subLine = subParts.join(' · ');
-      document.getElementById('activeInfo').innerHTML =
-        '<div style="font-size:17px; font-weight:bold; color:#1e40af; margin-bottom:4px;">' +
-          escHtml(u.systemName || u.fullName || '—') + '</div>' +
-        (subLine ? '<div style="font-size:12px; color:#64748b; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #dbeafe;">' + subLine + '</div>' : '') +
-        '<div><b>نام کامل:</b> ' + escHtml(u.fullName || '—') + '</div>' +
-        '<div><b>سطح دسترسی:</b> ' + escHtml(access || 'تعیین نشده') + '</div>';
+      renderUserCard(u);
       document.getElementById('reportsBtn').classList.remove('hidden');
       if (access === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
+      updateBtnGrid();
       show('activeSection');
     } else {
       show('pendingSection');
@@ -925,8 +1273,8 @@ document.getElementById('submitBtn').onclick = function() {
       var finalEl = document.getElementById('finalMsg');
       finalEl.className = 'msg msg-ok';
       finalEl.innerHTML =
-        '<div style="text-align:center;font-size:16px;font-weight:bold;">✅ ' + escHtml(r.message || 'ثبت شد') + '</div>' +
-        (r.row ? '<div style="text-align:center;font-size:13px;margin-top:4px;">ردیف ' + r.row + '</div>' : '') +
+        '<div style="text-align:center;font-size:14px;font-weight:bold;">✅ ' + escHtml(r.message || 'ثبت شد') + '</div>' +
+        (r.row ? '<div style="text-align:center;font-size:11px;margin-top:4px;">ردیف ' + r.row + '</div>' : '') +
         sendHtml;
       b.innerText = '✅ ثبت شد';
     } else if (r && r.duplicate) {
@@ -946,7 +1294,11 @@ document.getElementById('submitBtn').onclick = function() {
   });
 };
 
+/* ═══════════════════════════════════════════════
+   📊 گزارش‌ها
+   ═══════════════════════════════════════════════ */
 var rptFromY, rptFromM, rptFromD, rptToY, rptToM, rptToD;
+var currentReportRows = [];
 
 function initReports() {
   buildReportDatePickers();
@@ -993,13 +1345,11 @@ function buildReportDatePickers() {
     var empty = document.createElement('option'); empty.value = ''; empty.textContent = '--'; sel.appendChild(empty);
     for (var i = y-3; i <= y+2; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o); }
   });
-
   [rptFromM, rptToM].forEach(function(sel) {
     sel.innerHTML = '';
     var empty = document.createElement('option'); empty.value = ''; empty.textContent = '--'; sel.appendChild(empty);
     for (var j = 1; j <= 12; j++) { var o2 = document.createElement('option'); o2.value = j; o2.textContent = MONTHS[j]; sel.appendChild(o2); }
   });
-
   [rptFromD, rptToD].forEach(function(sel) {
     sel.innerHTML = '';
     var empty = document.createElement('option'); empty.value = ''; empty.textContent = '--'; sel.appendChild(empty);
@@ -1017,9 +1367,8 @@ function setQuickFilter(type) {
   var now = new Date();
   var t = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
   var fromJ, toJ;
-  if (type === 'today') {
-    fromJ = t; toJ = t;
-  } else if (type === 'week') {
+  if (type === 'today') { fromJ = t; toJ = t; }
+  else if (type === 'week') {
     var jsDay = now.getDay();
     var persianDay = (jsDay + 1) % 7;
     var sat = new Date(now); sat.setDate(now.getDate() - persianDay);
@@ -1030,7 +1379,6 @@ function setQuickFilter(type) {
     fromJ = [t[0], t[1], 1];
     toJ = [t[0], t[1], dim(t[0], t[1])];
   }
-
   rptFromY.value = fromJ[0]; rptFromM.value = fromJ[1]; rptFromD.value = fromJ[2];
   rptToY.value = toJ[0]; rptToM.value = toJ[1]; rptToD.value = toJ[2];
 }
@@ -1050,11 +1398,10 @@ function clearReportFilters() {
   document.getElementById('reportsResults').innerHTML = '<div class="empty-state">فیلترها پاک شدند</div>';
 }
 
-function statusBadgeClass(status) {
-  if (!status) return '';
-  if (status === 'ابلاغ شده') return 'report-badge-ok';
-  if (status === 'پیش نویس') return 'report-badge-warn';
-  return 'report-badge-info';
+function statusMetaClass(status) {
+  if (status === 'ابلاغ شده' || status === 'تکمیل شده') return 'meta-badge-status-ok';
+  if (status === 'پیش نویس' || status === 'متوقف') return 'meta-badge-status-warn';
+  return 'meta-badge-status-info';
 }
 
 document.getElementById('applyFiltersBtn').onclick = function() {
@@ -1082,7 +1429,8 @@ document.getElementById('applyFiltersBtn').onclick = function() {
       document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا: ' + escHtml((r && r.message) || 'نامشخص') + '</div>';
       return;
     }
-    renderReports(r.rows || []);
+    currentReportRows = r.rows || [];
+    renderReports(currentReportRows);
   }).catch(function(err) {
     btn.disabled = false; btn.innerText = '🔍 اعمال فیلتر';
     document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا: ' + escHtml(err.message || '') + '</div>';
@@ -1096,23 +1444,39 @@ function renderReports(rows) {
   }
   var html = '<div class="result-count">📋 ' + rows.length + ' نتیجه</div><div class="results-wrap">';
   rows.forEach(function(row, idx) {
+    var sClass = statusMetaClass(row.status);
     html += '<div class="report-card" data-idx="' + idx + '">' +
       '<div class="report-card-header" onclick="toggleReportCard(this)">' +
-        '<div class="report-card-title">' + escHtml(row.subject || '—') + '</div>' +
-        '<div class="report-card-date">' + escHtml(row.date || '') + '</div>' +
-        '<div class="report-card-arrow">▼</div>' +
+        '<div class="report-card-top">' +
+          '<div class="report-card-title">' + escHtml(row.subject || '—') + '</div>' +
+          '<div class="report-card-arrow">▼</div>' +
+        '</div>' +
+        '<div class="report-card-meta">' +
+          (row.row ? '<span class="meta-badge meta-badge-row">🔢 ردیف ' + escHtml(row.row) + '</span>' : '') +
+          (row.date ? '<span class="meta-badge meta-badge-date">📅 ' + escHtml(row.date) + '</span>' : '') +
+          (row.status ? '<span class="meta-badge ' + sClass + '">● ' + escHtml(row.status) + '</span>' : '') +
+          (row.recipient ? '<span class="meta-badge meta-badge-recipient">👤 ' + escHtml(row.recipient) + '</span>' : '') +
+          (row.epc ? '<span class="meta-badge">📌 ' + escHtml(row.epc) + '</span>' : '') +
+          (row.field ? '<span class="meta-badge">🔧 ' + escHtml(row.field) + '</span>' : '') +
+        '</div>' +
       '</div>' +
       '<div class="report-card-body">' +
-        '<div class="report-detail"><div class="report-detail-label">ردیف:</div><div class="report-detail-value">' + escHtml(row.row) + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">تاریخ شمسی:</div><div class="report-detail-value">' + escHtml(row.date) + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">EPC:</div><div class="report-detail-value">' + escHtml(row.epc || '—') + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">رشته:</div><div class="report-detail-value">' + escHtml(row.field || '—') + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">شرح:</div><div class="report-detail-value">' + escHtml(row.desc || '—') + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">ردیف مرتبط:</div><div class="report-detail-value">' + escHtml(row.related || '—') + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">وضعیت:</div><div class="report-detail-value"><span class="report-badge ' + statusBadgeClass(row.status) + '">' + escHtml(row.status || '—') + '</span></div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">پیمانکاری/امانی:</div><div class="report-detail-value">' + escHtml(row.engagement || '—') + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">پیمانکار:</div><div class="report-detail-value">' + escHtml(row.recipient || '—') + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">آدرس:</div><div class="report-detail-value">' + escHtml(row.address || '—') + '</div></div>' +
+        '<div class="report-details-grid">' +
+          '<div class="report-detail-box"><div class="report-detail-label">ردیف</div><div class="report-detail-value">' + escHtml(row.row) + '</div></div>' +
+          '<div class="report-detail-box"><div class="report-detail-label">تاریخ شمسی</div><div class="report-detail-value">' + escHtml(row.date) + '</div></div>' +
+          '<div class="report-detail-box"><div class="report-detail-label">EPC</div><div class="report-detail-value">' + escHtml(row.epc || '—') + '</div></div>' +
+          '<div class="report-detail-box"><div class="report-detail-label">رشته</div><div class="report-detail-value">' + escHtml(row.field || '—') + '</div></div>' +
+          '<div class="report-detail-box"><div class="report-detail-label">وضعیت</div><div class="report-detail-value">' + escHtml(row.status || '—') + '</div></div>' +
+          '<div class="report-detail-box"><div class="report-detail-label">پیمانکاری/امانی</div><div class="report-detail-value">' + escHtml(row.engagement || '—') + '</div></div>' +
+          '<div class="report-detail-box"><div class="report-detail-label">پیمانکار</div><div class="report-detail-value">' + escHtml(row.recipient || '—') + '</div></div>' +
+          '<div class="report-detail-box"><div class="report-detail-label">آدرس</div><div class="report-detail-value">' + escHtml(row.address || '—') + '</div></div>' +
+          '<div class="report-detail-box" style="grid-column: 1/-1;"><div class="report-detail-label">ردیف مرتبط</div><div class="report-detail-value">' + escHtml(row.related || '—') + '</div></div>' +
+          '<div class="report-detail-box" style="grid-column: 1/-1;"><div class="report-detail-label">شرح عملیات</div><div class="report-detail-value">' + escHtml(row.desc || '—') + '</div></div>' +
+        '</div>' +
+        '<div class="report-actions">' +
+          '<button class="btn-report" onclick="event.stopPropagation(); openReportModal(' + idx + ', \'report\')">📝 ثبت گزارش</button>' +
+          '<button class="btn-comment" onclick="event.stopPropagation(); openReportModal(' + idx + ', \'comment\')">💬 ثبت کامنت</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
   });
@@ -1124,6 +1488,88 @@ function toggleReportCard(header) {
   var card = header.parentElement;
   card.classList.toggle('open');
 }
+
+/* ═══════════════════════════════════════════════
+   📝 Modal ثبت گزارش/کامنت
+   ═══════════════════════════════════════════════ */
+function openReportModal(idx, type) {
+  var row = currentReportRows[idx];
+  if (!row) return;
+  currentReportTarget = { row: row, type: type };
+
+  var title = document.getElementById('reportModalTitle');
+  var labelEl = document.getElementById('reportModalTextLabel');
+  var parentEl = document.getElementById('reportModalParent');
+  var textEl = document.getElementById('reportModalText');
+  var msgEl = document.getElementById('reportModalMsg');
+
+  if (type === 'report') {
+    title.textContent = '📝 ثبت گزارش';
+    labelEl.textContent = 'متن گزارش *';
+    textEl.placeholder = 'شرح گزارش خود را وارد کنید...';
+  } else {
+    title.textContent = '💬 ثبت کامنت';
+    labelEl.textContent = 'متن کامنت *';
+    textEl.placeholder = 'متن کامنت خود را وارد کنید...';
+  }
+
+  parentEl.innerHTML =
+    '<b>#' + escHtml(row.row || '—') + '</b> — ' + escHtml(row.subject || '—') +
+    '<br>تاریخ: ' + escHtml(row.date || '—') +
+    '<br>پیمانکار: ' + escHtml(row.recipient || '—');
+
+  textEl.value = '';
+  msgEl.innerText = '';
+  msgEl.className = '';
+  document.getElementById('reportModal').classList.remove('hidden');
+  setTimeout(function() { textEl.focus(); }, 100);
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.add('hidden');
+  currentReportTarget = null;
+}
+
+document.getElementById('reportModalClose').onclick = closeReportModal;
+document.getElementById('reportModalCancel').onclick = closeReportModal;
+document.getElementById('reportModal').onclick = function(e) {
+  if (e.target === this) closeReportModal();
+};
+
+document.getElementById('reportModalSubmit').onclick = function() {
+  if (!currentReportTarget) return;
+  var text = document.getElementById('reportModalText').value.trim();
+  var msgEl = document.getElementById('reportModalMsg');
+  if (!text) {
+    msgEl.className = 'msg msg-err';
+    msgEl.innerText = '❌ متن الزامی است';
+    return;
+  }
+
+  var btn = this;
+  btn.disabled = true; btn.innerText = '⏳ ...';
+
+  api({
+    action: 'submitReport',
+    chatId: tgUser.id,
+    parentRow: currentReportTarget.row.row,
+    reportType: currentReportTarget.type,
+    text: text
+  }).then(function(r) {
+    btn.disabled = false; btn.innerText = 'ثبت';
+    if (r && r.ok) {
+      closeReportModal();
+      toast('✅ ' + r.message, 'ok');
+    } else {
+      msgEl.className = 'msg msg-err';
+      msgEl.innerText = '❌ ' + ((r && r.message) || 'خطا');
+    }
+  }).catch(function(err) {
+    btn.disabled = false; btn.innerText = 'ثبت';
+    msgEl.className = 'msg msg-err';
+    msgEl.innerText = '❌ ' + (err.message || 'خطا');
+  });
+};
 </script>
 </body>
 </html>

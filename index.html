@@ -49,7 +49,6 @@ body {
 }
 body.has-ticker { padding-top: calc(var(--header-h) + var(--ticker-h)); }
 
-/* ═══════════ Fixed Top Bar ═══════════ */
 .top-bar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -118,7 +117,6 @@ body.has-ticker { padding-top: calc(var(--header-h) + var(--ticker-h)); }
   to   { transform: translate(100vw, -50%); }
 }
 
-/* ═══════════ Main Layout ═══════════ */
 .main-wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
 .screen { display: none; }
 .screen.active { display: block; animation: fadeIn 0.2s ease; }
@@ -565,6 +563,62 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .ss-chip-x:hover { color: var(--danger); }
 
+/* ═══ Chips checkboxes (multi-select filter) ═══ */
+.chips-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.chips-checkboxes::-webkit-scrollbar { width: 6px; }
+.chips-checkboxes::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+.chk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+}
+.chk-chip:hover {
+  background: var(--bg-muted);
+  border-color: var(--text-soft);
+}
+.chk-chip.selected {
+  background: #eff6ff;
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+.chk-chip input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--primary);
+  margin: 0;
+  flex-shrink: 0;
+}
+.chips-empty {
+  color: var(--text-soft);
+  font-size: 11px;
+  padding: 4px;
+}
+
 .preview-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -663,6 +717,7 @@ textarea { min-height: 80px; resize: vertical; }
 @media (min-width: 1000px) {
   .filter-row { grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 }
+.filter-row .full { grid-column: 1/-1; }
 
 .results-wrap {
   display: flex;
@@ -1134,9 +1189,9 @@ textarea { min-height: 80px; resize: vertical; }
           <div class="col"><div class="date-cap">روز</div><select id="rptToDay"></select></div>
         </div>
       </div>
-      <div>
-        <label>موضوع ردیف</label>
-        <div id="rptSubjectWrap"></div>
+      <div class="full">
+        <label>موضوع ردیف (چند انتخابی)</label>
+        <div id="rptSubjectChips"></div>
       </div>
       <div>
         <label>EPC</label>
@@ -1166,7 +1221,7 @@ textarea { min-height: 80px; resize: vertical; }
         <label>طبقه / آدرس</label>
         <div id="rptAddrWrap"></div>
       </div>
-      <div style="grid-column: 1/-1;">
+      <div class="full">
         <label>شرح عملیات (جستجو)</label>
         <input id="rptDesc" type="text" placeholder="قسمتی از متن...">
       </div>
@@ -1180,7 +1235,7 @@ textarea { min-height: 80px; resize: vertical; }
   </div>
 </div>
 
-</div><!-- /main-wrap -->
+</div>
 
 <!-- Modal ثبت گزارش / کامنت -->
 <div class="modal-overlay hidden" id="reportModal">
@@ -1208,6 +1263,22 @@ textarea { min-height: 80px; resize: vertical; }
 
     <label>طبقه / آدرس (چندتایی)</label>
     <div id="rptModalAddrWrap"></div>
+
+    <div class="plat-box">
+      <div style="font-size:11px; font-weight:600; margin-bottom:8px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.4px;">📡 پلتفورم ارسال پیام</div>
+      <div class="plat-row all">
+        <input type="checkbox" id="rptModalChkAll">
+        <label for="rptModalChkAll">🌐 همه</label>
+      </div>
+      <div class="plat-row" id="rptModalRowTg">
+        <input type="checkbox" id="rptModalChkTg" checked>
+        <label for="rptModalChkTg">📱 Telegram</label>
+      </div>
+      <div class="plat-row" id="rptModalRowBale">
+        <input type="checkbox" id="rptModalChkBale">
+        <label for="rptModalChkBale">📨 Bale</label>
+      </div>
+    </div>
 
     <div id="reportModalMsg"></div>
     <div class="modal-actions">
@@ -1502,8 +1573,62 @@ function makeSS(boxId, opt) {
   };
 }
 
+// ═══ Chips multi-select (checkboxes) ═══
+function makeChipsMulti(boxId, opt) {
+  var box = document.getElementById(boxId);
+  box.innerHTML = '';
+  var opts = (opt.options || []).slice();
+  var val = [];
+
+  var wrap = document.createElement('div');
+  wrap.className = 'chips-checkboxes';
+  box.appendChild(wrap);
+
+  function render() {
+    wrap.innerHTML = '';
+    if (!opts.length) {
+      var e = document.createElement('div');
+      e.className = 'chips-empty';
+      e.textContent = 'گزینه‌ای موجود نیست';
+      wrap.appendChild(e);
+      return;
+    }
+    opts.forEach(function(o) {
+      var lbl = typeof o === 'string' ? o : (o.label || o.value);
+      var v = typeof o === 'string' ? o : o.value;
+      var isSel = val.indexOf(v) !== -1;
+      var chip = document.createElement('label');
+      chip.className = 'chk-chip' + (isSel ? ' selected' : '');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = isSel;
+      cb.onchange = function() {
+        if (cb.checked) {
+          if (val.indexOf(v) === -1) val.push(v);
+        } else {
+          val = val.filter(function(s) { return s !== v; });
+        }
+        render();
+      };
+      var span = document.createElement('span');
+      span.textContent = lbl;
+      chip.appendChild(cb);
+      chip.appendChild(span);
+      wrap.appendChild(chip);
+    });
+  }
+  render();
+
+  return {
+    getStr: function() { return val.join(', '); },
+    getValue: function() { return val.slice(); },
+    setOpts: function(a) { opts = (a || []).slice(); render(); },
+    clear: function() { val = []; render(); }
+  };
+}
+
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
-var rptSubjectSS, rptEpcSS, rptFieldSS, rptRelatedSS, rptStatusSS, rptEngSS, rptRecipientSS, rptAddrSS;
+var rptSubjectChips, rptEpcSS, rptFieldSS, rptRelatedSS, rptStatusSS, rptEngSS, rptRecipientSS, rptAddrSS;
 var rptModalRecipientsSS, rptModalEpcSS, rptModalStatusSS, rptModalEngSS, rptModalAddrSS;
 var rptModalOptionsLoaded = false;
 
@@ -1825,7 +1950,7 @@ var rptFromY, rptFromM, rptFromD, rptToY, rptToM, rptToD;
 function initReports() {
   buildReportDatePickers();
 
-  rptSubjectSS = makeSS('rptSubjectWrap', { multi: false, options: [], placeholder: 'همه' });
+  rptSubjectChips = makeChipsMulti('rptSubjectChips', { options: [] });
   rptEpcSS = makeSS('rptEpcWrap', { multi: false, options: [], placeholder: 'همه' });
   rptFieldSS = makeSS('rptFieldWrap', { multi: false, options: [], placeholder: 'همه' });
   rptRelatedSS = makeSS('rptRelatedWrap', { multi: false, options: [], placeholder: 'همه' });
@@ -1843,7 +1968,7 @@ function initReports() {
       document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا در دریافت گزینه‌ها</div>';
       return;
     }
-    rptSubjectSS.setOpts(r.subjects || []);
+    rptSubjectChips.setOpts(r.subjects || []);
     rptEpcSS.setOpts(r.epcs || []);
     rptFieldSS.setOpts(r.fields || []);
     rptRelatedSS.setOpts(r.relateds || []);
@@ -1952,7 +2077,7 @@ function clearReportFilters() {
   rptFromY.value = ''; rptFromM.value = ''; rptFromD.value = '';
   rptToY.value = ''; rptToM.value = ''; rptToD.value = '';
   document.getElementById('rptDesc').value = '';
-  if (rptSubjectSS) rptSubjectSS.clear();
+  if (rptSubjectChips) rptSubjectChips.clear();
   if (rptEpcSS) rptEpcSS.clear();
   if (rptFieldSS) rptFieldSS.clear();
   if (rptRelatedSS) rptRelatedSS.clear();
@@ -1973,7 +2098,7 @@ document.getElementById('applyFiltersBtn').onclick = function() {
   var filters = {
     dateFrom: getRptDate(rptFromY, rptFromM, rptFromD),
     dateTo: getRptDate(rptToY, rptToM, rptToD),
-    subject: rptSubjectSS ? rptSubjectSS.getStr() : '',
+    subject: rptSubjectChips ? rptSubjectChips.getStr() : '',
     epc: rptEpcSS ? rptEpcSS.getStr() : '',
     field: rptFieldSS ? rptFieldSS.getStr() : '',
     desc: document.getElementById('rptDesc').value.trim(),
@@ -2099,6 +2224,11 @@ function openReportModal(idx, type) {
   if (rptModalEngSS) rptModalEngSS.clear();
   if (rptModalAddrSS) rptModalAddrSS.clear();
 
+  // ریست پلتفورم‌ها — پیش‌فرض تلگرام
+  document.getElementById('rptModalChkTg').checked = true;
+  document.getElementById('rptModalChkBale').checked = false;
+  document.getElementById('rptModalChkAll').checked = false;
+
   document.getElementById('reportModal').classList.remove('hidden');
   setTimeout(function() { textEl.focus(); }, 100);
 }
@@ -2114,6 +2244,23 @@ document.getElementById('reportModal').onclick = function(e) {
   if (e.target === this) closeReportModal();
 };
 
+// پلتفورم‌های modal
+document.getElementById('rptModalChkAll').onchange = function() {
+  var v = this.checked;
+  document.getElementById('rptModalChkTg').checked = v;
+  document.getElementById('rptModalChkBale').checked = v;
+};
+document.getElementById('rptModalChkTg').onchange = function() {
+  var tg = this.checked;
+  var bale = document.getElementById('rptModalChkBale').checked;
+  document.getElementById('rptModalChkAll').checked = tg && bale;
+};
+document.getElementById('rptModalChkBale').onchange = function() {
+  var tg = document.getElementById('rptModalChkTg').checked;
+  var bale = this.checked;
+  document.getElementById('rptModalChkAll').checked = tg && bale;
+};
+
 document.getElementById('reportModalSubmit').onclick = function() {
   if (!currentReportTarget) return;
   var text = document.getElementById('reportModalText').value.trim();
@@ -2124,6 +2271,8 @@ document.getElementById('reportModalSubmit').onclick = function() {
   var status = rptModalStatusSS ? rptModalStatusSS.getStr() : '';
   var engagement = rptModalEngSS ? rptModalEngSS.getStr() : '';
   var address = rptModalAddrSS ? rptModalAddrSS.getStr() : '';
+  var sendTg = document.getElementById('rptModalChkTg').checked;
+  var sendBale = document.getElementById('rptModalChkBale').checked;
 
   if (!text) {
     msgEl.className = 'msg msg-err';
@@ -2133,6 +2282,11 @@ document.getElementById('reportModalSubmit').onclick = function() {
   if (!recipients) {
     msgEl.className = 'msg msg-err';
     msgEl.innerText = 'حداقل یک مخاطب انتخاب کنید';
+    return;
+  }
+  if (!sendTg && !sendBale) {
+    msgEl.className = 'msg msg-err';
+    msgEl.innerText = 'حداقل یک پلتفورم ارسال را انتخاب کنید';
     return;
   }
 
@@ -2149,7 +2303,9 @@ document.getElementById('reportModalSubmit').onclick = function() {
     epc: epc,
     status: status,
     engagement: engagement,
-    address: address
+    address: address,
+    sendTelegram: sendTg,
+    sendBale: sendBale
   }).then(function(r) {
     btn.disabled = false; btn.innerText = 'ثبت';
     if (r && r.ok) {

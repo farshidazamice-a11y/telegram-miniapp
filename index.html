@@ -32,6 +32,25 @@ button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 .btn-ok { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16,185,129,0.3); }
 .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 14px rgba(239,68,68,0.3); }
 
+/* دکمه‌های مربعی گزارش و پنل ادمین */
+.action-btn {
+  width: 100%; margin-top: 14px; padding: 20px;
+  border: none; border-radius: 8px;
+  color: #fff; font-size: 17px; font-weight: bold;
+  cursor: pointer; transition: all 0.15s ease;
+  display: block;
+}
+.action-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.action-btn:active { transform: translateY(0); }
+.action-btn-reports {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  box-shadow: 0 4px 14px rgba(139,92,246,0.35);
+}
+.action-btn-admin {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+}
+
 .msg { margin-top: 16px; padding: 14px; border-radius: 12px; text-align: center; font-size: 14px; white-space: pre-line; border: 1px solid; }
 .msg-ok { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 .msg-err { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
@@ -45,6 +64,7 @@ button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
 .date-row { display: flex; gap: 8px; }
 .date-row .col { flex: 1; }
+.date-cap { font-size: 11px; color: #64748b; text-align: center; margin-bottom: 4px; font-weight: bold; }
 .quick-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .btn-q { flex: 1; min-width: 80px; padding: 11px 8px; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; color: #334155; font-size: 13px; font-weight: bold; cursor: pointer; margin: 0; transition: all 0.2s; }
 .btn-q:hover { background: #e0f2fe; border-color: #93c5fd; color: #1e40af; }
@@ -57,7 +77,6 @@ button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 .plat-row.all { border-bottom: 1px solid #dbeafe; padding-bottom: 12px; margin-bottom: 6px; }
 .plat-row.all label { font-weight: bold; }
 
-/* searchable select */
 .ss-box { position: relative; margin-top: 6px; }
 .ss-in { width: 100%; padding: 13px 40px 13px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: #fff; transition: all 0.2s; outline: none; }
 .ss-in:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
@@ -114,10 +133,6 @@ body.has-ticker .user-panel-btn { top: 60px; }
 .user-panel-close { cursor: pointer; font-size: 26px; color: #94a3b8; background: none; border: none; padding: 0; width: auto; margin: 0; box-shadow: none; line-height: 1; }
 .user-panel-close:hover { color: #dc2626; transform: none; }
 
-.clock-box { background: linear-gradient(135deg, #1e3a8a, #3b82f6, #1e40af); color: white; border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 14px; box-shadow: 0 6px 20px rgba(30,58,138,0.35); }
-.clock-time { font-size: 40px; font-weight: bold; letter-spacing: 3px; direction: ltr; font-variant-numeric: tabular-nums; }
-.clock-date { font-size: 13px; opacity: 0.95; margin-top: 8px; }
-
 .weather-box { background: linear-gradient(135deg, #0ea5e9, #38bdf8, #0ea5e9); color: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 6px 20px rgba(14,165,233,0.35); }
 .weather-main { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .weather-temp { font-size: 36px; font-weight: bold; }
@@ -129,9 +144,9 @@ body.has-ticker .user-panel-btn { top: 60px; }
 .user-sub-info { font-size: 12px; color: #64748b; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #dbeafe; }
 .user-detail-row { padding: 4px 0; }
 
-/* ticker */
-.rain-ticker { position: fixed; top: 0; left: 0; right: 0; z-index: 998; height: 44px; overflow: hidden; background: linear-gradient(90deg, #1e40af, #2563eb, #1e40af, #2563eb, #1e40af); color: white; box-shadow: 0 4px 16px rgba(30,64,175,0.4); border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
-.rain-ticker-content { position: absolute; top: 50%; white-space: nowrap; direction: rtl; font-size: 14px; font-weight: bold; padding: 0 24px; transform: translate(100vw, -50%); animation: rainMarquee 35s linear infinite; }
+/* ticker — بزرگ‌تر و آرام‌تر */
+.rain-ticker { position: fixed; top: 0; left: 0; right: 0; z-index: 998; height: 52px; overflow: hidden; background: linear-gradient(90deg, #1e40af, #2563eb, #1e40af, #2563eb, #1e40af); color: white; box-shadow: 0 4px 16px rgba(30,64,175,0.4); border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+.rain-ticker-content { position: absolute; top: 50%; white-space: nowrap; direction: rtl; font-size: 17px; font-weight: bold; padding: 0 24px; transform: translate(100vw, -50%); animation: rainMarquee 65s linear infinite; letter-spacing: 0.3px; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 @keyframes rainMarquee { from { transform: translate(100vw, -50%); } to { transform: translate(-100%, -50%); } }
 
 /* گزارش‌ها */
@@ -165,7 +180,6 @@ body.has-ticker .user-panel-btn { top: 60px; }
 .empty-state { padding: 40px 20px; text-align: center; color: #94a3b8; font-size: 14px; }
 .result-count { text-align: center; padding: 8px; font-size: 13px; color: #64748b; margin-bottom: 8px; }
 
-/* اسکرول پنل ادمین */
 #adminSection .scroll-body { max-height: calc(100vh - 180px); overflow-y: auto; padding: 4px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
 #adminSection .scroll-body::-webkit-scrollbar { width: 8px; }
 #adminSection .scroll-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -184,10 +198,6 @@ body.has-ticker .user-panel-btn { top: 60px; }
     <div class="user-panel-header">
       <h3>👤 پنل کاربری</h3>
       <button class="user-panel-close" id="userPanelClose">×</button>
-    </div>
-    <div class="clock-box">
-      <div class="clock-time" id="clockTime">--:--:--</div>
-      <div class="clock-date" id="clockDate">در حال بارگذاری...</div>
     </div>
     <div class="weather-box">
       <div class="weather-main">
@@ -237,8 +247,8 @@ body.has-ticker .user-panel-btn { top: 60px; }
 <div id="activeSection" class="screen">
   <h2>✅ خوش آمدید</h2>
   <div class="msg msg-info" id="activeInfo"></div>
-  <button id="reportsBtn" class="hidden" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">📊 گزارش‌ها</button>
-  <button id="adminBtn" class="hidden">🛠 پنل ادمین</button>
+  <button id="reportsBtn" class="action-btn action-btn-reports hidden">📊 گزارش‌ها</button>
+  <button id="adminBtn" class="action-btn action-btn-admin hidden">🛠 پنل ادمین</button>
 </div>
 
 <div id="adminSection" class="screen">
@@ -288,9 +298,9 @@ body.has-ticker .user-panel-btn { top: 60px; }
         <button type="button" class="btn-q" onclick="setTomorrow()">📅 فردا</button>
       </div>
       <div class="date-row">
-        <div class="col"><select id="woYear"></select><div style="font-size:11px;text-align:center;color:#94a3b8;">سال</div></div>
-        <div class="col"><select id="woMonth"></select><div style="font-size:11px;text-align:center;color:#94a3b8;">ماه</div></div>
-        <div class="col"><select id="woDay"></select><div style="font-size:11px;text-align:center;color:#94a3b8;">روز</div></div>
+        <div class="col"><div class="date-cap">سال</div><select id="woYear"></select></div>
+        <div class="col"><div class="date-cap">ماه</div><select id="woMonth"></select></div>
+        <div class="col"><div class="date-cap">روز</div><select id="woDay"></select></div>
       </div>
       <label>مدت زمان (روز) *</label>
       <input id="woDur" type="number" min="1" placeholder="مثال: 3">
@@ -340,16 +350,16 @@ body.has-ticker .user-panel-btn { top: 60px; }
 
     <label>از تاریخ (شمسی)</label>
     <div class="date-row">
-      <div class="col"><select id="rptFromYear"></select></div>
-      <div class="col"><select id="rptFromMonth"></select></div>
-      <div class="col"><select id="rptFromDay"></select></div>
+      <div class="col"><div class="date-cap">سال</div><select id="rptFromYear"></select></div>
+      <div class="col"><div class="date-cap">ماه</div><select id="rptFromMonth"></select></div>
+      <div class="col"><div class="date-cap">روز</div><select id="rptFromDay"></select></div>
     </div>
 
     <label>تا تاریخ (شمسی)</label>
     <div class="date-row">
-      <div class="col"><select id="rptToYear"></select></div>
-      <div class="col"><select id="rptToMonth"></select></div>
-      <div class="col"><select id="rptToDay"></select></div>
+      <div class="col"><div class="date-cap">سال</div><select id="rptToYear"></select></div>
+      <div class="col"><div class="date-cap">ماه</div><select id="rptToMonth"></select></div>
+      <div class="col"><div class="date-cap">روز</div><select id="rptToDay"></select></div>
     </div>
 
     <label>موضوع ردیف</label>
@@ -395,7 +405,6 @@ var recipients = [];
 var payload = null;
 var submitting = false;
 var currentUser = null;
-var clockInterval = null;
 
 var MONTHS = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 
@@ -462,7 +471,6 @@ function j2g(jy, jm, jd) {
 }
 function dim(y, m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
 
-// تاریخ دستور کار
 var yS, mS, dS;
 function buildDates() {
   yS = document.getElementById('woYear'); mS = document.getElementById('woMonth'); dS = document.getElementById('woDay');
@@ -489,7 +497,6 @@ function setD(y, m, d) { yS.value = y; mS.value = m; var ev = document.createEve
 function setToday() { var now = new Date(); var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate()); setD(j[0], j[1], j[2]); }
 function setTomorrow() { var t = new Date(); t.setDate(t.getDate()+1); var j = g2j(t.getFullYear(), t.getMonth()+1, t.getDate()); setD(j[0], j[1], j[2]); }
 
-// ============ searchable select ============
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId);
   box.innerHTML = '';
@@ -617,22 +624,6 @@ function makeSS(boxId, opt) {
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 var rptSubjectSS, rptEpcSS, rptFieldSS, rptRelatedSS, rptStatusSS, rptEngSS, rptRecipientSS, rptAddrSS;
 
-// ساعت
-function updateClock() {
-  var now = new Date();
-  var utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
-  var d = new Date(utcMs + (3.5 * 3600000));
-  var h = String(d.getHours()).padStart(2, '0');
-  var m = String(d.getMinutes()).padStart(2, '0');
-  var s = String(d.getSeconds()).padStart(2, '0');
-  var el = document.getElementById('clockTime');
-  if (el) el.textContent = h + ':' + m + ':' + s;
-  var j = g2j(d.getFullYear(), d.getMonth() + 1, d.getDate());
-  var dn = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'][d.getDay()];
-  var dateEl = document.getElementById('clockDate');
-  if (dateEl) dateEl.textContent = dn + '  ' + j[0] + '/' + j[1] + '/' + j[2];
-}
-
 function loadWeather() {
   api({ action: 'getTehranWeather' }).then(function(r) {
     if (!r || !r.ok) { document.getElementById('weatherDesc').textContent = 'خطا'; return; }
@@ -661,15 +652,11 @@ setTimeout(loadWeather, 1500);
 
 function openUserPanel() {
   document.getElementById('userPanelModal').classList.remove('hidden');
-  updateClock();
-  if (clockInterval) clearInterval(clockInterval);
-  clockInterval = setInterval(updateClock, 1000);
   loadWeather();
   renderUserInfo();
 }
 function closeUserPanel() {
   document.getElementById('userPanelModal').classList.add('hidden');
-  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
 }
 function renderUserInfo() {
   var box = document.getElementById('userInfoBox');
@@ -689,9 +676,6 @@ document.getElementById('userPanelBtn').onclick = openUserPanel;
 document.getElementById('userPanelClose').onclick = closeUserPanel;
 document.getElementById('userPanelModal').onclick = function(e) { if (e.target === this) closeUserPanel(); };
 
-// ============================================
-// init
-// ============================================
 function init() {
   if (!tgUser) {
     document.getElementById('loading').innerHTML = '<div style="padding:30px; text-align:center; color:#dc2626;">لطفاً از داخل تلگرام باز کنید</div>';
@@ -712,7 +696,6 @@ function handleStatus(r) {
     currentUser = u;
     var access = String(u.access || '').trim();
     var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
-    // پنل کاربری فقط برای ادمین و ستادی
     if (access !== 'پایه') document.getElementById('userPanelBtn').classList.remove('hidden');
     if (active) {
       var subParts = [];
@@ -725,7 +708,6 @@ function handleStatus(r) {
         (subLine ? '<div style="font-size:12px; color:#64748b; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #dbeafe;">' + subLine + '</div>' : '') +
         '<div><b>نام کامل:</b> ' + escHtml(u.fullName || '—') + '</div>' +
         '<div><b>سطح دسترسی:</b> ' + escHtml(access || 'تعیین نشده') + '</div>';
-      // دکمه گزارش‌ها برای همه (پایه/ستادی/ادمین)
       document.getElementById('reportsBtn').classList.remove('hidden');
       if (access === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
       show('activeSection');
@@ -765,9 +747,6 @@ document.getElementById('backBtn').onclick = function() { show('activeSection');
 document.getElementById('reportsBtn').onclick = function() { show('reportsSection'); initReports(); };
 document.getElementById('reportsBackBtn').onclick = function() { show('activeSection'); };
 
-// ============================================
-// پنل ادمین
-// ============================================
 function loadAdmin() {
   ssRecipient = makeSS('recipientWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipient });
   ssSubject = makeSS('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
@@ -967,9 +946,6 @@ document.getElementById('submitBtn').onclick = function() {
   });
 };
 
-// ============================================
-// 📊 پنل گزارش‌ها
-// ============================================
 var rptFromY, rptFromM, rptFromD, rptToY, rptToM, rptToD;
 
 function initReports() {
@@ -1044,9 +1020,8 @@ function setQuickFilter(type) {
   if (type === 'today') {
     fromJ = t; toJ = t;
   } else if (type === 'week') {
-    // هفته جاری: شنبه تا جمعه
-    var jsDay = now.getDay(); // 0=Sun, 6=Sat
-    var persianDay = (jsDay + 1) % 7; // Sat=0, Sun=1, ...
+    var jsDay = now.getDay();
+    var persianDay = (jsDay + 1) % 7;
     var sat = new Date(now); sat.setDate(now.getDate() - persianDay);
     var fri = new Date(sat); fri.setDate(sat.getDate() + 6);
     fromJ = g2j(sat.getFullYear(), sat.getMonth()+1, sat.getDate());
@@ -1129,8 +1104,7 @@ function renderReports(rows) {
       '</div>' +
       '<div class="report-card-body">' +
         '<div class="report-detail"><div class="report-detail-label">ردیف:</div><div class="report-detail-value">' + escHtml(row.row) + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">تاریخ شمسی:</div><div class="report-detail-value" style="direction:ltr;">' + escHtml(row.date) + '</div></div>' +
-        '<div class="report-detail"><div class="report-detail-label">تاریخ میلادی:</div><div class="report-detail-value" style="direction:ltr;">' + escHtml(row.dateG) + '</div></div>' +
+        '<div class="report-detail"><div class="report-detail-label">تاریخ شمسی:</div><div class="report-detail-value">' + escHtml(row.date) + '</div></div>' +
         '<div class="report-detail"><div class="report-detail-label">EPC:</div><div class="report-detail-value">' + escHtml(row.epc || '—') + '</div></div>' +
         '<div class="report-detail"><div class="report-detail-label">رشته:</div><div class="report-detail-value">' + escHtml(row.field || '—') + '</div></div>' +
         '<div class="report-detail"><div class="report-detail-label">شرح:</div><div class="report-detail-value">' + escHtml(row.desc || '—') + '</div></div>' +

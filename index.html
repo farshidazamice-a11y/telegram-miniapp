@@ -283,8 +283,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-sec:hover { background: #e2e8f0; }
 .btn-ok { background: var(--success); }
 .btn-ok:hover { background: var(--success-hover); }
-.btn-danger { background: var(--danger); }
-.btn-danger:hover { background: #991b1b; }
 
 .action-grid {
   display: grid;
@@ -572,7 +570,7 @@ textarea { min-height: 80px; resize: vertical; }
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  max-height: 180px;
+  max-height: 200px;
   overflow-y: auto;
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
@@ -617,6 +615,55 @@ textarea { min-height: 80px; resize: vertical; }
   color: var(--text-soft);
   font-size: 11px;
   padding: 4px;
+}
+
+/* ═══ Highlight block (top of filters) ═══ */
+.subject-highlight-block {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.subject-highlight-block .sh-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-strong);
+}
+.subject-highlight-block .sh-title-icon {
+  width: 26px; height: 26px;
+  background: #eff6ff;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.subject-highlight-block .sh-title-count {
+  font-size: 10px;
+  background: var(--primary);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-right: auto;
+}
+.subject-highlight-block .sh-title-actions {
+  font-size: 10px;
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-weight: 600;
+}
+.subject-highlight-block .sh-title-actions:hover {
+  background: #e2e8f0;
 }
 
 .preview-card {
@@ -1164,12 +1211,24 @@ textarea { min-height: 80px; resize: vertical; }
   <h2>📊 گزارش‌ها</h2>
   <button id="reportsBackBtn" class="btn-sec">→ بازگشت</button>
 
-  <div class="reports-filters" style="margin-top:12px;">
+  <!-- ⭐ بلوک ویژه موضوع ردیف (چند انتخابی) — بالای همه فیلترها -->
+  <div class="subject-highlight-block" style="margin-top:12px;">
+    <div class="sh-title">
+      <span class="sh-title-icon">🏷</span>
+      <span>موضوع ردیف</span>
+      <span class="sh-title-count" id="rptSubjectCount">0</span>
+      <span class="sh-title-actions" onclick="rptSubjectSelectAll()">انتخاب همه</span>
+      <span class="sh-title-actions" onclick="rptSubjectClearAll()">پاک کردن</span>
+    </div>
+    <div id="rptSubjectChips"></div>
+  </div>
+
+  <div class="reports-filters">
     <div class="quick-row">
       <button type="button" class="btn-q" onclick="setQuickFilter('today')">📅 امروز</button>
       <button type="button" class="btn-q" onclick="setQuickFilter('week')">📅 هفته</button>
       <button type="button" class="btn-q" onclick="setQuickFilter('month')">📅 ماه</button>
-      <button type="button" class="btn-q" onclick="clearReportFilters()">🗑️ پاک</button>
+      <button type="button" class="btn-q" onclick="clearReportFilters()">🗑️ پاک همه</button>
     </div>
 
     <div class="filter-row">
@@ -1188,10 +1247,6 @@ textarea { min-height: 80px; resize: vertical; }
           <div class="col"><div class="date-cap">ماه</div><select id="rptToMonth"></select></div>
           <div class="col"><div class="date-cap">روز</div><select id="rptToDay"></select></div>
         </div>
-      </div>
-      <div class="full">
-        <label>موضوع ردیف (چند انتخابی)</label>
-        <div id="rptSubjectChips"></div>
       </div>
       <div>
         <label>EPC</label>
@@ -1573,12 +1628,13 @@ function makeSS(boxId, opt) {
   };
 }
 
-// ═══ Chips multi-select (checkboxes) ═══
+/* ═══ Chips multi-select با چک‌باکس ═══ */
 function makeChipsMulti(boxId, opt) {
   var box = document.getElementById(boxId);
   box.innerHTML = '';
   var opts = (opt.options || []).slice();
   var val = [];
+  var onCountChange = opt.onCountChange || null;
 
   var wrap = document.createElement('div');
   wrap.className = 'chips-checkboxes';
@@ -1591,6 +1647,7 @@ function makeChipsMulti(boxId, opt) {
       e.className = 'chips-empty';
       e.textContent = 'گزینه‌ای موجود نیست';
       wrap.appendChild(e);
+      if (onCountChange) onCountChange(0);
       return;
     }
     opts.forEach(function(o) {
@@ -1616,6 +1673,7 @@ function makeChipsMulti(boxId, opt) {
       chip.appendChild(span);
       wrap.appendChild(chip);
     });
+    if (onCountChange) onCountChange(val.length);
   }
   render();
 
@@ -1623,7 +1681,11 @@ function makeChipsMulti(boxId, opt) {
     getStr: function() { return val.join(', '); },
     getValue: function() { return val.slice(); },
     setOpts: function(a) { opts = (a || []).slice(); render(); },
-    clear: function() { val = []; render(); }
+    clear: function() { val = []; render(); },
+    selectAll: function() {
+      val = opts.map(function(o) { return typeof o === 'string' ? o : o.value; });
+      render();
+    }
   };
 }
 
@@ -1947,10 +2009,25 @@ document.getElementById('submitBtn').onclick = function() {
 /* ═══════════ گزارش‌ها ═══════════ */
 var rptFromY, rptFromM, rptFromD, rptToY, rptToM, rptToD;
 
+function rptSubjectSelectAll() {
+  if (rptSubjectChips) rptSubjectChips.selectAll();
+}
+function rptSubjectClearAll() {
+  if (rptSubjectChips) rptSubjectChips.clear();
+}
+
 function initReports() {
   buildReportDatePickers();
 
-  rptSubjectChips = makeChipsMulti('rptSubjectChips', { options: [] });
+  // ⭐ موضوع ردیف — chips با چک‌باکس (چند انتخابی)
+  rptSubjectChips = makeChipsMulti('rptSubjectChips', {
+    options: [],
+    onCountChange: function(n) {
+      var el = document.getElementById('rptSubjectCount');
+      if (el) el.textContent = n;
+    }
+  });
+
   rptEpcSS = makeSS('rptEpcWrap', { multi: false, options: [], placeholder: 'همه' });
   rptFieldSS = makeSS('rptFieldWrap', { multi: false, options: [], placeholder: 'همه' });
   rptRelatedSS = makeSS('rptRelatedWrap', { multi: false, options: [], placeholder: 'همه' });
@@ -2224,7 +2301,6 @@ function openReportModal(idx, type) {
   if (rptModalEngSS) rptModalEngSS.clear();
   if (rptModalAddrSS) rptModalAddrSS.clear();
 
-  // ریست پلتفورم‌ها — پیش‌فرض تلگرام
   document.getElementById('rptModalChkTg').checked = true;
   document.getElementById('rptModalChkBale').checked = false;
   document.getElementById('rptModalChkAll').checked = false;
@@ -2244,7 +2320,6 @@ document.getElementById('reportModal').onclick = function(e) {
   if (e.target === this) closeReportModal();
 };
 
-// پلتفورم‌های modal
 document.getElementById('rptModalChkAll').onchange = function() {
   var v = this.checked;
   document.getElementById('rptModalChkTg').checked = v;

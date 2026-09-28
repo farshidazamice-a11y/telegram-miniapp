@@ -18,7 +18,6 @@
   --text-soft: #94a3b8;
   --header-bg: #1e293b;
   --header-fg: #e2e8f0;
-  --header-sub: #cbd5e1;
   --accent: #475569;
   --accent-hover: #334155;
   --primary: #1e40af;
@@ -26,7 +25,6 @@
   --success: #047857;
   --success-hover: #065f46;
   --warning: #b45309;
-  --info: #0e7490;
   --danger: #b91c1c;
   --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
   --shadow-md: 0 2px 8px rgba(15,23,42,0.06);
@@ -68,33 +66,19 @@ body.has-ticker { padding-top: calc(var(--header-h) + var(--ticker-h)); }
   color: var(--header-fg);
 }
 .app-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
+  display: flex; align-items: center; gap: 10px;
+  min-width: 0; flex: 1;
 }
-.app-logo {
-  font-size: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-  filter: grayscale(0.2);
-}
+.app-logo { font-size: 22px; line-height: 1; flex-shrink: 0; }
 .app-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 14px; font-weight: 600;
   letter-spacing: 0.2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   color: #f1f5f9;
 }
 .app-header-weather {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500;
   background: rgba(255,255,255,0.08);
   padding: 5px 12px;
   border-radius: 20px;
@@ -104,13 +88,10 @@ body.has-ticker { padding-top: calc(var(--header-h) + var(--ticker-h)); }
   direction: ltr;
 }
 .app-header-weather .range {
-  opacity: 0.7;
-  font-size: 10px;
-  font-weight: 400;
-  margin-right: 2px;
+  opacity: 0.7; font-size: 10px;
+  font-weight: 400; margin-right: 2px;
 }
 
-/* ─── Ticker ─── */
 .rain-ticker {
   display: none;
   height: var(--ticker-h);
@@ -131,7 +112,6 @@ body.has-ticker { padding-top: calc(var(--header-h) + var(--ticker-h)); }
   padding: 0 24px;
   transform: translate(-100%, -50%);
   animation: rainMarquee 60s linear infinite;
-  letter-spacing: 0.2px;
 }
 @keyframes rainMarquee {
   from { transform: translate(-100%, -50%); }
@@ -139,17 +119,12 @@ body.has-ticker { padding-top: calc(var(--header-h) + var(--ticker-h)); }
 }
 
 /* ═══════════ Main Layout ═══════════ */
-.main-wrap {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 16px;
-}
+.main-wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
 .screen { display: none; }
 .screen.active { display: block; animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 #loading.active { display: flex; }
 
-/* ═══════════ Typography ═══════════ */
 h2 {
   color: var(--text-main);
   margin: 4px 0 16px 0;
@@ -166,24 +141,19 @@ h3 {
   border-bottom: 1px solid var(--border);
 }
 
-/* ═══════════ Breadcrumb ═══════════ */
 .breadcrumb {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  display: inline-flex; align-items: center; gap: 4px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   padding: 5px 12px;
   border-radius: 20px;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 11px; font-weight: 500;
   color: var(--text-muted);
   margin-bottom: 14px;
   box-shadow: var(--shadow-sm);
 }
 .breadcrumb .sep { color: var(--text-soft); font-size: 10px; }
 
-/* ═══════════ Cards ═══════════ */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -192,7 +162,6 @@ h3 {
   padding: 16px;
 }
 
-/* ─── Date Card (Home) ─── */
 .date-card {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: #f1f5f9;
@@ -219,28 +188,20 @@ h3 {
 }
 .date-card-main { flex: 1; min-width: 0; }
 .date-card-weekday {
-  font-size: 12px;
-  font-weight: 500;
-  color: #cbd5e1;
-  margin-bottom: 2px;
+  font-size: 12px; font-weight: 500;
+  color: #cbd5e1; margin-bottom: 2px;
 }
 .date-card-date {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 22px; font-weight: 700;
   letter-spacing: -0.5px;
-  color: #f8fafc;
-  line-height: 1.2;
+  color: #f8fafc; line-height: 1.2;
 }
 .date-card-lunar {
   font-size: 11px;
   color: #94a3b8;
   margin-top: 4px;
 }
-.date-card-icon {
-  font-size: 40px;
-  flex-shrink: 0;
-  opacity: 0.9;
-}
+.date-card-icon { font-size: 40px; flex-shrink: 0; opacity: 0.9; }
 .date-card-occasion {
   margin-top: 12px;
   padding-top: 12px;
@@ -248,22 +209,17 @@ h3 {
   font-size: 12px;
   color: #fbbf24;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: flex; align-items: center; gap: 6px;
   position: relative;
 }
 
-/* ─── User Card ─── */
 .user-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
   margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex; align-items: center; gap: 12px;
   box-shadow: var(--shadow-sm);
 }
 .user-avatar {
@@ -271,36 +227,26 @@ h3 {
   border-radius: 12px;
   background: linear-gradient(135deg, #334155, #475569);
   color: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 600; flex-shrink: 0;
 }
 .user-info-mini { flex: 1; min-width: 0; }
 .user-info-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 14px; font-weight: 600;
   color: var(--text-main);
   margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .user-info-sub {
   font-size: 11px;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .user-badge {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 6px;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 10px; font-weight: 600;
   background: var(--bg-muted);
   color: var(--text-muted);
   margin-left: 4px;
@@ -312,7 +258,6 @@ h3 {
   border-color: #fde68a;
 }
 
-/* ═══════════ Buttons ═══════════ */
 button {
   font-family: inherit;
   cursor: pointer;
@@ -342,9 +287,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-ok:hover { background: var(--success-hover); }
 .btn-danger { background: var(--danger); }
 .btn-danger:hover { background: #991b1b; }
-.btn-sm { padding: 8px 12px; font-size: 12px; margin-top: 0; }
 
-/* ─── Action Grid ─── */
 .action-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -360,18 +303,13 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
   gap: 10px;
-  margin: 0;
-  min-height: 110px;
+  margin: 0; min-height: 110px;
   color: var(--text-main);
   box-shadow: var(--shadow-sm);
   transition: all 0.15s;
-  position: relative;
-  overflow: hidden;
 }
 .action-tile:hover {
   transform: translateY(-2px);
@@ -381,24 +319,16 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .action-tile .tile-icon {
   width: 46px; height: 46px;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; line-height: 1;
 }
 .action-tile .tile-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 12px; font-weight: 600;
   letter-spacing: 0.1px;
-  color: var(--text-main);
 }
 .action-tile-reports .tile-icon { background: #eef2ff; color: #4338ca; }
 .action-tile-admin .tile-icon { background: #ecfeff; color: #0e7490; }
-.action-tile-reports:hover { background: #fafaff; }
-.action-tile-admin:hover { background: #f5feff; }
 
-/* ═══════════ Forms ═══════════ */
 label {
   display: block;
   margin-top: 14px;
@@ -425,7 +355,6 @@ input:focus, select:focus, textarea:focus {
 }
 textarea { min-height: 80px; resize: vertical; }
 
-/* ═══════════ Messages ═══════════ */
 .msg {
   margin-top: 12px;
   padding: 11px 14px;
@@ -442,7 +371,6 @@ textarea { min-height: 80px; resize: vertical; }
 .msg-warn { background: #fffbeb; color: #92400e; border-color: #fde68a; }
 .hidden { display: none !important; }
 
-/* ═══════════ Loading ═══════════ */
 #loading {
   flex-direction: column;
   align-items: center;
@@ -460,7 +388,6 @@ textarea { min-height: 80px; resize: vertical; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ═══════════ Date Pickers ═══════════ */
 .date-row { display: flex; gap: 6px; }
 .date-row .col { flex: 1; }
 .date-cap {
@@ -471,8 +398,7 @@ textarea { min-height: 80px; resize: vertical; }
   font-weight: 600;
 }
 .quick-row {
-  display: flex;
-  gap: 6px;
+  display: flex; gap: 6px;
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
@@ -495,7 +421,6 @@ textarea { min-height: 80px; resize: vertical; }
   color: var(--text-main);
 }
 
-/* ═══════════ Platform Box ═══════════ */
 .plat-box {
   background: var(--bg-subtle);
   border: 1px solid var(--border);
@@ -504,10 +429,8 @@ textarea { min-height: 80px; resize: vertical; }
   margin-top: 8px;
 }
 .plat-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
+  display: flex; align-items: center;
+  gap: 10px; padding: 6px 0;
 }
 .plat-row input[type="checkbox"] {
   width: 18px; height: 18px;
@@ -527,7 +450,6 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .plat-row.all label { font-weight: 600; }
 
-/* ═══════════ Searchable Select ═══════════ */
 .ss-box { position: relative; margin-top: 4px; }
 .ss-in {
   width: 100%;
@@ -606,8 +528,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .ss-item-summary {
   direction: ltr;
-  font-size: 10px;
-  color: #fff;
+  font-size: 10px; color: #fff;
   font-weight: 600;
   background: #92400e;
   padding: 2px 7px;
@@ -622,15 +543,12 @@ textarea { min-height: 80px; resize: vertical; }
   font-size: 12px;
 }
 .ss-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 6px;
+  display: flex; flex-wrap: wrap;
+  gap: 5px; margin-top: 6px;
 }
 .ss-chip {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  align-items: center; gap: 6px;
   padding: 4px 10px;
   background: var(--bg-muted);
   color: var(--text-main);
@@ -647,7 +565,6 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .ss-chip-x:hover { color: var(--danger); }
 
-/* ═══════════ Preview ═══════════ */
 .preview-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -674,8 +591,7 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-row:last-child { border-bottom: none; }
 .preview-label {
   font-weight: 600;
-  width: 90px;
-  flex-shrink: 0;
+  width: 90px; flex-shrink: 0;
   color: var(--text-muted);
   font-size: 11px;
 }
@@ -696,14 +612,9 @@ textarea { min-height: 80px; resize: vertical; }
   overflow-y: auto;
   color: var(--text-main);
 }
-.btn-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
+.btn-row { display: flex; gap: 8px; margin-top: 12px; }
 .btn-row button { flex: 1; margin-top: 0; }
 
-/* ═══════════ Send Status ═══════════ */
 .send-status-box {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -733,7 +644,6 @@ textarea { min-height: 80px; resize: vertical; }
 .send-status-fail { color: var(--danger); font-weight: bold; font-size: 16px; }
 .send-status-skip { color: var(--text-soft); font-size: 11px; }
 
-/* ═══════════ Reports ═══════════ */
 .reports-filters {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -760,7 +670,6 @@ textarea { min-height: 80px; resize: vertical; }
   gap: 8px;
 }
 
-/* ─── Report card ─── */
 .report-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -822,8 +731,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .meta-chip {
   display: inline-flex;
-  align-items: center;
-  gap: 3px;
+  align-items: center; gap: 3px;
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 10px;
@@ -833,43 +741,14 @@ textarea { min-height: 80px; resize: vertical; }
   border: 1px solid var(--border);
   white-space: nowrap;
 }
-.meta-chip-date {
-  background: #eff6ff;
-  color: #1e40af;
-  border-color: #dbeafe;
-}
-.meta-chip-status-ok {
-  background: #f0fdf4;
-  color: #166534;
-  border-color: #bbf7d0;
-}
-.meta-chip-status-warn {
-  background: #fffbeb;
-  color: #92400e;
-  border-color: #fde68a;
-}
-.meta-chip-status-info {
-  background: #ecfeff;
-  color: #155e75;
-  border-color: #a5f3fc;
-}
-.meta-chip-recipient {
-  background: #faf5ff;
-  color: #6b21a8;
-  border-color: #e9d5ff;
-}
-.meta-chip-epc {
-  background: #fef2f2;
-  color: #991b1b;
-  border-color: #fecaca;
-}
-.meta-chip-field {
-  background: #f7fee7;
-  color: #3f6212;
-  border-color: #d9f99d;
-}
+.meta-chip-date { background: #eff6ff; color: #1e40af; border-color: #dbeafe; }
+.meta-chip-status-ok { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.meta-chip-status-warn { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.meta-chip-status-info { background: #ecfeff; color: #155e75; border-color: #a5f3fc; }
+.meta-chip-recipient { background: #faf5ff; color: #6b21a8; border-color: #e9d5ff; }
+.meta-chip-epc { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.meta-chip-field { background: #f7fee7; color: #3f6212; border-color: #d9f99d; }
 
-/* ─── Report body ─── */
 .report-card-body {
   padding: 14px;
   border-top: 1px solid var(--border);
@@ -908,7 +787,6 @@ textarea { min-height: 80px; resize: vertical; }
   word-break: break-word;
 }
 
-/* ─── Report actions ─── */
 .report-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -921,25 +799,20 @@ textarea { min-height: 80px; resize: vertical; }
   .report-actions { grid-template-columns: 1fr 1fr 1fr; }
 }
 .btn-report {
-  background: #ecfdf5;
-  color: #047857;
+  background: #ecfdf5; color: #047857;
   border: 1px solid #a7f3d0;
-  font-size: 12px;
-  padding: 9px 10px;
+  font-size: 12px; padding: 9px 10px;
   margin-top: 0;
 }
 .btn-report:hover { background: #d1fae5; border-color: #6ee7b7; }
 .btn-comment {
-  background: #fffbeb;
-  color: #b45309;
+  background: #fffbeb; color: #b45309;
   border: 1px solid #fde68a;
-  font-size: 12px;
-  padding: 9px 10px;
+  font-size: 12px; padding: 9px 10px;
   margin-top: 0;
 }
 .btn-comment:hover { background: #fef3c7; border-color: #fcd34d; }
 
-/* ═══════════ Empty/Count ═══════════ */
 .empty-state {
   padding: 32px 20px;
   text-align: center;
@@ -960,7 +833,6 @@ textarea { min-height: 80px; resize: vertical; }
   text-transform: uppercase;
 }
 
-/* ═══════════ Modal ═══════════ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1003,8 +875,7 @@ textarea { min-height: 80px; resize: vertical; }
   background: none;
   border: none;
   padding: 0;
-  width: auto;
-  margin: 0;
+  width: auto; margin: 0;
   line-height: 1;
 }
 .modal-close:hover { color: var(--danger); background: none; }
@@ -1026,7 +897,6 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .modal-actions button { flex: 1; margin-top: 0; }
 
-/* ═══════════ Toast ═══════════ */
 .toast {
   position: fixed;
   bottom: 24px;
@@ -1049,7 +919,6 @@ textarea { min-height: 80px; resize: vertical; }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* ═══════════ Scroll Admin ═══════════ */
 #adminSection .scroll-body {
   max-height: calc(100vh - 220px);
   overflow-y: auto;
@@ -1066,7 +935,6 @@ textarea { min-height: 80px; resize: vertical; }
 </head>
 <body>
 
-<!-- ═══════════ Fixed Top Bar ═══════════ -->
 <div class="top-bar">
   <header class="app-header">
     <div class="app-header-left">
@@ -1080,7 +948,6 @@ textarea { min-height: 80px; resize: vertical; }
   </div>
 </div>
 
-<!-- ═══════════ Main Content ═══════════ -->
 <div class="main-wrap">
 
 <div id="loading" class="screen active">
@@ -1315,16 +1182,33 @@ textarea { min-height: 80px; resize: vertical; }
 
 </div><!-- /main-wrap -->
 
-<!-- Modal -->
+<!-- Modal ثبت گزارش / کامنت -->
 <div class="modal-overlay hidden" id="reportModal">
-  <div class="modal-content">
+  <div class="modal-content" style="max-width:560px;">
     <div class="modal-header">
       <div class="modal-title" id="reportModalTitle">📝 ثبت گزارش</div>
       <button class="modal-close" id="reportModalClose">×</button>
     </div>
     <div class="modal-parent" id="reportModalParent">—</div>
+
     <label id="reportModalTextLabel">متن گزارش *</label>
-    <textarea id="reportModalText" placeholder="توضیحات خود را وارد کنید..." style="min-height:120px;"></textarea>
+    <textarea id="reportModalText" placeholder="توضیحات خود را وارد کنید..." style="min-height:100px;"></textarea>
+
+    <label>مخاطب * (چندتایی)</label>
+    <div id="rptModalRecipientsWrap"></div>
+
+    <label>EPC</label>
+    <div id="rptModalEpcWrap"></div>
+
+    <label>پیمانکاری / امانی</label>
+    <div id="rptModalEngWrap"></div>
+
+    <label>وضعیت کار</label>
+    <div id="rptModalStatusWrap"></div>
+
+    <label>طبقه / آدرس (چندتایی)</label>
+    <div id="rptModalAddrWrap"></div>
+
     <div id="reportModalMsg"></div>
     <div class="modal-actions">
       <button class="btn-sec" id="reportModalCancel">انصراف</button>
@@ -1380,19 +1264,29 @@ function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function api(data, retries) {
-  if (data.action === 'createWorkOrder' || data.action === 'submitReport') retries = 0;
-  else if (retries === undefined) retries = 1;
+  if (data.action === 'createWorkOrder') retries = 0;
+  else if (retries === undefined) retries = 2;
+
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function() { controller.abort(); }, 25000);
+
   return fetch(API, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(data),
     redirect: 'follow',
-    cache: 'no-store'
+    cache: 'no-store',
+    signal: controller.signal
   })
-  .then(function(r) { return r.text(); })
+  .then(function(r) { clearTimeout(timeoutId); return r.text(); })
   .then(function(t) { try { return JSON.parse(t); } catch (e) { throw new Error('bad response'); } })
   .catch(function(err) {
-    if (retries > 0) return new Promise(function(r) { setTimeout(r, 700); }).then(function() { return api(data, retries - 1); });
+    clearTimeout(timeoutId);
+    if (retries > 0) {
+      return new Promise(function(r) { setTimeout(r, 900); }).then(function() {
+        return api(data, retries - 1);
+      });
+    }
     throw err;
   });
 }
@@ -1433,7 +1327,6 @@ function j2g(jy, jm, jd) {
 }
 function dim(y, m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
 
-// تاریخ امروز در کارت
 function updateDateCard() {
   var now = new Date();
   var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
@@ -1444,12 +1337,10 @@ function updateDateCard() {
   document.getElementById('todayWeekday').textContent = wd;
   document.getElementById('todayDate').textContent = dateStr;
 
-  // میلادی
   var monthsEn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   document.getElementById('todayGregorian').textContent =
     now.getDate() + ' ' + monthsEn[now.getMonth()] + ' ' + now.getFullYear();
 
-  // مناسبت
   var key = j[1] + '/' + j[2];
   var occasion = OCCASIONS[key];
   var occEl = document.getElementById('todayOccasion');
@@ -1613,6 +1504,8 @@ function makeSS(boxId, opt) {
 
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 var rptSubjectSS, rptEpcSS, rptFieldSS, rptRelatedSS, rptStatusSS, rptEngSS, rptRecipientSS, rptAddrSS;
+var rptModalRecipientsSS, rptModalEpcSS, rptModalStatusSS, rptModalEngSS, rptModalAddrSS;
+var rptModalOptionsLoaded = false;
 
 function updateHeaderWeather(r) {
   var el = document.getElementById('headerWeather');
@@ -1943,6 +1836,8 @@ function initReports() {
 
   document.getElementById('reportsResults').innerHTML = '<div class="empty-state">در حال بارگذاری گزینه‌ها...</div>';
 
+  loadModalOptions();
+
   api({ action: 'getReportFilterOptions', chatId: tgUser.id }).then(function(r) {
     if (!r || !r.ok) {
       document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا در دریافت گزینه‌ها</div>';
@@ -1960,6 +1855,47 @@ function initReports() {
   }).catch(function() {
     document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا در ارتباط</div>';
   });
+}
+
+function loadModalOptions() {
+  if (rptModalOptionsLoaded) return;
+
+  rptModalRecipientsSS = makeSS('rptModalRecipientsWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
+  rptModalEpcSS = makeSS('rptModalEpcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  rptModalStatusSS = makeSS('rptModalStatusWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  rptModalEngSS = makeSS('rptModalEngWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  rptModalAddrSS = makeSS('rptModalAddrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
+
+  api({ action: 'getRecipients' }).then(function(r) {
+    var recs = (r && r.recipients) || [];
+    if (recs.length) {
+      rptModalRecipientsSS.setOpts(recs.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
+      rptModalRecipientsSS.setPh('جستجو و انتخاب (' + recs.length + ' مخاطب)');
+    } else rptModalRecipientsSS.setPh('مخاطبی موجود نیست');
+  }).catch(function() { rptModalRecipientsSS.setPh('خطا'); });
+
+  api({ action: 'getFormOptions' }).then(function(r) {
+    r = r || {};
+    var epcs = r.epcs || [];
+    var sts = r.statuses || [];
+    var engs = r.engagementTypes || [];
+    var addrs = r.addresses || [];
+
+    rptModalEpcSS.setOpts(epcs);
+    rptModalEpcSS.setPh(epcs.length ? 'انتخاب (' + epcs.length + ')' : 'تایپ کنید');
+
+    if (!sts.length) sts = ['ابلاغ شده', 'پیش نویس', 'در حال اجرا', 'تکمیل شده', 'متوقف'];
+    rptModalStatusSS.setOpts(sts);
+    rptModalStatusSS.setPh('انتخاب (' + sts.length + ')');
+
+    rptModalEngSS.setOpts(engs);
+    rptModalEngSS.setPh(engs.length ? 'انتخاب (' + engs.length + ')' : 'تایپ کنید');
+
+    rptModalAddrSS.setOpts(addrs);
+    rptModalAddrSS.setPh(addrs.length ? 'چندتایی (' + addrs.length + ')' : 'تایپ کنید');
+
+    rptModalOptionsLoaded = true;
+  }).catch(function() {});
 }
 
 function buildReportDatePickers() {
@@ -2148,11 +2084,21 @@ function openReportModal(idx, type) {
   parentEl.innerHTML =
     '<b>' + escHtml(truncate(row.subject, 60) || '—') + '</b>' +
     '<br>تاریخ: ' + escHtml(row.date || '—') +
-    '<br>پیمانکار: ' + escHtml(row.recipient || '—');
+    '<br>پیمانکار: ' + escHtml(row.recipient || '—') +
+    '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;color:var(--text-soft);">' +
+    '<b>ارث‌بری از والد:</b> رشته: ' + escHtml(row.field || '—') + ' • ردیف مرتبط: ' + escHtml(truncate(row.related, 40) || '—') +
+    '</div>';
 
   textEl.value = '';
   msgEl.innerText = '';
   msgEl.className = '';
+
+  if (rptModalRecipientsSS) rptModalRecipientsSS.clear();
+  if (rptModalEpcSS) rptModalEpcSS.clear();
+  if (rptModalStatusSS) rptModalStatusSS.clear();
+  if (rptModalEngSS) rptModalEngSS.clear();
+  if (rptModalAddrSS) rptModalAddrSS.clear();
+
   document.getElementById('reportModal').classList.remove('hidden');
   setTimeout(function() { textEl.focus(); }, 100);
 }
@@ -2172,9 +2118,21 @@ document.getElementById('reportModalSubmit').onclick = function() {
   if (!currentReportTarget) return;
   var text = document.getElementById('reportModalText').value.trim();
   var msgEl = document.getElementById('reportModalMsg');
+
+  var recipients = rptModalRecipientsSS ? rptModalRecipientsSS.getStr() : '';
+  var epc = rptModalEpcSS ? rptModalEpcSS.getStr() : '';
+  var status = rptModalStatusSS ? rptModalStatusSS.getStr() : '';
+  var engagement = rptModalEngSS ? rptModalEngSS.getStr() : '';
+  var address = rptModalAddrSS ? rptModalAddrSS.getStr() : '';
+
   if (!text) {
     msgEl.className = 'msg msg-err';
     msgEl.innerText = 'متن الزامی است';
+    return;
+  }
+  if (!recipients) {
+    msgEl.className = 'msg msg-err';
+    msgEl.innerText = 'حداقل یک مخاطب انتخاب کنید';
     return;
   }
 
@@ -2186,7 +2144,12 @@ document.getElementById('reportModalSubmit').onclick = function() {
     chatId: tgUser.id,
     parentRow: currentReportTarget.row.row,
     reportType: currentReportTarget.type,
-    text: text
+    text: text,
+    recipients: recipients,
+    epc: epc,
+    status: status,
+    engagement: engagement,
+    address: address
   }).then(function(r) {
     btn.disabled = false; btn.innerText = 'ثبت';
     if (r && r.ok) {

@@ -32,22 +32,15 @@ body {
 
 .container { max-width: 720px; margin: 0 auto; padding: 12px 14px 40px; }
 
-/* ============ Ticker (تابلو روان) ============ */
+/* Ticker */
 .ticker {
-  position: sticky;
-  top: 56px;
-  z-index: 490;
+  position: sticky; top: 56px; z-index: 490;
   background: linear-gradient(90deg, #1e40af 0%, #7c3aed 50%, #1e40af 100%);
   background-size: 200% 100%;
-  color: #fff;
-  padding: 10px 14px;
-  font-size: 13.5px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+  color: #fff; padding: 10px 14px;
+  font-size: 13.5px; font-weight: bold;
+  display: flex; align-items: center; gap: 10px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
   animation: tickerBg 12s linear infinite;
 }
 @keyframes tickerBg {
@@ -55,65 +48,33 @@ body {
   100% { background-position: 200% 50%; }
 }
 .ticker.hidden { display: none; }
-.ticker-icon {
-  font-size: 18px;
-  flex-shrink: 0;
-  animation: pulse 2s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-.ticker-content {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  height: 22px;
-}
+.ticker-icon { font-size: 18px; flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.15);} }
+.ticker-content { flex: 1; overflow: hidden; position: relative; height: 22px; }
 .ticker-text {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0;
-  transform: translateY(20px);
+  position: absolute; top: 0; left: 0; right: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  opacity: 0; transform: translateY(20px);
   transition: opacity 0.4s, transform 0.4s;
 }
-.ticker-text.active {
-  opacity: 1;
-  transform: translateY(0);
-}
+.ticker-text.active { opacity: 1; transform: translateY(0); }
 
-/* ============ Global Loader ============ */
 .global-loader {
-  position: fixed;
-  top: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(30, 64, 175, 0.95);
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 30px;
-  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.35);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: bold;
+  position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
+  background: rgba(30, 64, 175, 0.95); color: #fff;
+  padding: 10px 20px; border-radius: 30px;
+  z-index: 9999; display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: bold;
 }
 .global-loader.hidden { display: none; }
 .gl-spinner {
   width: 16px; height: 16px;
   border: 2.5px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
+  border-top-color: #fff; border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ============ Top Navigation ============ */
 .topbar {
   position: sticky; top: 0; z-index: 500;
   background: rgba(255, 255, 255, 0.95);
@@ -125,23 +86,18 @@ body {
 }
 .topbar.hidden { display: none; }
 .nav-btn {
-  width: 40px; height: 40px;
-  border: none; border-radius: 10px;
-  background: #f1f5f9; color: #334155;
-  font-size: 18px; cursor: pointer;
-  transition: all 0.15s; flex-shrink: 0;
+  width: 40px; height: 40px; border: none; border-radius: 10px;
+  background: #f1f5f9; color: #334155; font-size: 18px; cursor: pointer;
+  flex-shrink: 0;
 }
-.nav-btn:hover { background: #e2e8f0; }
 .nav-btn:active { transform: scale(0.94); }
 .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .nav-btn.home { background: #dbeafe; color: #1e40af; }
 .topbar-title {
-  flex: 1; font-size: 14px; font-weight: bold;
-  text-align: center; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
+  flex: 1; font-size: 14px; font-weight: bold; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* ============ User Header ============ */
 .user-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff; border-radius: var(--radius);
@@ -161,98 +117,25 @@ body {
 #loading { flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; text-align: center; min-height: 70vh; }
 .spinner { width: 54px; height: 54px; border: 5px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.9s linear infinite; }
 
-/* ============ Reserve Banner ============ */
-.reserve-banner {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 2px solid #f59e0b;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 14px;
-  display: none;
-}
-.reserve-banner.active { display: block; }
-.reserve-banner-title {
-  font-weight: bold;
-  color: #92400e;
-  font-size: 13.5px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.reserve-numbers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.reserve-chip {
-  background: #fff;
-  border: 2px solid #f59e0b;
-  color: #92400e;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: bold;
-  font-family: monospace;
-}
-.reserve-chip.primary {
-  background: #f59e0b;
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
-}
-.reserve-hint {
-  font-size: 11.5px;
-  color: #b45309;
-  margin-top: 8px;
-}
-
-/* ============ Form Loader ============ */
 .form-loader {
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border: 1.5px solid #bfdbfe;
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  overflow: hidden;
+  border: 1.5px solid #bfdbfe; border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px;
+  position: relative; overflow: hidden;
 }
 .form-loader::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
+  content: ''; position: absolute; top: 0; left: -100%;
   width: 100%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
   animation: shimmer 1.8s infinite;
 }
-@keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-.form-loader.ready {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  border-color: #6ee7b7;
-}
+@keyframes shimmer { 0%{left:-100%;} 100%{left:100%;} }
+.form-loader.ready { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #6ee7b7; }
 .form-loader.ready::before { display: none; }
-.form-loader.hide {
-  opacity: 0; max-height: 0; padding: 0;
-  margin: 0; border: 0; pointer-events: none;
-}
-.fl-spinner {
-  width: 24px; height: 24px;
-  border: 3px solid #93c5fd;
-  border-top-color: #2563eb;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  flex-shrink: 0;
-}
-.form-loader.ready .fl-spinner {
-  border: none; background: #10b981;
-  display: flex; align-items: center; justify-content: center;
-  animation: none; color: #fff; font-size: 15px; font-weight: bold;
-}
+.form-loader.hide { opacity: 0; max-height: 0; padding: 0; margin: 0; border: 0; pointer-events: none; }
+.fl-spinner { width: 24px; height: 24px; border: 3px solid #93c5fd; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+.form-loader.ready .fl-spinner { border: none; background: #10b981; display: flex; align-items: center; justify-content: center; animation: none; color: #fff; font-size: 15px; font-weight: bold; }
 .form-loader.ready .fl-spinner::after { content: '✓'; }
 .fl-text { flex: 1; font-size: 13.5px; font-weight: bold; color: #1e40af; }
 .form-loader.ready .fl-text { color: #065f46; }
@@ -260,17 +143,9 @@ body {
 .form-loader .fl-dot { animation: dotPulse 1.4s infinite; }
 .form-loader .fl-dot:nth-child(2) { animation-delay: 0.2s; }
 .form-loader .fl-dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes dotPulse {
-  0%, 60%, 100% { opacity: 0.3; }
-  30% { opacity: 1; }
-}
+@keyframes dotPulse { 0%,60%,100%{opacity:0.3;} 30%{opacity:1;} }
 
-/* ============ Welcome ============ */
-.welcome-box {
-  background: var(--card); border-radius: 18px;
-  padding: 26px 20px; text-align: center;
-  box-shadow: var(--shadow); border: 1px solid var(--border);
-}
+.welcome-box { background: var(--card); border-radius: 18px; padding: 26px 20px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); }
 .welcome-hero { font-size: 64px; line-height: 1; margin-bottom: 12px; }
 .welcome-title { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 6px; }
 .welcome-project { font-size: 15px; color: var(--primary); font-weight: bold; margin-bottom: 16px; }
@@ -280,18 +155,12 @@ body {
 .welcome-user-info .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
 .welcome-user-info .row:last-child { border-bottom: none; }
 .welcome-user-info .val { color: #334155; font-weight: 500; }
-.welcome-btn {
-  width: 100%; padding: 15px; border: none; border-radius: 12px;
-  font-size: 15.5px; font-weight: bold; cursor: pointer; color: #fff;
-  background: var(--primary); margin-top: 10px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
+.welcome-btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 15.5px; font-weight: bold; cursor: pointer; color: #fff; background: var(--primary); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .welcome-btn:active { transform: scale(0.98); }
 .welcome-btn.green { background: var(--success); }
 .welcome-btn.orange { background: var(--warn); }
 .welcome-btn.gray { background: #64748b; }
 
-/* ============ Panel Menu ============ */
 .panel-menu-title { text-align: center; font-size: 18px; font-weight: bold; margin: 16px 0 6px; }
 .panel-menu-sub { text-align: center; font-size: 13px; color: var(--hint); margin-bottom: 20px; }
 .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
@@ -302,7 +171,6 @@ body {
 .menu-card .desc { font-size: 11.5px; color: var(--hint); }
 .menu-card.disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ============ Cards & Forms ============ */
 .card { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
 h2.section-title { text-align: center; color: var(--primary); margin: 8px 0 18px; font-size: 20px; }
 h3.section-h { color: var(--primary); margin: 20px 0 10px; font-size: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0f2fe; }
@@ -361,12 +229,80 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-row { display: flex; gap: 8px; margin-top: 16px; }
 .btn-row button { flex: 1; margin-top: 0; }
 
+/* ============ Reports Section ============ */
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.filter-btn {
+  flex: 1; min-width: 70px; padding: 8px 10px;
+  border: 1.5px solid var(--border); border-radius: 20px;
+  background: #fff; color: #334155;
+  font-size: 12.5px; font-weight: bold; cursor: pointer;
+  margin: 0; width: auto;
+}
+.filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+#reportSearch { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; }
+
+.tree-container { display: flex; flex-direction: column; gap: 4px; }
+.tree-node {
+  background: #fff; border: 1.5px solid var(--border); border-radius: 10px;
+  margin-bottom: 4px; overflow: hidden;
+  border-right: 4px solid var(--primary);
+  transition: all 0.2s;
+}
+.tree-node:hover { box-shadow: var(--shadow); }
+.tree-node.type-report { border-right-color: var(--success); }
+.tree-node.type-comment { border-right-color: #94a3b8; }
+.tree-node.type-order { border-right-color: var(--primary); }
+
+.tree-header {
+  padding: 10px 12px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.tree-header:hover { background: #f8fafc; }
+.tree-toggle {
+  width: 22px; height: 22px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 12px; color: #64748b;
+  flex-shrink: 0; cursor: pointer;
+  background: #f1f5f9; border-radius: 5px;
+}
+.tree-toggle.open { transform: rotate(-90deg); }
+.tree-toggle.leaf { background: transparent; opacity: 0.3; cursor: default; }
+.tree-icon { font-size: 16px; flex-shrink: 0; }
+.tree-info { flex: 1; min-width: 0; }
+.tree-code {
+  font-family: monospace; font-size: 11.5px;
+  color: #f59e0b; font-weight: bold;
+  margin-bottom: 2px;
+  direction: ltr; text-align: right;
+}
+.tree-subject {
+  font-size: 13.5px; font-weight: bold;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tree-meta {
+  font-size: 11px; color: #64748b; margin-top: 3px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.tree-children {
+  border-top: 1px dashed #e2e8f0;
+  padding: 6px 8px;
+  background: #fafbfc;
+}
+.tree-children.hidden { display: none; }
+.tree-empty {
+  text-align: center; color: #94a3b8;
+  padding: 40px 20px; font-size: 14px;
+}
+
 @media (max-width: 480px) {
   .container { padding: 10px 12px 30px; }
   .uh-grid { grid-template-columns: 1fr 1fr; }
   .menu-grid { grid-template-columns: 1fr 1fr; }
   .nav-btn { width: 36px; height: 36px; font-size: 16px; }
   .ticker { font-size: 12.5px; padding: 8px 12px; }
+  .filter-btn { font-size: 11.5px; min-width: 60px; }
 }
 </style>
 </head>
@@ -451,10 +387,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         <div class="label">ثبت دستور کار</div>
         <div class="desc">ایجاد و ارسال دستور کار جدید</div>
       </div>
-      <div class="menu-card disabled">
+      <div class="menu-card" id="menuReports">
         <div class="icon">📊</div>
-        <div class="label">گزارش‌ها</div>
-        <div class="desc">به‌زودی</div>
+        <div class="label">گزارش‌ها و گردش کار</div>
+        <div class="desc">نمایش درختی دستور کارها</div>
       </div>
       <div class="menu-card disabled">
         <div class="icon">👥</div>
@@ -469,17 +405,32 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 
+  <div id="reportsSection" class="screen">
+    <h2 class="section-title">📊 گزارش‌ها و گردش کار</h2>
+
+    <div class="card">
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">همه</button>
+        <button class="filter-btn" data-filter="order" onclick="setFilter('order')">📋 دستور کار</button>
+        <button class="filter-btn" data-filter="report" onclick="setFilter('report')">📊 گزارش</button>
+        <button class="filter-btn" data-filter="comment" onclick="setFilter('comment')">💬 کامنت</button>
+      </div>
+      <input id="reportSearch" placeholder="🔎 جستجو در کد یا موضوع..." oninput="onSearchChange()">
+      <button id="refreshReportsBtn" style="margin-top:12px;">🔄 بروزرسانی</button>
+    </div>
+
+    <div class="form-loader hidden" id="reportsLoader">
+      <div class="fl-spinner"></div>
+      <div class="fl-text">
+        در حال بارگذاری گزارش‌ها<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span>
+      </div>
+    </div>
+
+    <div id="treeContainer" class="tree-container"></div>
+  </div>
+
   <div id="workOrderSection" class="screen">
     <h2 class="section-title">📋 ثبت دستور کار</h2>
-
-    <div class="reserve-banner" id="reserveBanner">
-      <div class="reserve-banner-title">
-        <span>🎫</span>
-        <span>شماره‌های رزرو شده برای شما</span>
-      </div>
-      <div class="reserve-numbers" id="reserveNumbers"></div>
-      <div class="reserve-hint" id="reserveHint">اولین شماره هنگام ثبت اختصاص می‌یابد</div>
-    </div>
 
     <div class="form-loader" id="formLoader">
       <div class="fl-spinner"></div>
@@ -560,7 +511,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     <div class="preview-card">
       <div class="preview-title">📋 اطلاعات دستور کار</div>
-      <div class="preview-row"><div class="preview-label">شماره یکتا:</div><div class="preview-value" id="pvNumber" style="font-family:monospace;color:#f59e0b;font-weight:bold;">—</div></div>
       <div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value" id="pvRecipient">—</div></div>
       <div class="preview-row"><div class="preview-label">پلتفورم:</div><div class="preview-value" id="pvPlatforms">—</div></div>
       <div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value" id="pvSubject">—</div></div>
@@ -603,6 +553,11 @@ var weatherData = null;
 var panelLoaded = false;
 var reservedNumbers = [];
 var submitToken = null;
+var reportsData = [];
+var reportsLoaded = false;
+var currentFilter = 'all';
+var currentSearch = '';
+var expandedNodes = {};
 
 var navStack = [];
 var navIndex = -1;
@@ -612,14 +567,10 @@ var WEEKDAYS = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنب�
 
 var IRAN_EVENTS = {
   '1-1': '🎉 نوروز باستانی - آغاز سال نو',
-  '1-2': '🎉 عید نوروز',
-  '1-3': '🎉 عید نوروز',
-  '1-4': '🎉 عید نوروز',
-  '1-12': '🇮🇷 روز جمهوری اسلامی',
-  '1-13': '🌿 سیزده بدر',
+  '1-2': '🎉 عید نوروز', '1-3': '🎉 عید نوروز', '1-4': '🎉 عید نوروز',
+  '1-12': '🇮🇷 روز جمهوری اسلامی', '1-13': '🌿 سیزده بدر',
   '2-2': '📚 روز معلم',
-  '3-14': '🕊️ رحلت حضرت امام خمینی',
-  '3-15': '🔥 قیام ۱۵ خرداد',
+  '3-14': '🕊️ رحلت حضرت امام خمینی', '3-15': '🔥 قیام ۱۵ خرداد',
   '4-7': '⚖️ شهادت آیت‌الله بهشتی',
   '7-8': '🛡️ هفته دفاع مقدس',
   '8-13': '✊ روز مبارزه با استکبار',
@@ -642,38 +593,25 @@ if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsa
 // ============ Ticker ============
 var tickerIndex = 0;
 var tickerItems = [];
+var tickerIntervalId = null;
 
 function startTicker() {
   tickerItems = [];
-
-  // آب و هوا
   if (weatherData) {
-    tickerItems.push({
-      icon: weatherData.icon,
-      text: '🌤️ ' + WEATHER_CITY + ' — ' + weatherData.temp + '°C ' + weatherData.text
-    });
+    tickerItems.push({ icon: weatherData.icon, text: '🌤️ ' + WEATHER_CITY + ' — ' + weatherData.temp + '°C ' + weatherData.text });
   } else {
     tickerItems.push({ icon: '🌤️', text: '🌤️ در حال دریافت آب و هوا...' });
   }
-
-  // مناسبت امروز
   var now = new Date();
   var j = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
-  var key = j[1] + '-' + j[2];
-  var ev = IRAN_EVENTS[key];
-  if (ev) {
-    tickerItems.push({ icon: '🎉', text: ev });
-  } else {
-    tickerItems.push({
-      icon: '📅',
-      text: '📅 امروز: ' + WEEKDAYS[now.getDay()] + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0]
-    });
-  }
+  var ev = IRAN_EVENTS[j[1] + '-' + j[2]];
+  if (ev) tickerItems.push({ icon: '🎉', text: ev });
+  else tickerItems.push({ icon: '📅', text: '📅 امروز: ' + WEEKDAYS[now.getDay()] + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0] });
 
-  // شروع فوری چرخه
   tickerIndex = 0;
   updateTickerDisplay();
-  setInterval(function() {
+  if (tickerIntervalId) clearInterval(tickerIntervalId);
+  tickerIntervalId = setInterval(function() {
     tickerIndex = (tickerIndex + 1) % tickerItems.length;
     updateTickerDisplay();
   }, 4000);
@@ -683,10 +621,8 @@ function updateTickerDisplay() {
   var iconEl = document.getElementById('tickerIcon');
   var textEl = document.getElementById('tickerText');
   if (!iconEl || !textEl) return;
-
   var item = tickerItems[tickerIndex];
   if (!item) return;
-
   iconEl.textContent = item.icon;
   textEl.classList.remove('active');
   setTimeout(function() {
@@ -695,7 +631,7 @@ function updateTickerDisplay() {
   }, 200);
 }
 
-// ============ Global Loader ============
+// ============ Loader ============
 function showGlobalLoader(text) {
   document.getElementById('globalLoaderText').textContent = text || 'در حال بارگذاری...';
   document.getElementById('globalLoader').classList.remove('hidden');
@@ -703,8 +639,6 @@ function showGlobalLoader(text) {
 function hideGlobalLoader() {
   document.getElementById('globalLoader').classList.add('hidden');
 }
-
-// ============ Form Loader ============
 function setLoaderState(state, msg) {
   var loader = document.getElementById('formLoader');
   var countEl = document.getElementById('flCount');
@@ -734,9 +668,8 @@ function navigateTo(screenId) {
   renderScreen(screenId);
   updateNavBtns();
 }
-
 function renderScreen(screenId) {
-  ['loading','welcomeSection','formSection','panelMenuSection','workOrderSection','previewSection'].forEach(function(x) {
+  ['loading','welcomeSection','formSection','panelMenuSection','reportsSection','workOrderSection','previewSection'].forEach(function(x) {
     var el = document.getElementById(x);
     if (el) el.classList.remove('active');
   });
@@ -745,7 +678,6 @@ function renderScreen(screenId) {
 
   var topbar = document.getElementById('topbar');
   var ticker = document.getElementById('ticker');
-
   if (screenId === 'loading') {
     topbar.classList.add('hidden');
     ticker.classList.add('hidden');
@@ -756,11 +688,9 @@ function renderScreen(screenId) {
   }
 
   var titles = {
-    'welcomeSection': 'صفحه اصلی',
-    'formSection': 'ثبت‌نام',
-    'panelMenuSection': 'پنل کاربری',
-    'workOrderSection': 'ثبت دستور کار',
-    'previewSection': 'پیش‌نمایش دستور کار'
+    'welcomeSection': 'صفحه اصلی', 'formSection': 'ثبت‌نام',
+    'panelMenuSection': 'پنل کاربری', 'reportsSection': 'گزارش‌ها و گردش کار',
+    'workOrderSection': 'ثبت دستور کار', 'previewSection': 'پیش‌نمایش دستور کار'
   };
   document.getElementById('topbarTitle').textContent = titles[screenId] || 'سیستم';
 
@@ -781,45 +711,26 @@ function renderScreen(screenId) {
     }
     reserveForUser();
   }
-
+  if (screenId === 'reportsSection') {
+    if (!reportsLoaded) loadReports();
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-function goBack() {
-  if (navIndex > 0) {
-    navIndex--;
-    renderScreen(navStack[navIndex]);
-    updateNavBtns();
-  }
-}
-function goForward() {
-  if (navIndex < navStack.length - 1) {
-    navIndex++;
-    renderScreen(navStack[navIndex]);
-    updateNavBtns();
-  }
-}
-function goHome() {
-  navStack = ['welcomeSection'];
-  navIndex = 0;
-  renderScreen('welcomeSection');
-  updateNavBtns();
-}
+function goBack() { if (navIndex > 0) { navIndex--; renderScreen(navStack[navIndex]); updateNavBtns(); } }
+function goForward() { if (navIndex < navStack.length - 1) { navIndex++; renderScreen(navStack[navIndex]); updateNavBtns(); } }
+function goHome() { navStack = ['welcomeSection']; navIndex = 0; renderScreen('welcomeSection'); updateNavBtns(); }
 function updateNavBtns() {
   document.getElementById('navBack').disabled = navIndex <= 0;
   document.getElementById('navForward').disabled = navIndex >= navStack.length - 1;
 }
-
 document.getElementById('navHome').onclick = goHome;
 document.getElementById('navBack').onclick = goBack;
 document.getElementById('navForward').onclick = goForward;
-
 if (tg && tg.BackButton) tg.BackButton.onClick(function() { goBack(); });
 
 function escHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
 function api(data, retries) {
   if (data.action === 'createWorkOrder') retries = 0;
   else if (retries === undefined) retries = 1;
@@ -827,8 +738,7 @@ function api(data, retries) {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(data),
-    redirect: 'follow',
-    cache: 'no-store'
+    redirect: 'follow', cache: 'no-store'
   })
   .then(function(r) { return r.text(); })
   .then(function(t) { try { return JSON.parse(t); } catch (e) { throw new Error('bad response'); } })
@@ -872,13 +782,9 @@ function updateHeaderDateTime() {
   if (!currentUser) return;
   var now = new Date();
   var j = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
-  var dateStr = WEEKDAYS[now.getDay()] + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0];
-  var hh = String(now.getHours()).padStart(2, '0');
-  var mm = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('uhDate').textContent = dateStr;
-  document.getElementById('uhTime').textContent = hh + ':' + mm;
+  document.getElementById('uhDate').textContent = WEEKDAYS[now.getDay()] + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0];
+  document.getElementById('uhTime').textContent = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 }
-
 function updateHeaderUser() {
   if (!currentUser) return;
   var u = currentUser;
@@ -886,9 +792,8 @@ function updateHeaderUser() {
   document.getElementById('uhId').textContent = String(tgUser.id);
   document.getElementById('uhAccess').textContent = u.access || 'تعیین نشده';
 }
-
 function fetchWeather() {
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + WEATHER_LAT + '&longitude=' + WEATHER_LON + '&current=temperature_2m,weather_code&timezone=Asia/Tehran')
+  return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + WEATHER_LAT + '&longitude=' + WEATHER_LON + '&current=temperature_2m,weather_code&timezone=Asia/Tehran')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d && d.current) {
@@ -896,49 +801,24 @@ function fetchWeather() {
         var temp = Math.round(d.current.temperature_2m);
         var w = WEATHER_CODES[code] || { t: 'نامشخص', i: '🌡️' };
         weatherData = { temp: temp, text: w.t, icon: w.i };
-        if (tickerItems.length > 0) {
-          tickerItems[0] = { icon: w.i, text: '🌤️ ' + WEATHER_CITY + ' — ' + temp + '°C ' + w.t };
-        }
+        if (tickerItems.length > 0) tickerItems[0] = { icon: w.i, text: '🌤️ ' + WEATHER_CITY + ' — ' + temp + '°C ' + w.t };
       }
     })
     .catch(function() {});
 }
-
 setInterval(function() { if (currentUser) updateHeaderDateTime(); }, 60000);
 
-// ============ Reserve ============
+// ============ Reserve (پشت صحنه) ============
 function reserveForUser() {
   if (!currentUser || !tgUser) return;
-  if (reservedNumbers.length > 0) {
-    renderReserveBanner();
-    return;
-  }
+  if (reservedNumbers.length > 0) return;
   api({ action: 'reserveNumbers', chatId: String(tgUser.id), count: 5 })
     .then(function(r) {
       if (r && r.ok && r.numbers && r.numbers.length > 0) {
         reservedNumbers = r.numbers;
-        renderReserveBanner();
       }
     })
     .catch(function() {});
-}
-
-function renderReserveBanner() {
-  var banner = document.getElementById('reserveBanner');
-  var numsEl = document.getElementById('reserveNumbers');
-  if (!banner || !numsEl) return;
-  if (!reservedNumbers || reservedNumbers.length === 0) {
-    banner.classList.remove('active');
-    return;
-  }
-  banner.classList.add('active');
-  numsEl.innerHTML = '';
-  reservedNumbers.forEach(function(n, i) {
-    var chip = document.createElement('span');
-    chip.className = 'reserve-chip' + (i === 0 ? ' primary' : '');
-    chip.textContent = n;
-    numsEl.appendChild(chip);
-  });
 }
 
 // ============ Welcome ============
@@ -947,7 +827,6 @@ function showWelcome(userData) {
   var subEl = document.getElementById('welcomeSub');
   var userBox = document.getElementById('welcomeUserBox');
   var actions = document.getElementById('welcomeActions');
-
   userBox.innerHTML = '';
   userBox.classList.add('hidden');
   actions.innerHTML = '';
@@ -973,7 +852,7 @@ function showWelcome(userData) {
       if (access === 'ادمین') {
         actions.innerHTML =
           '<button class="welcome-btn green" id="goToPanel">🛠 ورود به پنل کاربری</button>' +
-          '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد و تازه‌سازی</button>';
+          '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد</button>';
         document.getElementById('goToPanel').onclick = function() { navigateTo('panelMenuSection'); };
         document.getElementById('refreshBtn').onclick = function() { reload(true); };
       } else {
@@ -1002,19 +881,15 @@ function init() {
     return;
   }
   try { buildDates(); } catch (e) {}
-
   var safety = setTimeout(function() {
     if (document.getElementById('loading').classList.contains('active')) navigateTo('welcomeSection');
   }, 10000);
-
   api({ action: 'getUserStatus', chatId: tgUser.id })
     .then(function(r) { clearTimeout(safety); handleStatus(r); })
     .catch(function() { clearTimeout(safety); navigateTo('welcomeSection'); });
-
-  fetchWeather().then(function() { setTimeout(startTicker, 300); });
+  fetchWeather();
   startTicker();
 }
-
 function handleStatus(r) {
   if (r && r.registered && r.userData) {
     currentUser = r.userData;
@@ -1024,14 +899,12 @@ function handleStatus(r) {
   } else {
     currentUser = null;
     document.getElementById('tgInfo').innerHTML =
-      '<b>شناسه:</b> ' + tgUser.id + '<br>' +
-      '<b>نام:</b> ' + escHtml(tgUser.first_name + ' ' + (tgUser.last_name || ''));
+      '<b>شناسه:</b> ' + tgUser.id + '<br><b>نام:</b> ' + escHtml(tgUser.first_name + ' ' + (tgUser.last_name || ''));
     showWelcome(null);
   }
   navigateTo('welcomeSection');
   updateNavBtns();
 }
-
 function reload(showLoading) {
   if (showLoading) {
     document.getElementById('loading').classList.add('active');
@@ -1040,14 +913,200 @@ function reload(showLoading) {
     document.getElementById('ticker').classList.add('hidden');
   }
   panelLoaded = false;
+  reportsLoaded = false;
   reservedNumbers = [];
   api({ action: 'getUserStatus', chatId: tgUser.id })
     .then(function(r) { handleStatus(r); fetchWeather(); })
     .catch(function() { navigateTo('welcomeSection'); });
 }
 
+// ============ Menu ============
 document.getElementById('menuCreateOrder').onclick = function() { navigateTo('workOrderSection'); };
+document.getElementById('menuReports').onclick = function() { navigateTo('reportsSection'); };
+document.getElementById('refreshReportsBtn').onclick = function() { reportsLoaded = false; loadReports(); };
 
+// ============ Reports ============
+function setFilter(f) {
+  currentFilter = f;
+  var btns = document.querySelectorAll('.filter-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-filter') === f);
+  }
+  renderTree();
+}
+function onSearchChange() {
+  currentSearch = document.getElementById('reportSearch').value.trim().toLowerCase();
+  renderTree();
+}
+function loadReports() {
+  var loader = document.getElementById('reportsLoader');
+  var container = document.getElementById('treeContainer');
+  if (loader) loader.classList.remove('hidden');
+  if (container) container.innerHTML = '';
+  api({ action: 'getWorkOrdersList' })
+    .then(function(r) {
+      if (loader) loader.classList.add('hidden');
+      if (r && r.ok) {
+        reportsData = r.orders || [];
+        reportsLoaded = true;
+        renderTree();
+      } else {
+        container.innerHTML = '<div class="tree-empty">❌ خطا در بارگذاری گزارش‌ها</div>';
+      }
+    })
+    .catch(function(err) {
+      if (loader) loader.classList.add('hidden');
+      container.innerHTML = '<div class="tree-empty">❌ ' + escHtml(err.message || 'خطا در ارتباط') + '</div>';
+    });
+}
+function getNodeType(code) {
+  if (!code) return 'order';
+  var first = code.charAt(0).toUpperCase();
+  if (first === 'R') return 'report';
+  if (first === 'C') return 'comment';
+  return 'order';
+}
+function getTypeIcon(type) {
+  if (type === 'report') return '📊';
+  if (type === 'comment') return '💬';
+  return '📋';
+}
+function renderTree() {
+  var container = document.getElementById('treeContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  var filtered = reportsData.filter(function(o) {
+    if (currentFilter !== 'all') {
+      var t = getNodeType(o.code);
+      if (t !== currentFilter) return false;
+    }
+    if (currentSearch) {
+      var inCode = (o.code || '').toLowerCase().indexOf(currentSearch) !== -1;
+      var inSubj = (o.subject || '').toLowerCase().indexOf(currentSearch) !== -1;
+      if (!inCode && !inSubj) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="tree-empty">📭 هیچ موردی یافت نشد</div>';
+    return;
+  }
+
+  // ساخت map برای فرزندان
+  var childrenMap = {};
+  filtered.forEach(function(o) {
+    var parent = o.parentCode || '';
+    if (!childrenMap[parent]) childrenMap[parent] = [];
+    childrenMap[parent].push(o);
+  });
+
+  // پیدا کردن ریشه‌ها (والدشون توی لیست نیست یا والد خالی)
+  var codesInList = {};
+  filtered.forEach(function(o) { codesInList[o.code] = true; });
+  var roots = filtered.filter(function(o) {
+    if (!o.parentCode) return true;
+    if (!codesInList[o.parentCode]) return true;
+    return false;
+  });
+
+  if (roots.length === 0) {
+    container.innerHTML = '<div class="tree-empty">📭 ریشه‌ای یافت نشد</div>';
+    return;
+  }
+
+  // تابع ساخت نود
+  function buildNode(node, depth) {
+    var type = getNodeType(node.code);
+    var icon = getTypeIcon(type);
+    var children = childrenMap[node.code] || [];
+    var hasChildren = children.length > 0;
+    var nodeId = node.code;
+    var isExpanded = expandedNodes[nodeId] === true;
+
+    var div = document.createElement('div');
+    div.className = 'tree-node type-' + type;
+
+    var header = document.createElement('div');
+    header.className = 'tree-header';
+    header.style.paddingRight = (12 + depth * 20) + 'px';
+    header.onclick = function() {
+      if (!hasChildren) return;
+      expandedNodes[nodeId] = !isExpanded;
+      renderTree();
+    };
+
+    var toggle = document.createElement('span');
+    toggle.className = 'tree-toggle ' + (hasChildren ? (isExpanded ? 'open' : '') : 'leaf');
+    toggle.textContent = hasChildren ? '▼' : '•';
+    header.appendChild(toggle);
+
+    var iconEl = document.createElement('span');
+    iconEl.className = 'tree-icon';
+    iconEl.textContent = icon;
+    header.appendChild(iconEl);
+
+    var info = document.createElement('div');
+    info.className = 'tree-info';
+
+    var codeEl = document.createElement('div');
+    codeEl.className = 'tree-code';
+    codeEl.textContent = node.code;
+    info.appendChild(codeEl);
+
+    var subjEl = document.createElement('div');
+    subjEl.className = 'tree-subject';
+    subjEl.textContent = node.subject || '—';
+    info.appendChild(subjEl);
+
+    var metaEl = document.createElement('div');
+    metaEl.className = 'tree-meta';
+    if (node.recipient) {
+      var rEl = document.createElement('span');
+      rEl.textContent = '👤 ' + node.recipient;
+      metaEl.appendChild(rEl);
+    }
+    if (node.dateShamsi) {
+      var dEl = document.createElement('span');
+      dEl.textContent = '📅 ' + node.dateShamsi;
+      metaEl.appendChild(dEl);
+    }
+    if (node.status) {
+      var sEl = document.createElement('span');
+      sEl.textContent = '🔹 ' + node.status;
+      metaEl.appendChild(sEl);
+    }
+    if (hasChildren) {
+      var cEl = document.createElement('span');
+      cEl.textContent = '📎 ' + children.length + ' زیرمجموعه';
+      metaEl.appendChild(cEl);
+    }
+    info.appendChild(metaEl);
+
+    header.appendChild(info);
+    div.appendChild(header);
+
+    if (hasChildren) {
+      var chDiv = document.createElement('div');
+      chDiv.className = 'tree-children' + (isExpanded ? '' : ' hidden');
+      children.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
+      children.forEach(function(child) {
+        chDiv.appendChild(buildNode(child, depth + 1));
+      });
+      div.appendChild(chDiv);
+    }
+
+    return div;
+  }
+
+  roots.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
+  roots.forEach(function(root) {
+    container.appendChild(buildNode(root, 0));
+  });
+}
+
+// ============ Register Form ============
 document.getElementById('regForm').onsubmit = function(e) {
   e.preventDefault();
   var b = document.getElementById('regBtn');
@@ -1077,9 +1136,7 @@ document.getElementById('regForm').onsubmit = function(e) {
 // ============ Jalali Pickers ============
 var yS, mS, dS;
 function buildDates() {
-  yS = document.getElementById('woYear');
-  mS = document.getElementById('woMonth');
-  dS = document.getElementById('woDay');
+  yS = document.getElementById('woYear'); mS = document.getElementById('woMonth'); dS = document.getElementById('woDay');
   var now = new Date();
   var t = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
   var y = t[0];
@@ -1096,8 +1153,7 @@ function buildDates() {
     for (var k = 1; k <= mx; k++) { var o3 = document.createElement('option'); o3.value = k; o3.textContent = k; dS.appendChild(o3); }
     dS.value = Math.min(cur, mx);
   }
-  yS.onchange = refresh;
-  mS.onchange = refresh;
+  yS.onchange = refresh; mS.onchange = refresh;
   refresh();
   dS.value = t[2];
 }
@@ -1107,22 +1163,13 @@ function setD(y, m, d) {
   mS.dispatchEvent(ev);
   dS.value = d;
 }
-function setToday() {
-  var now = new Date();
-  var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
-  setD(j[0], j[1], j[2]);
-}
-function setTomorrow() {
-  var t = new Date(); t.setDate(t.getDate()+1);
-  var j = g2j(t.getFullYear(), t.getMonth()+1, t.getDate());
-  setD(j[0], j[1], j[2]);
-}
+function setToday() { var now = new Date(); var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate()); setD(j[0], j[1], j[2]); }
+function setTomorrow() { var t = new Date(); t.setDate(t.getDate()+1); var j = g2j(t.getFullYear(), t.getMonth()+1, t.getDate()); setD(j[0], j[1], j[2]); }
 
 // ============ Searchable Select ============
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId);
-  box.innerHTML = '';
-  box.className = 'ss-box';
+  box.innerHTML = ''; box.className = 'ss-box';
   var multi = opt.multi === true;
   var opts = (opt.options || []).slice();
   var placeholder = opt.placeholder || 'تایپ کنید...';
@@ -1138,10 +1185,7 @@ function makeSS(boxId, opt) {
   var chips = document.createElement('div'); chips.className = 'ss-chips'; box.appendChild(chips);
 
   function norm(o) { return typeof o === 'string' ? { value: o, label: o } : { value: o.value, label: o.label || o.value }; }
-  function objFor(v) {
-    for (var i = 0; i < opts.length; i++) { if (norm(opts[i]).value === v) return norm(opts[i]); }
-    return { value: v, label: v };
-  }
+  function objFor(v) { for (var i = 0; i < opts.length; i++) { if (norm(opts[i]).value === v) return norm(opts[i]); } return { value: v, label: v }; }
   function updateClear() { clr.classList.toggle('hidden', multi ? val.length === 0 : !val); }
 
   function renderList(q) {
@@ -1210,7 +1254,6 @@ function makeSS(boxId, opt) {
     list.classList.remove('hidden'); renderList(inp.value);
   };
   document.addEventListener('click', function(e) { if (!box.contains(e.target)) list.classList.add('hidden'); });
-
   renderList(''); updateClear();
 
   return {
@@ -1220,9 +1263,7 @@ function makeSS(boxId, opt) {
     getChatIds: function() {
       if (!multi && val) {
         for (var i = 0; i < recipients.length; i++) {
-          if (recipients[i].systemName === val) {
-            return { tg: recipients[i].telegramChatId || '', bale: recipients[i].baleChatId || '' };
-          }
+          if (recipients[i].systemName === val) return { tg: recipients[i].telegramChatId || '', bale: recipients[i].baleChatId || '' };
         }
       }
       return { tg: '', bale: '' };
@@ -1237,7 +1278,6 @@ var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 function loadPanel() {
   setLoaderState('loading', 'در حال آماده‌سازی فرم');
   updateLoaderCount('در حال دریافت لیست مخاطبین و گزینه‌ها');
-
   ssRecipient = makeSS('recipientWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipient });
   ssSubject = makeSS('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssEpc = makeSS('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
@@ -1247,7 +1287,6 @@ function loadPanel() {
   ssAddr = makeSS('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
   var recipientsDone = false, optionsDone = false, recipientsCount = 0;
-
   function checkAllDone() {
     if (recipientsDone && optionsDone) {
       panelLoaded = true;
@@ -1258,7 +1297,6 @@ function loadPanel() {
       }, 300);
     }
   }
-
   api({ action: 'getRecipients' }).then(function(r) {
     recipients = (r && r.recipients) || [];
     recipientsCount = recipients.length;
@@ -1269,11 +1307,7 @@ function loadPanel() {
     recipientsDone = true;
     updateLoaderCount('دریافت مخاطبین: ' + recipientsCount + ' نفر ✓');
     checkAllDone();
-  }).catch(function() {
-    ssRecipient.setPh('خطا در بارگذاری');
-    recipientsDone = true;
-    checkAllDone();
-  });
+  }).catch(function() { ssRecipient.setPh('خطا'); recipientsDone = true; checkAllDone(); });
 
   api({ action: 'getFormOptions' }).then(function(r) {
     r = r || {};
@@ -1283,15 +1317,13 @@ function loadPanel() {
     var g = (r.engagementTypes && r.engagementTypes.options) || [];
     var a = (r.addresses && r.addresses.options) || [];
     var rr = (r.relatedRows && r.relatedRows.options) || [];
-
-    if (ssSubject) { ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب کنید (' + s.length + ')' : 'تایپ کنید'); }
-    if (ssEpc) { ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب کنید (' + e.length + ')' : 'تایپ کنید'); }
-    if (ssField) { ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب کنید (' + f.length + ')' : 'تایپ کنید'); }
-    if (ssEng) { ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب کنید (' + g.length + ')' : 'تایپ کنید'); }
-    if (ssAddr) { ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ کنید'); }
-    if (ssRelated) { ssRelated.setOpts(rr); ssRelated.setPh(rr.length ? 'جستجو کنید (' + rr.length + ')' : 'گزینه‌ای موجود نیست'); }
-    optionsDone = true;
-    checkAllDone();
+    if (ssSubject) { ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب (' + s.length + ')' : 'تایپ'); }
+    if (ssEpc) { ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب (' + e.length + ')' : 'تایپ'); }
+    if (ssField) { ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب (' + f.length + ')' : 'تایپ'); }
+    if (ssEng) { ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب (' + g.length + ')' : 'تایپ'); }
+    if (ssAddr) { ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ'); }
+    if (ssRelated) { ssRelated.setOpts(rr); ssRelated.setPh(rr.length ? 'جستجو (' + rr.length + ')' : 'خالی'); }
+    optionsDone = true; checkAllDone();
   }).catch(function() { optionsDone = true; checkAllDone(); });
 }
 
@@ -1324,6 +1356,7 @@ document.getElementById('chkAll').onchange = function() {
 document.getElementById('chkTg').onchange = updateAll;
 document.getElementById('chkBale').onchange = updateAll;
 
+// ============ Preview ============
 document.getElementById('previewBtn').onclick = function() {
   var rec = ssRecipient ? ssRecipient.getStr() : '';
   var sub = ssSubject ? ssSubject.getStr() : '';
@@ -1352,7 +1385,7 @@ document.getElementById('previewBtn').onclick = function() {
   if (!addr) return showMsg('woMsg', '❌ آدرس را انتخاب کنید', 'err');
   if (!dur || parseInt(dur, 10) < 1) return showMsg('woMsg', '❌ مدت معتبر نیست', 'err');
   if (!sTg && !sBale) return showMsg('woMsg', '❌ حداقل یک پلتفورم انتخاب کنید', 'err');
-  if (reservedNumbers.length === 0) return showMsg('woMsg', '❌ شماره رزرو نشده — چند لحظه صبر کنید یا صفحه رو رفرش کنید', 'err');
+  if (reservedNumbers.length === 0) return showMsg('woMsg', '⏳ چند لحظه صبر کنید و دوباره امتحان کنید', 'err');
 
   var sY = parseInt(y), sM = parseInt(m), sD = parseInt(d), n = parseInt(dur);
   var sg = j2g(sY, sM, sD);
@@ -1361,7 +1394,6 @@ document.getElementById('previewBtn').onclick = function() {
   var ej = g2j(edt.getFullYear(), edt.getMonth()+1, edt.getDate());
   var endSh = ej[0] + '-' + ej[1] + '-' + ej[2];
   var startSh = sY + '-' + sM + '-' + sD;
-
   var now = new Date();
   var tj = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
   var todaySh = tj[0] + '-' + tj[1] + '-' + tj[2];
@@ -1379,7 +1411,6 @@ document.getElementById('previewBtn').onclick = function() {
     'از تاریخ:  ' + startSh + 'تا تاریخ:' + endSh + ' به مدت ' + n + 'روز\n' +
     '***در صورت نیاز به هرگونه مقدمات، تدارکات و مصالح، کنترل موجودی و درخواست به موقع آنها، وظیفه پیمانکار/مسئول محترم می باشد';
 
-  document.getElementById('pvNumber').innerText = reservedNumbers[0];
   document.getElementById('pvRecipient').innerText = rec;
   var pl = [];
   if (sTg) pl.push('📱 Telegram');
@@ -1400,8 +1431,7 @@ document.getElementById('previewBtn').onclick = function() {
   var ci = ssRecipient.getChatIds();
   submitToken = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   payload = {
-    action: 'createWorkOrder',
-    adminChatId: String(tgUser.id),
+    action: 'createWorkOrder', adminChatId: String(tgUser.id),
     recipientSystemName: rec,
     recipientTelegramChatId: ci.tg,
     recipientBaleChatId: ci.bale,
@@ -1412,8 +1442,7 @@ document.getElementById('previewBtn').onclick = function() {
     startYear: y, startMonth: m, startDay: d, duration: dur,
     reservedNumber: reservedNumbers[0],
     submitToken: submitToken,
-    _hasTg: !!ci.tg,
-    _hasBale: !!ci.bale
+    _hasTg: !!ci.tg, _hasBale: !!ci.bale
   };
 
   submitting = false;
@@ -1426,6 +1455,7 @@ document.getElementById('previewBtn').onclick = function() {
 
 document.getElementById('editBtn').onclick = function() { navigateTo('workOrderSection'); };
 
+// ============ Submit ============
 document.getElementById('submitBtn').onclick = function() {
   if (submitting) return;
   submitting = true;
@@ -1435,7 +1465,6 @@ document.getElementById('submitBtn').onclick = function() {
   document.getElementById('editBtn').disabled = true;
   document.getElementById('finalMsg').innerText = '';
   document.getElementById('finalMsg').className = '';
-
   showGlobalLoader('در حال ثبت و ارسال...');
 
   api(payload)
@@ -1447,12 +1476,12 @@ document.getElementById('submitBtn').onclick = function() {
         finalEl.innerHTML =
           '<div style="text-align:center;font-size:16px;font-weight:bold;">✅ ' + escHtml(r.message || 'ثبت شد') + '</div>' +
           (r.row ? '<div style="text-align:center;font-size:13px;margin-top:4px;">ردیف: ' + r.row + '</div>' : '') +
-          (r.code ? '<div style="text-align:center;font-size:14px;margin-top:6px;font-family:monospace;color:#f59e0b;font-weight:bold;">🎫 ' + escHtml(r.code) + '</div>' : '');
+          (r.code ? '<div style="text-align:center;font-size:14px;margin-top:6px;font-family:monospace;color:#f59e0b;font-weight:bold;">' + escHtml(r.code) + '</div>' : '');
         b.innerText = '✅ ثبت شد';
         b.disabled = true;
-        // پاک کردن رزرو بعد از ثبت
         reservedNumbers = [];
         panelLoaded = false;
+        reportsLoaded = false;
       } else if (r && r.duplicate) {
         showMsg('finalMsg', '⚠️ ' + r.message, 'err');
         b.innerText = '⚠️ قبلاً ثبت شده';
@@ -1474,7 +1503,6 @@ document.getElementById('submitBtn').onclick = function() {
     });
 };
 
-// ============ Start ============
 init();
 </script>
 </body>

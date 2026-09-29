@@ -1,1428 +1,712 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<title>سامانه مدیریت پروژه ایگل</title>
+<title>سیستم مدیریت کارگاهی ایگل</title>
 <style>
 :root {
-  --bg-body: #f5f7fa;
-  --bg-card: #ffffff;
-  --bg-subtle: #f8fafc;
-  --bg-muted: #f1f5f9;
-  --border: #e5e9ef;
-  --border-strong: #d4dbe5;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --text-soft: #94a3b8;
-  --header-bg: #1e293b;
-  --header-fg: #e2e8f0;
-  --accent: #475569;
-  --accent-hover: #334155;
-  --primary: #1e40af;
-  --primary-hover: #1e3a8a;
-  --success: #047857;
-  --success-hover: #065f46;
-  --warning: #b45309;
-  --danger: #b91c1c;
-  --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
-  --shadow-md: 0 2px 8px rgba(15,23,42,0.06);
-  --shadow-lg: 0 4px 16px rgba(15,23,42,0.08);
-  --radius: 10px;
-  --radius-sm: 8px;
-  --header-h: 56px;
-  --ticker-h: 36px;
+  --bg: var(--tg-theme-bg-color, #f8fafc);
+  --text: var(--tg-theme-text-color, #0f172a);
+  --hint: var(--tg-theme-hint-color, #64748b);
+  --btn: var(--tg-theme-button-color, #229ED9);
+  --btnText: var(--tg-theme-button-text-color, #ffffff);
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --primary: #229ED9;
+  --success: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --purple: #8b5cf6;
+  --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  --radius: 12px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
 body {
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  font-size: 13px;
-  line-height: 1.55;
+  font-family: Tahoma, 'Segoe UI', sans-serif;
   direction: rtl;
-  background: var(--bg-body);
-  color: var(--text-main);
+  background: linear-gradient(180deg, #f0f9ff 0%, #f8fafc 100%);
+  color: var(--text);
   min-height: 100vh;
-  padding-top: var(--header-h);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
-body.has-ticker { padding-top: calc(var(--header-h) + var(--ticker-h)); }
 
-.top-bar {
+.container { max-width: 720px; margin: 0 auto; padding: 12px 14px 40px; }
+
+.global-loader {
   position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 1000;
-  background: var(--header-bg);
-  box-shadow: 0 1px 3px rgba(15,23,42,0.15);
-}
-.app-header {
-  height: var(--header-h);
-  padding: 0 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--header-fg);
-}
-.app-header-left {
-  display: flex; align-items: center; gap: 10px;
-  min-width: 0; flex: 1;
-}
-.app-logo { font-size: 22px; line-height: 1; flex-shrink: 0; }
-.app-title {
-  font-size: 14px; font-weight: 600;
-  letter-spacing: 0.2px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  color: #f1f5f9;
-}
-.app-header-weather {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 500;
-  background: rgba(255,255,255,0.08);
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--header-fg);
-  flex-shrink: 0;
-  direction: ltr;
-}
-.app-header-weather .range {
-  opacity: 0.7; font-size: 10px;
-  font-weight: 400; margin-right: 2px;
-}
-
-.rain-ticker {
-  display: none;
-  height: var(--ticker-h);
-  overflow: hidden;
-  position: relative;
-  background: #7c2d12;
-  color: #fef3c7;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-.rain-ticker:not(.hidden) { display: block; }
-.rain-ticker-content {
-  position: absolute;
-  top: 50%;
-  white-space: nowrap;
-  direction: rtl;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 0 24px;
-  transform: translate(-100%, -50%);
-  animation: rainMarquee 60s linear infinite;
-}
-@keyframes rainMarquee {
-  from { transform: translate(-100%, -50%); }
-  to   { transform: translate(100vw, -50%); }
-}
-
-.main-wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
-.screen { display: none; }
-.screen.active { display: block; animation: fadeIn 0.2s ease; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-#loading.active { display: flex; }
-
-h2 {
-  color: var(--text-main);
-  margin: 4px 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-}
-h3 {
-  color: var(--text-main);
-  margin: 18px 0 10px 0;
-  font-size: 13px;
-  font-weight: 600;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.breadcrumb {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 11px; font-weight: 500;
-  color: var(--text-muted);
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
-}
-.breadcrumb .sep { color: var(--text-soft); font-size: 10px; }
-
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  padding: 16px;
-}
-
-.date-card {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  color: #f1f5f9;
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
-}
-.date-card::before {
-  content: '';
-  position: absolute;
-  top: -20px; left: -20px;
-  width: 100px; height: 100px;
-  background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%);
-  border-radius: 50%;
-}
-.date-card-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-}
-.date-card-main { flex: 1; min-width: 0; }
-.date-card-weekday {
-  font-size: 12px; font-weight: 500;
-  color: #cbd5e1; margin-bottom: 2px;
-}
-.date-card-date {
-  font-size: 22px; font-weight: 700;
-  letter-spacing: -0.5px;
-  color: #f8fafc; line-height: 1.2;
-}
-.date-card-lunar {
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 4px;
-}
-.date-card-icon { font-size: 40px; flex-shrink: 0; opacity: 0.9; }
-.date-card-occasion {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  font-size: 12px;
-  color: #fbbf24;
-  font-weight: 500;
-  display: flex; align-items: center; gap: 6px;
-  position: relative;
-}
-
-.user-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  display: flex; align-items: center; gap: 12px;
-  box-shadow: var(--shadow-sm);
-}
-.user-avatar {
-  width: 46px; height: 46px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #334155, #475569);
-  color: #f1f5f9;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 600; flex-shrink: 0;
-}
-.user-info-mini { flex: 1; min-width: 0; }
-.user-info-name {
-  font-size: 14px; font-weight: 600;
-  color: var(--text-main);
-  margin-bottom: 3px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.user-info-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.user-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 10px; font-weight: 600;
-  background: var(--bg-muted);
-  color: var(--text-muted);
-  margin-left: 4px;
-  border: 1px solid var(--border);
-}
-.user-badge.access {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fde68a;
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  font-size: 13px;
-  padding: 11px 14px;
-  transition: all 0.15s ease;
-  width: 100%;
-  background: var(--accent);
-  color: #fff;
-  margin-top: 12px;
-}
-button:hover { background: var(--accent-hover); }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btn-primary { background: var(--primary); }
-.btn-primary:hover { background: var(--primary-hover); }
-.btn-sec {
-  background: var(--bg-muted);
-  color: var(--text-main);
-  border: 1px solid var(--border);
-}
-.btn-sec:hover { background: #e2e8f0; }
-.btn-ok { background: var(--success); }
-.btn-ok:hover { background: var(--success-hover); }
-
-.action-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 4px;
-}
-.action-grid.single { grid-template-columns: 1fr; }
-@media (min-width: 640px) { .action-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 900px) { .action-grid { grid-template-columns: repeat(4, 1fr); } }
-
-.action-tile {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 14px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 10px;
-  margin: 0; min-height: 110px;
-  color: var(--text-main);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.15s;
-}
-.action-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-strong);
-}
-.action-tile .tile-icon {
-  width: 46px; height: 46px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; line-height: 1;
-}
-.action-tile .tile-label {
-  font-size: 12px; font-weight: 600;
-  letter-spacing: 0.1px;
-}
-.action-tile-reports .tile-icon { background: #eef2ff; color: #4338ca; }
-.action-tile-admin .tile-icon { background: #ecfeff; color: #0e7490; }
-
-label {
-  display: block;
-  margin-top: 14px;
-  margin-bottom: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-input, select, textarea {
-  width: 100%;
-  padding: 11px 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-family: inherit;
-  background: var(--bg-card);
-  color: var(--text-main);
-  transition: all 0.15s;
-  outline: none;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(30,64,175,0.1);
-}
-textarea { min-height: 80px; resize: vertical; }
-
-.msg {
-  margin-top: 12px;
-  padding: 11px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  line-height: 1.6;
-  border: 1px solid;
-  text-align: center;
-  white-space: pre-line;
-}
-.msg-ok { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-.msg-err { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-.msg-info { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
-.msg-warn { background: #fffbeb; color: #92400e; border-color: #fde68a; }
-.hidden { display: none !important; }
-
-#loading {
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  min-height: 60vh;
-}
-.spinner {
-  width: 40px; height: 40px;
-  border: 3px solid var(--border);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.date-row { display: flex; gap: 6px; }
-.date-row .col { flex: 1; }
-.date-cap {
-  font-size: 10px;
-  color: var(--text-soft);
-  text-align: center;
-  margin-bottom: 3px;
-  font-weight: 600;
-}
-.quick-row {
-  display: flex; gap: 6px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-.btn-q {
-  flex: 1;
-  min-width: 70px;
-  padding: 8px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 600;
-  margin: 0;
-  transition: all 0.15s;
-}
-.btn-q:hover {
-  background: var(--bg-muted);
-  border-color: var(--text-soft);
-  color: var(--text-main);
-}
-
-.plat-box {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  margin-top: 8px;
-}
-.plat-row {
-  display: flex; align-items: center;
-  gap: 10px; padding: 6px 0;
-}
-.plat-row input[type="checkbox"] {
-  width: 18px; height: 18px;
-  accent-color: var(--primary);
-  flex-shrink: 0;
-}
-.plat-row label {
-  margin: 0; flex: 1;
-  font-weight: 500; font-size: 12px;
-  color: var(--text-main);
-}
-.plat-row.dis { opacity: 0.4; }
-.plat-row.all {
-  padding-bottom: 10px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-}
-.plat-row.all label { font-weight: 600; }
-
-.ss-box { position: relative; margin-top: 4px; }
-.ss-in {
-  width: 100%;
-  padding: 11px 36px 11px 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  background: var(--bg-card);
-  color: var(--text-main);
-  transition: all 0.15s;
-  outline: none;
-}
-.ss-in:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(30,64,175,0.1);
-}
-.ss-in[readonly] {
-  background: #f0fdf4;
-  border-color: #86efac;
-  color: #166534;
-  font-weight: 500;
-}
-.ss-arrow {
-  position: absolute;
-  top: 50%; left: 12px;
-  transform: translateY(-50%);
-  font-size: 10px;
-  color: var(--text-soft);
-  pointer-events: none;
-}
-.ss-clear {
-  position: absolute;
-  top: 50%; right: 8px;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: var(--danger);
-  font-weight: bold;
-  font-size: 15px;
-  padding: 4px 8px;
-  user-select: none;
-}
-.ss-list {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0; right: 0;
-  max-height: 240px;
-  overflow-y: auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  z-index: 100;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-}
-.ss-list::-webkit-scrollbar { width: 6px; }
-.ss-list::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 3px;
-}
-.ss-item {
-  padding: 10px 12px;
-  cursor: pointer;
-  font-size: 12px;
-  border-bottom: 1px solid var(--bg-subtle);
-  color: var(--text-main);
-  transition: background 0.1s;
-}
-.ss-item:hover { background: var(--bg-muted); }
-.ss-item:last-child { border-bottom: none; }
-.ss-item-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-.ss-item-summary {
-  direction: ltr;
-  font-size: 10px; color: #fff;
-  font-weight: 600;
-  background: #92400e;
-  padding: 2px 7px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  letter-spacing: 0.3px;
-}
-.ss-empty {
-  padding: 14px;
-  color: var(--text-soft);
-  text-align: center;
-  font-size: 12px;
-}
-.ss-chips {
-  display: flex; flex-wrap: wrap;
-  gap: 5px; margin-top: 6px;
-}
-.ss-chip {
-  display: inline-flex;
-  align-items: center; gap: 6px;
-  padding: 4px 10px;
-  background: var(--bg-muted);
-  color: var(--text-main);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  font-size: 11px;
-  font-weight: 500;
-}
-.ss-chip-x {
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  color: var(--text-soft);
-}
-.ss-chip-x:hover { color: var(--danger); }
-
-/* ═══ Chips checkboxes (multi-select filter) ═══ */
-.chips-checkboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 10px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  max-height: 200px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-}
-.chips-checkboxes::-webkit-scrollbar { width: 6px; }
-.chips-checkboxes::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 3px;
-}
-.chk-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-strong);
-  border-radius: 14px;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.15s;
-}
-.chk-chip:hover {
-  background: var(--bg-muted);
-  border-color: var(--text-soft);
-}
-.chk-chip.selected {
-  background: #eff6ff;
-  border-color: var(--primary);
-  color: var(--primary);
-  font-weight: 600;
-}
-.chk-chip input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--primary);
-  margin: 0;
-  flex-shrink: 0;
-}
-.chips-empty {
-  color: var(--text-soft);
-  font-size: 11px;
-  padding: 4px;
-}
-
-/* ═══ Highlight block (top of filters) ═══ */
-.subject-highlight-block {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
-}
-.subject-highlight-block .sh-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border-strong);
-}
-.subject-highlight-block .sh-title-icon {
-  width: 26px; height: 26px;
-  background: #eff6ff;
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-}
-.subject-highlight-block .sh-title-count {
-  font-size: 10px;
-  background: var(--primary);
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-right: auto;
-}
-.subject-highlight-block .sh-title-actions {
-  font-size: 10px;
-  background: var(--bg-muted);
-  color: var(--text-muted);
-  padding: 3px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  font-weight: 600;
-}
-.subject-highlight-block .sh-title-actions:hover {
-  background: #e2e8f0;
-}
-
-.preview-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
-}
-.preview-title {
-  font-weight: 600;
-  color: var(--text-main);
-  text-align: center;
-  margin-bottom: 12px;
-  font-size: 13px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-.preview-row {
-  display: flex;
-  padding: 8px 0;
-  font-size: 12px;
-  border-bottom: 1px solid var(--bg-subtle);
-}
-.preview-row:last-child { border-bottom: none; }
-.preview-label {
-  font-weight: 600;
-  width: 90px; flex-shrink: 0;
-  color: var(--text-muted);
-  font-size: 11px;
-}
-.preview-value {
-  flex: 1;
-  color: var(--text-main);
-  word-break: break-word;
-}
-.preview-msg {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  font-size: 11px;
-  white-space: pre-line;
-  line-height: 1.8;
-  max-height: 240px;
-  overflow-y: auto;
-  color: var(--text-main);
-}
-.btn-row { display: flex; gap: 8px; margin-top: 12px; }
-.btn-row button { flex: 1; margin-top: 0; }
-
-.send-status-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  margin-top: 12px;
-}
-.send-status-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.send-status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 4px;
-  border-bottom: 1px solid var(--bg-subtle);
-  font-size: 12px;
-}
-.send-status-row:last-child { border-bottom: none; }
-.send-status-ok { color: var(--success); font-weight: bold; font-size: 16px; }
-.send-status-fail { color: var(--danger); font-weight: bold; font-size: 16px; }
-.send-status-skip { color: var(--text-soft); font-size: 11px; }
-
-.reports-filters {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
-}
-.filter-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-@media (min-width: 700px) {
-  .filter-row { grid-template-columns: 1fr 1fr; gap: 12px; }
-}
-@media (min-width: 1000px) {
-  .filter-row { grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-}
-.filter-row .full { grid-column: 1/-1; }
-
-.results-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.report-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.15s;
-}
-.report-card:hover { border-color: var(--border-strong); }
-.report-card.open { box-shadow: var(--shadow-md); }
-
-.report-card-header {
-  padding: 12px 14px;
-  cursor: pointer;
-  background: var(--bg-card);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.report-card-header:hover { background: var(--bg-subtle); }
-
-.report-card-row1 {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-.report-card-title {
-  flex: 1;
-  font-weight: 600;
-  color: var(--text-main);
-  font-size: 13px;
-  line-height: 1.5;
-  word-break: break-word;
-}
-.report-card-arrow {
-  color: var(--text-soft);
-  font-size: 10px;
-  transition: transform 0.2s;
-  flex-shrink: 0;
-  margin-top: 4px;
-}
-.report-card.open .report-card-arrow { transform: rotate(180deg); }
-
-.report-card-desc {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.6;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.report-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.meta-chip {
-  display: inline-flex;
-  align-items: center; gap: 3px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 600;
-  background: var(--bg-muted);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  white-space: nowrap;
-}
-.meta-chip-date { background: #eff6ff; color: #1e40af; border-color: #dbeafe; }
-.meta-chip-status-ok { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-.meta-chip-status-warn { background: #fffbeb; color: #92400e; border-color: #fde68a; }
-.meta-chip-status-info { background: #ecfeff; color: #155e75; border-color: #a5f3fc; }
-.meta-chip-recipient { background: #faf5ff; color: #6b21a8; border-color: #e9d5ff; }
-.meta-chip-epc { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-.meta-chip-field { background: #f7fee7; color: #3f6212; border-color: #d9f99d; }
-
-.report-card-body {
-  padding: 14px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-subtle);
-  display: none;
-}
-.report-card.open .report-card-body { display: block; }
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-@media (min-width: 600px) { .detail-grid { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 900px) { .detail-grid { grid-template-columns: 1fr 1fr 1fr; } }
-
-.detail-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-}
-.detail-box.full { grid-column: 1 / -1; }
-.detail-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-soft);
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-.detail-value {
-  font-size: 12px;
-  color: var(--text-main);
-  line-height: 1.55;
-  word-break: break-word;
-}
-
-.report-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border-strong);
-}
-@media (min-width: 500px) {
-  .report-actions { grid-template-columns: 1fr 1fr 1fr; }
-}
-.btn-report {
-  background: #ecfdf5; color: #047857;
-  border: 1px solid #a7f3d0;
-  font-size: 12px; padding: 9px 10px;
-  margin-top: 0;
-}
-.btn-report:hover { background: #d1fae5; border-color: #6ee7b7; }
-.btn-comment {
-  background: #fffbeb; color: #b45309;
-  border: 1px solid #fde68a;
-  font-size: 12px; padding: 9px 10px;
-  margin-top: 0;
-}
-.btn-comment:hover { background: #fef3c7; border-color: #fcd34d; }
-
-.empty-state {
-  padding: 32px 20px;
-  text-align: center;
-  color: var(--text-soft);
-  font-size: 12px;
-  background: var(--bg-card);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius);
-}
-.result-count {
-  text-align: center;
-  padding: 8px;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15,23,42,0.5);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: fadeIn 0.15s ease;
-  backdrop-filter: blur(2px);
-}
-.modal-content {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-.modal-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-main);
-}
-.modal-close {
-  cursor: pointer;
-  font-size: 22px;
-  color: var(--text-soft);
-  background: none;
-  border: none;
-  padding: 0;
-  width: auto; margin: 0;
-  line-height: 1;
-}
-.modal-close:hover { color: var(--danger); background: none; }
-.modal-parent {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  margin-bottom: 12px;
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.7;
-}
-.modal-parent b { color: var(--text-main); }
-.modal-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-}
-.modal-actions button { flex: 1; margin-top: 0; }
-
-.toast {
-  position: fixed;
-  bottom: 24px;
+  top: 60px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1e293b;
-  color: #f1f5f9;
-  padding: 11px 20px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  z-index: 2000;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-  animation: toastIn 0.25s ease;
+  background: rgba(30, 64, 175, 0.95);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.35);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.3s;
+  animation: glSlide 0.3s ease-out;
 }
-.toast.ok { background: var(--success); }
-.toast.err { background: var(--danger); }
-@keyframes toastIn {
-  from { opacity: 0; transform: translate(-50%, 14px); }
+@keyframes glSlide {
+  from { opacity: 0; transform: translate(-50%, -20px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
-
-#adminSection .scroll-body {
-  max-height: calc(100vh - 220px);
-  overflow-y: auto;
-  padding: 2px;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
+.global-loader.hidden { display: none; }
+.gl-spinner {
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
 }
-#adminSection .scroll-body::-webkit-scrollbar { width: 6px; }
-#adminSection .scroll-body::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 3px;
+
+.topbar {
+  position: sticky; top: 0; z-index: 500;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: var(--shadow);
+}
+.topbar.hidden { display: none; }
+.nav-btn {
+  width: 40px; height: 40px;
+  border: none; border-radius: 10px;
+  background: #f1f5f9; color: #334155;
+  font-size: 18px; cursor: pointer;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.nav-btn:hover { background: #e2e8f0; }
+.nav-btn:active { transform: scale(0.94); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.nav-btn.home { background: #dbeafe; color: #1e40af; }
+.topbar-title {
+  flex: 1; font-size: 14px; font-weight: bold; color: var(--text);
+  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.user-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff; border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+  position: relative; overflow: hidden;
+}
+.user-header::before {
+  content: ''; position: absolute; top: -50%; right: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.user-header.hidden { display: none; }
+.uh-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.uh-name { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 15px; }
+.uh-name-icon { font-size: 20px; }
+.uh-access { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; backdrop-filter: blur(4px); }
+.uh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 12.5px; }
+.uh-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); padding: 6px 10px; border-radius: 8px; backdrop-filter: blur(4px); }
+.uh-item .ico { font-size: 15px; }
+.uh-event { grid-column: 1 / -1; background: rgba(255, 235, 59, 0.22); color: #fff9c4; text-align: center; font-weight: bold; padding: 8px 12px; border-radius: 8px; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+#loading.active { display: flex; }
+#loading { flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; text-align: center; min-height: 70vh; }
+.spinner { width: 54px; height: 54px; border: 5px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.form-loader {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.4s ease;
+  overflow: hidden;
+  position: relative;
+}
+.form-loader::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: shimmer 1.8s infinite;
+}
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+.form-loader.ready {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-color: #6ee7b7;
+}
+.form-loader.ready::before { animation: none; display: none; }
+.form-loader.hide {
+  opacity: 0; transform: scale(0.95);
+  max-height: 0; padding-top: 0; padding-bottom: 0;
+  margin-bottom: 0; border-width: 0; pointer-events: none;
+}
+.fl-spinner {
+  width: 24px; height: 24px;
+  border: 3px solid #93c5fd;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+.form-loader.ready .fl-spinner {
+  border: none; border-radius: 50%;
+  background: #10b981; color: #fff;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; animation: none;
+}
+.form-loader.ready .fl-spinner::after { content: '✓'; font-weight: bold; font-size: 15px; }
+.fl-text { flex: 1; font-size: 13.5px; font-weight: bold; color: #1e40af; transition: color 0.3s; }
+.form-loader.ready .fl-text { color: #065f46; }
+.fl-count { font-size: 11.5px; color: #64748b; font-weight: normal; display: block; margin-top: 2px; }
+.form-loader.ready .fl-count { color: #047857; }
+.form-loader .fl-dot { display: inline-block; animation: dotPulse 1.4s infinite; }
+.form-loader .fl-dot:nth-child(2) { animation-delay: 0.2s; }
+.form-loader .fl-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+
+.welcome-box {
+  background: var(--card); border-radius: 18px;
+  padding: 26px 20px; text-align: center;
+  box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 16px;
+}
+.welcome-hero { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+.welcome-title { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 6px; }
+.welcome-project { font-size: 15px; color: var(--primary); font-weight: bold; margin-bottom: 16px; }
+.welcome-sub { font-size: 13.5px; color: var(--hint); line-height: 1.9; margin-bottom: 20px; }
+.welcome-user-info { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 18px; text-align: right; font-size: 13.5px; line-height: 2; }
+.welcome-user-info .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
+.welcome-user-info .row:last-child { border-bottom: none; }
+.welcome-user-info .val { color: #334155; font-weight: 500; }
+.welcome-btn {
+  width: 100%; padding: 15px; border: none; border-radius: 12px;
+  font-size: 15.5px; font-weight: bold; cursor: pointer; color: #fff;
+  background: var(--primary); transition: all 0.15s; margin-top: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.welcome-btn:hover { filter: brightness(0.95); }
+.welcome-btn:active { transform: scale(0.98); }
+.welcome-btn.green { background: var(--success); }
+.welcome-btn.orange { background: var(--warn); }
+.welcome-btn.gray { background: #64748b; }
+
+.panel-menu-title { text-align: center; font-size: 18px; font-weight: bold; margin: 16px 0 6px; }
+.panel-menu-sub { text-align: center; font-size: 13px; color: var(--hint); margin-bottom: 20px; }
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.menu-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 14px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(34, 158, 217, 0.15); border-color: var(--primary); }
+.menu-card .icon { font-size: 34px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #dbeafe, #e0e7ff); border-radius: 14px; }
+.menu-card .label { font-size: 14px; font-weight: bold; color: var(--text); }
+.menu-card .desc { font-size: 11.5px; color: var(--hint); }
+.menu-card.disabled { opacity: 0.5; cursor: not-allowed; }
+
+.card { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+h2.section-title { text-align: center; color: var(--primary); margin: 8px 0 18px; font-size: 20px; }
+h3.section-h { color: var(--primary); margin: 20px 0 10px; font-size: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0f2fe; }
+label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 13.5px; font-weight: bold; color: #334155; }
+input, select, textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; background: #fff; color: var(--text); transition: border-color 0.15s; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(34, 158, 217, 0.1); }
+textarea { min-height: 90px; resize: vertical; }
+button { width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: 11px; background: var(--primary); color: #fff; font-size: 15.5px; font-weight: bold; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+button:hover:not(:disabled) { filter: brightness(0.95); }
+button:active:not(:disabled) { transform: scale(0.985); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sec { background: #e2e8f0; color: #334155; margin-bottom: 12px; margin-top: 0; }
+.btn-ok { background: var(--success); }
+.btn-warn { background: var(--warn); }
+
+.msg { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 13.5px; line-height: 1.7; }
+.msg-ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.msg-err { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.msg-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.msg-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+.date-row { display: flex; gap: 8px; }
+.date-row .col { flex: 1; position: relative; }
+.date-row .col select { text-align: center; font-weight: bold; padding: 14px 8px; }
+.date-lbl { font-size: 11px; text-align: center; color: var(--hint); margin-top: 4px; }
+.quick-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.btn-q { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: 10px; background: #f8fafc; color: #334155; font-size: 13.5px; font-weight: bold; cursor: pointer; margin: 0; }
+.btn-q:hover { background: #e0f2fe; border-color: var(--primary); }
+
+.plat-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
+.plat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.plat-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
+.plat-row label { margin: 0; flex: 1; font-weight: normal; cursor: pointer; font-size: 14px; }
+.plat-row.dis { opacity: 0.45; }
+.plat-row.all { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 4px; }
+.plat-row.all label { font-weight: bold; }
+
+.ss-box { position: relative; margin-top: 6px; }
+.ss-in { width: 100%; padding: 12px 40px 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; background: #fff; color: var(--text); }
+.ss-in:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(34,158,217,0.1); }
+.ss-in[readonly] { background: #e8f5e9; border-color: var(--success); font-weight: bold; color: #065f46; }
+.ss-arrow { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); font-size: 11px; color: #94a3b8; pointer-events: none; }
+.ss-clear { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); cursor: pointer; color: #ef4444; font-weight: bold; font-size: 16px; padding: 4px 8px; user-select: none; border-radius: 6px; }
+.ss-clear:hover { background: #fee2e2; }
+.ss-clear.hidden { display: none; }
+.ss-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 240px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12); z-index: 100; }
+.ss-list.hidden { display: none; }
+.ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #334155; transition: background 0.1s; }
+.ss-item:hover, .ss-item:active { background: #eff6ff; }
+.ss-item:last-child { border-bottom: none; }
+.ss-item-main { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ss-item-summary { direction: ltr; font-size: 11px; color: var(--purple); font-weight: bold; background: #f3e8ff; padding: 3px 9px; border-radius: 10px; flex-shrink: 0; }
+.ss-empty { padding: 16px; color: var(--hint); text-align: center; font-size: 13px; }
+.ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--primary); color: #fff; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; opacity: 0.9; }
+.ss-chip-x:hover { opacity: 1; }
+
+.preview-card { background: linear-gradient(135deg, #f0f9ff, #f8fafc); border: 2px solid var(--primary); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.preview-title { font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 14px; font-size: 15px; padding-bottom: 10px; border-bottom: 1px dashed #bfdbfe; }
+.preview-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 13.5px; gap: 8px; }
+.preview-row:last-child { border-bottom: none; }
+.preview-label { font-weight: bold; min-width: 90px; color: #475569; flex-shrink: 0; }
+.preview-value { flex: 1; word-break: break-word; color: #0f172a; white-space: pre-line; }
+.preview-msg { background: #fff; border-radius: 10px; padding: 14px; font-size: 12.5px; white-space: pre-line; line-height: 1.85; border: 1px solid var(--border); max-height: 320px; overflow-y: auto; font-family: Tahoma, monospace; color: #1e293b; }
+.btn-row { display: flex; gap: 8px; margin-top: 16px; }
+.btn-row button { flex: 1; margin-top: 0; }
+
+.send-status-box { background: #fff; border-radius: 12px; padding: 14px; margin-top: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.send-status-title { font-weight: bold; font-size: 13px; color: #475569; margin-bottom: 10px; text-align: center; }
+.send-status-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 4px; border-bottom: 1px solid #f1f5f9; }
+.send-status-row:last-child { border-bottom: none; }
+.send-status-name { font-size: 13.5px; }
+.send-status-icon { font-size: 20px; font-weight: bold; }
+.send-status-ok { color: var(--success); }
+.send-status-fail { color: var(--danger); }
+.send-status-skip { color: #94a3b8; font-size: 13px; }
+
+@media (max-width: 480px) {
+  .container { padding: 10px 12px 30px; }
+  .user-header { padding: 12px 14px; }
+  .uh-grid { grid-template-columns: 1fr 1fr; }
+  .menu-grid { grid-template-columns: 1fr 1fr; }
+  .topbar { padding: 6px 10px; gap: 6px; }
+  .nav-btn { width: 36px; height: 36px; font-size: 16px; }
+  .welcome-box { padding: 20px 16px; }
+  .welcome-hero { font-size: 52px; }
+}
+@media (min-width: 720px) {
+  .container { padding: 20px 24px 50px; }
+  .topbar { padding: 10px 20px; }
+  .topbar-title { font-size: 15px; }
+  .nav-btn { width: 44px; height: 44px; }
 }
 </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <header class="app-header">
-    <div class="app-header-left">
-      <span class="app-logo">🏗</span>
-      <span class="app-title">سامانه مدیریت پروژه ایگل</span>
-    </div>
-    <div class="app-header-weather" id="headerWeather">--°</div>
-  </header>
-  <div class="rain-ticker hidden" id="rainTicker">
-    <div class="rain-ticker-content" id="rainTickerContent"></div>
-  </div>
+<div id="globalLoader" class="global-loader hidden">
+  <div class="gl-spinner"></div>
+  <span id="globalLoaderText">در حال بارگذاری...</span>
 </div>
 
-<div class="main-wrap">
-
-<div id="loading" class="screen active">
-  <div class="spinner"></div>
-  <p style="color:var(--text-muted); margin-top:16px; font-size: 13px;">در حال بارگذاری...</p>
+<div id="topbar" class="topbar hidden">
+  <button class="nav-btn home" id="navHome" title="صفحه اصلی">🏠</button>
+  <button class="nav-btn" id="navBack" title="قبلی">▶</button>
+  <button class="nav-btn" id="navForward" title="بعدی">◀</button>
+  <div class="topbar-title" id="topbarTitle">سیستم مدیریت کارگاهی</div>
 </div>
 
-<div id="formSection" class="screen">
-  <div class="breadcrumb">📍 خانه <span class="sep">›</span> ثبت‌نام</div>
-  <h2>📝 فرم ثبت‌نام</h2>
-  <div class="card">
-    <div class="msg msg-info" id="tgInfo" style="margin-top:0;"></div>
-    <form id="regForm">
-      <label>نام و نام خانوادگی *</label>
-      <input id="fullName" required>
-      <label>سمت *</label>
-      <input id="position" required>
-      <label>واحد *</label>
-      <input id="unit" required>
-      <button type="submit" id="regBtn" class="btn-primary">📤 ثبت‌نام</button>
-    </form>
-    <div id="formMsg"></div>
-  </div>
-</div>
+<div class="container">
 
-<div id="pendingSection" class="screen">
-  <div class="breadcrumb">📍 خانه <span class="sep">›</span> در انتظار تأیید</div>
-  <h2>⏳ در انتظار تأیید ادمین</h2>
-  <div class="msg msg-warn">ثبت‌نام شما انجام شد و در انتظار تأیید ادمین است.</div>
-</div>
-
-<div id="activeSection" class="screen">
-  <div class="breadcrumb">📍 خانه</div>
-
-  <div class="date-card">
-    <div class="date-card-row">
-      <div class="date-card-main">
-        <div class="date-card-weekday" id="todayWeekday">—</div>
-        <div class="date-card-date" id="todayDate">—</div>
-        <div class="date-card-lunar" id="todayGregorian">—</div>
+  <div id="userHeader" class="user-header hidden">
+    <div class="uh-top">
+      <div class="uh-name">
+        <span class="uh-name-icon">👤</span>
+        <span id="uhName">—</span>
       </div>
-      <div class="date-card-icon">📅</div>
+      <span class="uh-access" id="uhAccess">—</span>
     </div>
-    <div class="date-card-occasion hidden" id="todayOccasion">
-      <span>🎉</span>
-      <span id="todayOccasionText">—</span>
-    </div>
-  </div>
-
-  <div class="user-card">
-    <div class="user-avatar" id="userAvatar">👤</div>
-    <div class="user-info-mini">
-      <div class="user-info-name" id="userInfoName">—</div>
-      <div class="user-info-sub" id="userInfoSub">—</div>
+    <div class="uh-grid">
+      <div class="uh-item"><span class="ico">🆔</span><span id="uhId">—</span></div>
+      <div class="uh-item"><span class="ico">📅</span><span id="uhDate">—</span></div>
+      <div class="uh-item"><span class="ico">🕐</span><span id="uhTime">—</span></div>
+      <div class="uh-item"><span class="ico">🌤️</span><span id="uhWeather">—</span></div>
+      <div class="uh-item"><span class="ico">🏗️</span><span>پروژه ویلایی ایگل</span></div>
+      <div class="uh-event hidden" id="uhEvent"></div>
     </div>
   </div>
 
-  <div class="action-grid" id="homeBtnGrid">
-    <button id="reportsBtn" class="action-tile action-tile-reports hidden">
-      <span class="tile-icon">📊</span>
-      <span class="tile-label">گزارش‌ها</span>
-    </button>
-    <button id="adminBtn" class="action-tile action-tile-admin hidden">
-      <span class="tile-icon">🛠</span>
-      <span class="tile-label">پنل ادمین</span>
-    </button>
+  <div id="loading" class="screen active">
+    <div class="spinner"></div>
+    <p style="color:#64748b; margin-top:18px; font-size:14px;">در حال بارگذاری...</p>
   </div>
-</div>
 
-<div id="adminSection" class="screen">
-  <div class="breadcrumb">📍 خانه <span class="sep">›</span> پنل ادمین</div>
-  <h2>🛠 پنل ادمین</h2>
-  <button id="backBtn" class="btn-sec">→ بازگشت</button>
+  <div id="welcomeSection" class="screen">
+    <div class="welcome-box">
+      <div class="welcome-hero" id="welcomeHero">👋</div>
+      <div class="welcome-title" id="welcomeTitle">به سیستم مدیریت کارگاهی خوش آمدید</div>
+      <div class="welcome-project">🏗️ پروژه ویلایی ایگل</div>
+      <div class="welcome-sub" id="welcomeSub">—</div>
+      <div class="welcome-user-info hidden" id="welcomeUserBox"></div>
+      <div id="welcomeActions"></div>
+    </div>
+  </div>
 
-  <div class="scroll-body">
-    <h3>مخاطب</h3>
-    <label>مخاطب *</label>
-    <div id="recipientWrap"></div>
+  <div id="formSection" class="screen">
+    <h2 class="section-title">📝 فرم ثبت‌نام</h2>
+    <div class="card">
+      <div class="msg msg-info" id="tgInfo"></div>
+      <form id="regForm">
+        <label>نام و نام خانوادگی *</label>
+        <input id="fullName" required>
+        <label>سمت *</label>
+        <input id="position" required>
+        <label>واحد *</label>
+        <input id="unit" required>
+        <button type="submit" id="regBtn">📨 ارسال ثبت‌نام</button>
+      </form>
+      <div id="formMsg"></div>
+    </div>
+  </div>
 
-    <div class="plat-box">
-      <div style="font-size:11px; font-weight:600; margin-bottom:8px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.4px;">📡 پلتفورم ارسال</div>
-      <div class="plat-row all">
-        <input type="checkbox" id="chkAll">
-        <label for="chkAll">🌐 همه</label>
+  <div id="panelMenuSection" class="screen">
+    <div class="panel-menu-title">🎯 پنل کاربری</div>
+    <div class="panel-menu-sub">لطفاً یک گزینه را انتخاب کنید</div>
+    <div class="menu-grid" id="menuGrid">
+      <div class="menu-card" id="menuCreateOrder">
+        <div class="icon">📋</div>
+        <div class="label">ثبت دستور کار</div>
+        <div class="desc">ایجاد و ارسال دستور کار جدید</div>
       </div>
-      <div class="plat-row" id="rowTg">
-        <input type="checkbox" id="chkTg">
-        <label for="chkTg">📱 Telegram</label>
+      <div class="menu-card disabled">
+        <div class="icon">📊</div>
+        <div class="label">گزارش‌ها</div>
+        <div class="desc">به‌زودی</div>
       </div>
-      <div class="plat-row" id="rowBale">
-        <input type="checkbox" id="chkBale">
-        <label for="chkBale">📨 Bale</label>
+      <div class="menu-card disabled">
+        <div class="icon">👥</div>
+        <div class="label">مدیریت کاربران</div>
+        <div class="desc">به‌زودی</div>
+      </div>
+      <div class="menu-card disabled">
+        <div class="icon">⚙️</div>
+        <div class="label">تنظیمات</div>
+        <div class="desc">به‌زودی</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="workOrderSection" class="screen">
+    <h2 class="section-title">📋 ثبت دستور کار</h2>
+
+    <div class="form-loader" id="formLoader">
+      <div class="fl-spinner"></div>
+      <div class="fl-text">
+        در حال آماده‌سازی فرم<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span>
+        <span class="fl-count" id="flCount">در حال بارگذاری داده‌ها</span>
       </div>
     </div>
 
-    <h3>اطلاعات دستور کار</h3>
-    <form id="woForm" onsubmit="return false;">
-      <label>موضوع ردیف *</label>
-      <div id="subjectWrap"></div>
-      <label>شرح عملیات *</label>
-      <textarea id="woDesc"></textarea>
-      <label>EPC *</label>
-      <div id="epcWrap"></div>
-      <label>رشته *</label>
-      <div id="fieldWrap"></div>
-      <label>پیمانکاری / امانی *</label>
-      <div id="engWrap"></div>
-      <label>در ارتباط با کدام ردیف برنامه کلی *</label>
-      <div id="relatedWrap"></div>
-      <label>آدرس / محل *</label>
-      <div id="addrWrap"></div>
-      <label>تاریخ شروع (شمسی) *</label>
-      <div class="quick-row">
-        <button type="button" class="btn-q" onclick="setToday()">📅 امروز</button>
-        <button type="button" class="btn-q" onclick="setTomorrow()">📅 فردا</button>
-      </div>
-      <div class="date-row">
-        <div class="col"><div class="date-cap">سال</div><select id="woYear"></select></div>
-        <div class="col"><div class="date-cap">ماه</div><select id="woMonth"></select></div>
-        <div class="col"><div class="date-cap">روز</div><select id="woDay"></select></div>
-      </div>
-      <label>مدت زمان (روز) *</label>
-      <input id="woDur" type="number" min="1" placeholder="مثال: 3">
-      <button type="button" id="previewBtn" class="btn-primary">👁 پیش‌نمایش</button>
-    </form>
-    <div id="woMsg"></div>
-  </div>
-</div>
+    <div class="card">
+      <h3 class="section-h">👥 مخاطب</h3>
+      <label>انتخاب مخاطب *</label>
+      <div id="recipientWrap"></div>
 
-<div id="previewSection" class="screen">
-  <div class="breadcrumb">📍 خانه <span class="sep">›</span> پنل ادمین <span class="sep">›</span> پیش‌نمایش</div>
-  <h2>👁 پیش‌نمایش</h2>
-  <div class="preview-card">
-    <div class="preview-title">📋 اطلاعات دستور کار</div>
-    <div class="preview-row"><div class="preview-label">مخاطب</div><div class="preview-value" id="pvRecipient">—</div></div>
-    <div class="preview-row"><div class="preview-label">پلتفورم</div><div class="preview-value" id="pvPlatforms">—</div></div>
-    <div class="preview-row"><div class="preview-label">موضوع</div><div class="preview-value" id="pvSubject">—</div></div>
-    <div class="preview-row"><div class="preview-label">EPC</div><div class="preview-value" id="pvEpc">—</div></div>
-    <div class="preview-row"><div class="preview-label">رشته</div><div class="preview-value" id="pvField">—</div></div>
-    <div class="preview-row"><div class="preview-label">پیمانکاری</div><div class="preview-value" id="pvEng">—</div></div>
-    <div class="preview-row"><div class="preview-label">ردیف مرتبط</div><div class="preview-value" id="pvRelated">—</div></div>
-    <div class="preview-row"><div class="preview-label">آدرس</div><div class="preview-value" id="pvAddr">—</div></div>
-    <div class="preview-row"><div class="preview-label">شرح</div><div class="preview-value" id="pvDesc">—</div></div>
-    <div class="preview-row"><div class="preview-label">شروع</div><div class="preview-value" id="pvStart">—</div></div>
-    <div class="preview-row"><div class="preview-label">مدت</div><div class="preview-value" id="pvDur">—</div></div>
-    <div class="preview-row"><div class="preview-label">پایان</div><div class="preview-value" id="pvEnd">—</div></div>
-  </div>
-  <div class="preview-title" style="text-align:right; margin-top:12px; border:none; padding:0 0 6px 0;">📩 متن پیام:</div>
-  <div class="preview-msg" id="pvMsg"></div>
-  <div class="btn-row">
-    <button id="editBtn" class="btn-sec">← ویرایش</button>
-    <button id="submitBtn" class="btn-ok">✅ ثبت و ارسال</button>
-  </div>
-  <div id="finalMsg"></div>
-</div>
-
-<div id="reportsSection" class="screen">
-  <div class="breadcrumb">📍 خانه <span class="sep">›</span> گزارش‌ها</div>
-  <h2>📊 گزارش‌ها</h2>
-  <button id="reportsBackBtn" class="btn-sec">→ بازگشت</button>
-
-  <!-- ⭐ بلوک ویژه موضوع ردیف (چند انتخابی) — بالای همه فیلترها -->
-  <div class="subject-highlight-block" style="margin-top:12px;">
-    <div class="sh-title">
-      <span class="sh-title-icon">🏷</span>
-      <span>موضوع ردیف</span>
-      <span class="sh-title-count" id="rptSubjectCount">0</span>
-      <span class="sh-title-actions" onclick="rptSubjectSelectAll()">انتخاب همه</span>
-      <span class="sh-title-actions" onclick="rptSubjectClearAll()">پاک کردن</span>
-    </div>
-    <div id="rptSubjectChips"></div>
-  </div>
-
-  <div class="reports-filters">
-    <div class="quick-row">
-      <button type="button" class="btn-q" onclick="setQuickFilter('today')">📅 امروز</button>
-      <button type="button" class="btn-q" onclick="setQuickFilter('week')">📅 هفته</button>
-      <button type="button" class="btn-q" onclick="setQuickFilter('month')">📅 ماه</button>
-      <button type="button" class="btn-q" onclick="clearReportFilters()">🗑️ پاک همه</button>
-    </div>
-
-    <div class="filter-row">
-      <div>
-        <label>از تاریخ</label>
-        <div class="date-row">
-          <div class="col"><div class="date-cap">سال</div><select id="rptFromYear"></select></div>
-          <div class="col"><div class="date-cap">ماه</div><select id="rptFromMonth"></select></div>
-          <div class="col"><div class="date-cap">روز</div><select id="rptFromDay"></select></div>
+      <div class="plat-box" style="margin-top:14px;">
+        <div style="font-size:13px; font-weight:bold; margin-bottom:6px;">📡 پلتفورم ارسال پیام:</div>
+        <div class="plat-row all">
+          <input type="checkbox" id="chkAll">
+          <label for="chkAll">🌐 همه پلتفورم‌ها</label>
+        </div>
+        <div class="plat-row" id="rowTg">
+          <input type="checkbox" id="chkTg">
+          <label for="chkTg">📱 Telegram</label>
+        </div>
+        <div class="plat-row" id="rowBale">
+          <input type="checkbox" id="chkBale">
+          <label for="chkBale">📨 Bale</label>
         </div>
       </div>
-      <div>
-        <label>تا تاریخ</label>
-        <div class="date-row">
-          <div class="col"><div class="date-cap">سال</div><select id="rptToYear"></select></div>
-          <div class="col"><div class="date-cap">ماه</div><select id="rptToMonth"></select></div>
-          <div class="col"><div class="date-cap">روز</div><select id="rptToDay"></select></div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-h">📝 اطلاعات دستور کار</h3>
+      <form id="woForm" onsubmit="return false;">
+        <label>موضوع ردیف *</label>
+        <div id="subjectWrap"></div>
+
+        <label>شرح عملیات *</label>
+        <textarea id="woDesc" placeholder="توضیحات کامل عملیات..."></textarea>
+
+        <label>EPC *</label>
+        <div id="epcWrap"></div>
+
+        <label>رشته *</label>
+        <div id="fieldWrap"></div>
+
+        <label>پیمانکاری / امانی *</label>
+        <div id="engWrap"></div>
+
+        <label>در ارتباط با کدام ردیف برنامه کلی *</label>
+        <div id="relatedWrap"></div>
+
+        <label>آدرس / محل *</label>
+        <div id="addrWrap"></div>
+
+        <label>تاریخ شروع (شمسی) *</label>
+        <div class="quick-row">
+          <button type="button" class="btn-q" onclick="setToday()">📅 امروز</button>
+          <button type="button" class="btn-q" onclick="setTomorrow()">📅 فردا</button>
         </div>
-      </div>
-      <div>
-        <label>EPC</label>
-        <div id="rptEpcWrap"></div>
-      </div>
-      <div>
-        <label>رشته</label>
-        <div id="rptFieldWrap"></div>
-      </div>
-      <div>
-        <label>در ارتباط با ردیف برنامه</label>
-        <div id="rptRelatedWrap"></div>
-      </div>
-      <div>
-        <label>وضعیت</label>
-        <div id="rptStatusWrap"></div>
-      </div>
-      <div>
-        <label>پیمانکاری / امانی</label>
-        <div id="rptEngWrap"></div>
-      </div>
-      <div>
-        <label>پیمانکار / مسئول</label>
-        <div id="rptRecipientWrap"></div>
-      </div>
-      <div>
-        <label>طبقه / آدرس</label>
-        <div id="rptAddrWrap"></div>
-      </div>
-      <div class="full">
-        <label>شرح عملیات (جستجو)</label>
-        <input id="rptDesc" type="text" placeholder="قسمتی از متن...">
-      </div>
-    </div>
+        <div class="date-row">
+          <div class="col"><select id="woYear"></select><div class="date-lbl">سال</div></div>
+          <div class="col"><select id="woMonth"></select><div class="date-lbl">ماه</div></div>
+          <div class="col"><select id="woDay"></select><div class="date-lbl">روز</div></div>
+        </div>
 
-    <button type="button" id="applyFiltersBtn" class="btn-primary">🔍 اعمال فیلتر</button>
-  </div>
+        <label>مدت زمان (روز) *</label>
+        <input id="woDur" type="number" min="1" placeholder="مثال: 3">
 
-  <div id="reportsResults">
-    <div class="empty-state">فیلترها را تنظیم و روی «اعمال فیلتر» بزنید</div>
-  </div>
-</div>
-
-</div>
-
-<!-- Modal ثبت گزارش / کامنت -->
-<div class="modal-overlay hidden" id="reportModal">
-  <div class="modal-content" style="max-width:560px;">
-    <div class="modal-header">
-      <div class="modal-title" id="reportModalTitle">📝 ثبت گزارش</div>
-      <button class="modal-close" id="reportModalClose">×</button>
-    </div>
-    <div class="modal-parent" id="reportModalParent">—</div>
-
-    <label id="reportModalTextLabel">متن گزارش *</label>
-    <textarea id="reportModalText" placeholder="توضیحات خود را وارد کنید..." style="min-height:100px;"></textarea>
-
-    <label>مخاطب * (چندتایی)</label>
-    <div id="rptModalRecipientsWrap"></div>
-
-    <label>EPC</label>
-    <div id="rptModalEpcWrap"></div>
-
-    <label>پیمانکاری / امانی</label>
-    <div id="rptModalEngWrap"></div>
-
-    <label>وضعیت کار</label>
-    <div id="rptModalStatusWrap"></div>
-
-    <label>طبقه / آدرس (چندتایی)</label>
-    <div id="rptModalAddrWrap"></div>
-
-    <div class="plat-box">
-      <div style="font-size:11px; font-weight:600; margin-bottom:8px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.4px;">📡 پلتفورم ارسال پیام</div>
-      <div class="plat-row all">
-        <input type="checkbox" id="rptModalChkAll">
-        <label for="rptModalChkAll">🌐 همه</label>
-      </div>
-      <div class="plat-row" id="rptModalRowTg">
-        <input type="checkbox" id="rptModalChkTg" checked>
-        <label for="rptModalChkTg">📱 Telegram</label>
-      </div>
-      <div class="plat-row" id="rptModalRowBale">
-        <input type="checkbox" id="rptModalChkBale">
-        <label for="rptModalChkBale">📨 Bale</label>
-      </div>
-    </div>
-
-    <div id="reportModalMsg"></div>
-    <div class="modal-actions">
-      <button class="btn-sec" id="reportModalCancel">انصراف</button>
-      <button class="btn-ok" id="reportModalSubmit">ثبت</button>
+        <button type="button" id="previewBtn">👁 پیش‌نمایش دستور کار</button>
+      </form>
+      <div id="woMsg"></div>
     </div>
   </div>
+
+  <div id="previewSection" class="screen">
+    <h2 class="section-title">👁 پیش‌نمایش دستور کار</h2>
+
+    <div class="preview-card">
+      <div class="preview-title">📋 اطلاعات دستور کار</div>
+      <div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value" id="pvRecipient">—</div></div>
+      <div class="preview-row"><div class="preview-label">پلتفورم:</div><div class="preview-value" id="pvPlatforms">—</div></div>
+      <div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value" id="pvSubject">—</div></div>
+      <div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value" id="pvEpc">—</div></div>
+      <div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value" id="pvField">—</div></div>
+      <div class="preview-row"><div class="preview-label">پیمانکاری:</div><div class="preview-value" id="pvEng">—</div></div>
+      <div class="preview-row"><div class="preview-label">ردیف مرتبط:</div><div class="preview-value" id="pvRelated">—</div></div>
+      <div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value" id="pvAddr">—</div></div>
+      <div class="preview-row"><div class="preview-label">شرح:</div><div class="preview-value" id="pvDesc">—</div></div>
+      <div class="preview-row"><div class="preview-label">تاریخ شروع:</div><div class="preview-value" id="pvStart">—</div></div>
+      <div class="preview-row"><div class="preview-label">مدت:</div><div class="preview-value" id="pvDur">—</div></div>
+      <div class="preview-row"><div class="preview-label">تاریخ پایان:</div><div class="preview-value" id="pvEnd">—</div></div>
+    </div>
+
+    <div class="preview-title" style="text-align:right; margin-top:16px;">📩 متن پیام نهایی:</div>
+    <div class="preview-msg" id="pvMsg"></div>
+
+    <div class="btn-row">
+      <button id="editBtn" class="btn-sec">← ویرایش</button>
+      <button id="submitBtn" class="btn-ok">✅ ثبت و ارسال</button>
+    </div>
+    <div id="finalMsg"></div>
+  </div>
+
 </div>
 
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
+var PROJECT_NAME = 'پروژه ویلایی ایگل';
+var WEATHER_LAT = 35.91183529343982;
+var WEATHER_LON = 51.48856941941395;
+var WEATHER_CITY = 'روستای ایگل';
+
 var tg = window.Telegram && window.Telegram.WebApp;
 var tgUser = null;
 var recipients = [];
 var payload = null;
 var submitting = false;
 var currentUser = null;
-var currentReportTarget = null;
-var currentReportRows = [];
+var weatherData = null;
+var panelLoaded = false;
+
+var navStack = [];
+var navIndex = -1;
 
 var MONTHS = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 var WEEKDAYS = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
-var OCCASIONS = {
-  '1/1': 'جشن نوروز', '1/2': 'عید نوروز', '1/3': 'عید نوروز', '1/4': 'عید نوروز',
-  '1/12': 'روز جمهوری اسلامی ایران', '1/13': 'سیزده‌بدر',
-  '1/25': 'بزرگداشت حکیم ابوعلی سینا',
-  '2/10': 'روز ملی خلیج فارس',
-  '3/1': 'بزرگداشت ملاصدرا', '3/14': 'رحلت حضرت امام خمینی', '3/15': 'قیام ۱۵ خرداد',
-  '5/16': 'شهادت آیت‌الله صدر',
-  '7/8': 'شهادت آیت‌الله سید مصطفی خمینی', '7/13': 'روز نیروی انتظامی',
-  '8/13': 'روز مقاومت اسلامی', '8/24': 'روز کتاب',
-  '9/16': 'روز دانش‌آموز', '9/30': 'روز دانشجو',
-  '10/8': 'روز ملی فناوری هسته‌ای',
-  '11/12': 'بازگشت امام خمینی', '11/22': 'پیروزی انقلاب اسلامی',
-  '12/5': 'بزرگداشت خواجه نصیر', '12/29': 'روز ملی شدن صنعت نفت'
+
+var IRAN_EVENTS = {
+  '1-1': '🎉 نوروز باستانی - آغاز سال نو',
+  '1-2': '🎉 عید نوروز', '1-3': '🎉 عید نوروز', '1-4': '🎉 عید نوروز',
+  '1-12': '🇮🇷 روز جمهوری اسلامی', '1-13': '🌿 سیزده بدر',
+  '2-2': '📚 روز معلم',
+  '3-14': '🕊️ رحلت حضرت امام خمینی', '3-15': '🔥 قیام ۱۵ خرداد',
+  '4-7': '⚖️ شهادت آیت‌الله بهشتی',
+  '7-8': '🛡️ هفته دفاع مقدس',
+  '8-13': '✊ روز مبارزه با استکبار',
+  '11-22': '🇮🇷 پیروزی انقلاب اسلامی',
+  '12-29': '🛢️ روز ملی شدن صنعت نفت'
+};
+
+var WEATHER_CODES = {
+  0: {t:'صاف', i:'☀️'}, 1: {t:'عمدتاً صاف', i:'🌤️'}, 2: {t:'نیمه ابری', i:'⛅'},
+  3: {t:'ابری', i:'☁️'}, 45: {t:'مه', i:'🌫️'}, 48: {t:'مه یخ‌زده', i:'🌫️'},
+  51: {t:'نمناک', i:'🌦️'}, 53: {t:'نمناک', i:'🌦️'}, 55: {t:'نمناک شدید', i:'🌧️'},
+  61: {t:'باران سبک', i:'🌦️'}, 63: {t:'باران', i:'🌧️'}, 65: {t:'باران شدید', i:'🌧️'},
+  71: {t:'برف سبک', i:'🌨️'}, 73: {t:'برف', i:'🌨️'}, 75: {t:'برف شدید', i:'❄️'},
+  80: {t:'رگبار', i:'🌦️'}, 81: {t:'رگبار شدید', i:'🌧️'}, 82: {t:'رگبار شدید', i:'⛈️'},
+  95: {t:'رعد و برق', i:'⛈️'}, 96: {t:'رعد و برق با تگرگ', i:'⛈️'}, 99: {t:'رعد و برق شدید', i:'⛈️'}
 };
 
 if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user; }
 
-function show(id) {
-  ['loading','formSection','pendingSection','activeSection','adminSection','previewSection','reportsSection'].forEach(function(x) {
+function showGlobalLoader(text) {
+  var el = document.getElementById('globalLoader');
+  document.getElementById('globalLoaderText').textContent = text || 'در حال بارگذاری...';
+  el.classList.remove('hidden');
+}
+function hideGlobalLoader() {
+  document.getElementById('globalLoader').classList.add('hidden');
+}
+
+function setLoaderState(state, msg) {
+  var loader = document.getElementById('formLoader');
+  var countEl = document.getElementById('flCount');
+  if (!loader) return;
+  if (state === 'loading') {
+    loader.classList.remove('ready', 'hide');
+    document.querySelector('.fl-text').innerHTML = msg + '<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-count" id="flCount">در حال بارگذاری داده‌ها</span>';
+  } else if (state === 'ready') {
+    loader.classList.add('ready');
+    loader.classList.remove('hide');
+    document.querySelector('.fl-text').innerHTML = '✅ ' + msg + '<span class="fl-count">' + (countEl ? countEl.textContent : '') + '</span>';
+  } else if (state === 'hide') {
+    loader.classList.add('hide');
+  }
+}
+
+function updateLoaderCount(text) {
+  var countEl = document.getElementById('flCount');
+  if (countEl) countEl.textContent = text;
+}
+
+function navigateTo(screenId, options) {
+  options = options || {};
+  if (navIndex < navStack.length - 1) navStack = navStack.slice(0, navIndex + 1);
+  if (navStack.length > 0 && navStack[navStack.length - 1].id === screenId) return;
+  navStack.push({ id: screenId, opts: options });
+  navIndex = navStack.length - 1;
+  renderScreen(screenId, options);
+  updateNavBtns();
+}
+
+function renderScreen(screenId, options) {
+  options = options || {};
+  var ids = ['loading','welcomeSection','formSection','panelMenuSection','workOrderSection','previewSection'];
+  ids.forEach(function(x) {
     var el = document.getElementById(x);
     if (el) el.classList.remove('active');
   });
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
+  var t = document.getElementById(screenId);
+  if (t) t.classList.add('active');
+
+  var topbar = document.getElementById('topbar');
+  if (screenId === 'loading') topbar.classList.add('hidden');
+  else topbar.classList.remove('hidden');
+
+  var titles = {
+    'welcomeSection': 'صفحه اصلی',
+    'formSection': 'ثبت‌نام',
+    'panelMenuSection': 'پنل کاربری',
+    'workOrderSection': 'ثبت دستور کار',
+    'previewSection': 'پیش‌نمایش دستور کار'
+  };
+  document.getElementById('topbarTitle').textContent = titles[screenId] || 'سیستم مدیریت کارگاهی';
+
+  var uh = document.getElementById('userHeader');
+  if (screenId === 'formSection' || screenId === 'loading') uh.classList.add('hidden');
+  else if (currentUser) uh.classList.remove('hidden');
+  else uh.classList.add('hidden');
+
+  if (screenId === 'workOrderSection') {
+    if (!panelLoaded) {
+      loadPanel();
+    } else {
+      setLoaderState('loading', 'در حال آماده‌سازی فرم');
+      updateLoaderCount('استفاده از داده‌های ذخیره‌شده');
+      setTimeout(function() {
+        setLoaderState('ready', 'فرم آماده است');
+        setTimeout(function() { setLoaderState('hide'); }, 2000);
+      }, 500);
+    }
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function showMsg(el, text, type) {
-  var e = document.getElementById(el);
-  e.className = 'msg ' + (type === 'ok' ? 'msg-ok' : type === 'err' ? 'msg-err' : 'msg-info');
-  e.innerText = text;
+
+function goBack() {
+  if (navIndex > 0) {
+    navIndex--;
+    var frame = navStack[navIndex];
+    renderScreen(frame.id, frame.opts);
+    updateNavBtns();
+  }
 }
+function goForward() {
+  if (navIndex < navStack.length - 1) {
+    navIndex++;
+    var frame = navStack[navIndex];
+    renderScreen(frame.id, frame.opts);
+    updateNavBtns();
+  }
+}
+function goHome() {
+  navStack = [{ id: 'welcomeSection' }];
+  navIndex = 0;
+  renderScreen('welcomeSection');
+  updateNavBtns();
+  if (!currentUser) reload();
+}
+
+function updateNavBtns() {
+  document.getElementById('navBack').disabled = navIndex <= 0;
+  document.getElementById('navForward').disabled = navIndex >= navStack.length - 1;
+}
+
+document.getElementById('navHome').onclick = goHome;
+document.getElementById('navBack').onclick = goBack;
+document.getElementById('navForward').onclick = goForward;
+
+if (tg && tg.BackButton) tg.BackButton.onClick(function() { goBack(); });
+
 function escHtml(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
 function api(data, retries) {
   if (data.action === 'createWorkOrder') retries = 0;
-  else if (retries === undefined) retries = 2;
-
-  var controller = new AbortController();
-  var timeoutId = setTimeout(function() { controller.abort(); }, 25000);
-
+  else if (retries === undefined) retries = 1;
   return fetch(API, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(data),
     redirect: 'follow',
-    cache: 'no-store',
-    signal: controller.signal
+    cache: 'no-store'
   })
-  .then(function(r) { clearTimeout(timeoutId); return r.text(); })
+  .then(function(r) { return r.text(); })
   .then(function(t) { try { return JSON.parse(t); } catch (e) { throw new Error('bad response'); } })
   .catch(function(err) {
-    clearTimeout(timeoutId);
-    if (retries > 0) {
-      return new Promise(function(r) { setTimeout(r, 900); }).then(function() {
-        return api(data, retries - 1);
-      });
-    }
+    if (retries > 0) return new Promise(function(r) { setTimeout(r, 700); }).then(function() { return api(data, retries - 1); });
     throw err;
   });
-}
-
-function toast(text, type) {
-  var t = document.createElement('div');
-  t.className = 'toast ' + (type || '');
-  t.textContent = text;
-  document.body.appendChild(t);
-  setTimeout(function() { t.remove(); }, 3000);
 }
 
 function g2j(gy, gm, gd) {
@@ -1453,34 +737,189 @@ function j2g(jy, jm, jd) {
 }
 function dim(y, m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
 
-function updateDateCard() {
+function updateHeaderDateTime() {
+  if (!currentUser) return;
   var now = new Date();
-  var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
+  var j = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
   var wd = WEEKDAYS[now.getDay()];
-  var monthName = MONTHS[j[1]];
-  var dateStr = j[2] + ' ' + monthName + ' ' + j[0];
+  var dateStr = wd + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0];
+  var hh = String(now.getHours()).padStart(2, '0');
+  var mm = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('uhDate').textContent = dateStr;
+  document.getElementById('uhTime').textContent = hh + ':' + mm;
+  var key = j[1] + '-' + j[2];
+  var ev = IRAN_EVENTS[key];
+  var evEl = document.getElementById('uhEvent');
+  if (ev) { evEl.textContent = ev; evEl.classList.remove('hidden'); }
+  else evEl.classList.add('hidden');
+}
 
-  document.getElementById('todayWeekday').textContent = wd;
-  document.getElementById('todayDate').textContent = dateStr;
+function updateHeaderUser() {
+  if (!currentUser) return;
+  var u = currentUser;
+  document.getElementById('uhName').textContent = u.systemName || u.fullName || '—';
+  document.getElementById('uhId').textContent = String(tgUser.id);
+  document.getElementById('uhAccess').textContent = u.access || 'تعیین نشده';
+}
 
-  var monthsEn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('todayGregorian').textContent =
-    now.getDate() + ' ' + monthsEn[now.getMonth()] + ' ' + now.getFullYear();
+function fetchWeather() {
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + WEATHER_LAT + '&longitude=' + WEATHER_LON + '&current=temperature_2m,weather_code&timezone=Asia/Tehran')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.current) {
+        var code = d.current.weather_code;
+        var temp = Math.round(d.current.temperature_2m);
+        var w = WEATHER_CODES[code] || { t: 'نامشخص', i: '🌡️' };
+        weatherData = { temp: temp, text: w.t, icon: w.i };
+        document.getElementById('uhWeather').textContent = WEATHER_CITY + ': ' + temp + '°C ' + w.i + ' ' + w.t;
+      }
+    })
+    .catch(function() {
+      document.getElementById('uhWeather').textContent = WEATHER_CITY + ': نامشخص';
+    });
+}
 
-  var key = j[1] + '/' + j[2];
-  var occasion = OCCASIONS[key];
-  var occEl = document.getElementById('todayOccasion');
-  if (occasion) {
-    document.getElementById('todayOccasionText').textContent = occasion;
-    occEl.classList.remove('hidden');
+setInterval(function() { if (currentUser) updateHeaderDateTime(); }, 60000);
+
+function showWelcome(userData) {
+  var heroEl = document.getElementById('welcomeHero');
+  var titleEl = document.getElementById('welcomeTitle');
+  var subEl = document.getElementById('welcomeSub');
+  var userBox = document.getElementById('welcomeUserBox');
+  var actions = document.getElementById('welcomeActions');
+
+  titleEl.textContent = 'به سیستم مدیریت کارگاهی خوش آمدید';
+  userBox.innerHTML = '';
+  userBox.classList.add('hidden');
+  actions.innerHTML = '';
+
+  if (!userData) {
+    heroEl.textContent = '🚫';
+    subEl.textContent = 'برای استفاده از سیستم، ابتدا باید ثبت‌نام کنید. پس از ثبت‌نام، منتظر تأیید ادمین بمانید.';
+    actions.innerHTML = '<button class="welcome-btn" id="goToRegister">📝 ثبت‌نام در سیستم</button>';
+    document.getElementById('goToRegister').onclick = function() { navigateTo('formSection'); };
   } else {
-    occEl.classList.add('hidden');
+    var u = userData;
+    var access = String(u.access || '').trim();
+    var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
+    if (active) {
+      heroEl.textContent = '👋';
+      subEl.textContent = 'سیستم با موفقیت آماده استفاده است.';
+      userBox.classList.remove('hidden');
+      userBox.innerHTML =
+        '<div class="row"><span>نام:</span><span class="val">' + escHtml(u.fullName || '—') + '</span></div>' +
+        '<div class="row"><span>سمت:</span><span class="val">' + escHtml(u.position || '—') + '</span></div>' +
+        '<div class="row"><span>واحد:</span><span class="val">' + escHtml(u.unit || '—') + '</span></div>' +
+        '<div class="row"><span>سطح دسترسی:</span><span class="val">' + escHtml(access || 'تعیین نشده') + '</span></div>';
+      if (access === 'ادمین') {
+        actions.innerHTML =
+          '<button class="welcome-btn green" id="goToPanel">🛠 ورود به پنل کاربری</button>' +
+          '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد و تازه‌سازی</button>';
+        document.getElementById('goToPanel').onclick = function() { navigateTo('panelMenuSection'); };
+        document.getElementById('refreshBtn').onclick = function() { reload(true); };
+      } else {
+        actions.innerHTML =
+          '<div class="msg msg-info" style="margin-top:0;">دسترسی شما فعال است اما دسترسی ادمین ندارید.</div>' +
+          '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد و تازه‌سازی</button>';
+        document.getElementById('refreshBtn').onclick = function() { reload(true); };
+      }
+    } else {
+      heroEl.textContent = '⏳';
+      subEl.textContent = 'ثبت‌نام شما با موفقیت انجام شد. پس از تأیید ادمین، به سیستم دسترسی خواهید داشت.';
+      userBox.classList.remove('hidden');
+      userBox.innerHTML =
+        '<div class="row"><span>نام:</span><span class="val">' + escHtml(u.fullName || '—') + '</span></div>' +
+        '<div class="row"><span>سمت:</span><span class="val">' + escHtml(u.position || '—') + '</span></div>' +
+        '<div class="row"><span>واحد:</span><span class="val">' + escHtml(u.unit || '—') + '</span></div>' +
+        '<div class="row"><span>وضعیت:</span><span class="val" style="color:#b45309;font-weight:bold;">در انتظار تأیید</span></div>';
+      actions.innerHTML = '<button class="welcome-btn orange" id="refreshBtn">🔄 بررسی مجدد و تازه‌سازی</button>';
+      document.getElementById('refreshBtn').onclick = function() { reload(true); };
+    }
   }
 }
 
+function init() {
+  if (!tgUser) {
+    document.getElementById('loading').innerHTML = '<div style="padding:30px; text-align:center; color:#c00;">لطفاً از داخل تلگرام باز کنید</div>';
+    return;
+  }
+  try { buildDates(); } catch (e) {}
+
+  var safety = setTimeout(function() {
+    if (document.getElementById('loading').classList.contains('active')) navigateTo('welcomeSection');
+  }, 10000);
+
+  api({ action: 'getUserStatus', chatId: tgUser.id })
+    .then(function(r) { clearTimeout(safety); handleStatus(r); })
+    .catch(function() { clearTimeout(safety); navigateTo('welcomeSection'); });
+
+  fetchWeather();
+}
+
+function handleStatus(r) {
+  if (r && r.registered && r.userData) {
+    currentUser = r.userData;
+    updateHeaderUser();
+    updateHeaderDateTime();
+    showWelcome(r.userData);
+  } else {
+    currentUser = null;
+    document.getElementById('tgInfo').innerHTML =
+      '<b>شناسه:</b> ' + tgUser.id + '<br>' +
+      '<b>نام:</b> ' + escHtml(tgUser.first_name + ' ' + (tgUser.last_name || ''));
+    showWelcome(null);
+  }
+  navigateTo('welcomeSection');
+  updateNavBtns();
+}
+
+function reload(showLoading) {
+  if (showLoading) {
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('welcomeSection').classList.remove('active');
+    document.getElementById('topbar').classList.add('hidden');
+  }
+  panelLoaded = false;
+  api({ action: 'getUserStatus', chatId: tgUser.id })
+    .then(function(r) { handleStatus(r); fetchWeather(); })
+    .catch(function() { navigateTo('welcomeSection'); });
+}
+
+document.getElementById('menuCreateOrder').onclick = function() {
+  navigateTo('workOrderSection');
+};
+
+document.getElementById('regForm').onsubmit = function(e) {
+  e.preventDefault();
+  var b = document.getElementById('regBtn');
+  b.disabled = true; b.innerText = 'در حال ارسال...';
+  showGlobalLoader('در حال ارسال ثبت‌نام...');
+  api({
+    action: 'registerUser', chatId: tgUser.id, username: tgUser.username || '',
+    fullName: document.getElementById('fullName').value.trim(),
+    position: document.getElementById('position').value.trim(),
+    unit: document.getElementById('unit').value.trim()
+  })
+  .then(function(r) {
+    hideGlobalLoader();
+    b.disabled = false; b.innerText = '📨 ارسال ثبت‌نام';
+    if (r && r.ok) {
+      showMsg('formMsg', '✅ ' + r.message, 'ok');
+      setTimeout(function() { reload(true); }, 1500);
+    } else showMsg('formMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+  })
+  .catch(function(err) {
+    hideGlobalLoader();
+    b.disabled = false; b.innerText = '📨 ارسال ثبت‌نام';
+    showMsg('formMsg', '❌ ' + err.message, 'err');
+  });
+};
+
 var yS, mS, dS;
 function buildDates() {
-  yS = document.getElementById('woYear'); mS = document.getElementById('woMonth'); dS = document.getElementById('woDay');
+  yS = document.getElementById('woYear');
+  mS = document.getElementById('woMonth');
+  dS = document.getElementById('woDay');
   var now = new Date();
   var t = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
   var y = t[0];
@@ -1497,12 +936,27 @@ function buildDates() {
     for (var k = 1; k <= mx; k++) { var o3 = document.createElement('option'); o3.value = k; o3.textContent = k; dS.appendChild(o3); }
     dS.value = Math.min(cur, mx);
   }
-  yS.onchange = refresh; mS.onchange = refresh;
-  refresh(); dS.value = t[2];
+  yS.onchange = refresh;
+  mS.onchange = refresh;
+  refresh();
+  dS.value = t[2];
 }
-function setD(y, m, d) { yS.value = y; mS.value = m; var ev = document.createEvent('HTMLEvents'); ev.initEvent('change', true, false); mS.dispatchEvent(ev); dS.value = d; }
-function setToday() { var now = new Date(); var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate()); setD(j[0], j[1], j[2]); }
-function setTomorrow() { var t = new Date(); t.setDate(t.getDate()+1); var j = g2j(t.getFullYear(), t.getMonth()+1, t.getDate()); setD(j[0], j[1], j[2]); }
+function setD(y, m, d) {
+  yS.value = y; mS.value = m;
+  var ev = document.createEvent('HTMLEvents'); ev.initEvent('change', true, false);
+  mS.dispatchEvent(ev);
+  dS.value = d;
+}
+function setToday() {
+  var now = new Date();
+  var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
+  setD(j[0], j[1], j[2]);
+}
+function setTomorrow() {
+  var t = new Date(); t.setDate(t.getDate()+1);
+  var j = g2j(t.getFullYear(), t.getMonth()+1, t.getDate());
+  setD(j[0], j[1], j[2]);
+}
 
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId);
@@ -1522,13 +976,10 @@ function makeSS(boxId, opt) {
   var list = document.createElement('div'); list.className = 'ss-list hidden'; box.appendChild(list);
   var chips = document.createElement('div'); chips.className = 'ss-chips'; box.appendChild(chips);
 
-  function norm(o) {
-    if (typeof o === 'string') return { value: o, label: o, isSummary: false };
-    return { value: o.value, label: o.label || o.value, isSummary: !!o.isSummary };
-  }
+  function norm(o) { return typeof o === 'string' ? { value: o, label: o, summary: '' } : { value: o.value, label: o.label || o.value, summary: o.summary || '' }; }
   function objFor(v) {
-    for (var i = 0; i < opts.length; i++) if (norm(opts[i]).value === v) return norm(opts[i]);
-    return { value: v, label: v, isSummary: false };
+    for (var i = 0; i < opts.length; i++) { if (norm(opts[i]).value === v) return norm(opts[i]); }
+    return { value: v, label: v, summary: '' };
   }
   function updateClear() { clr.classList.toggle('hidden', multi ? val.length === 0 : !val); }
 
@@ -1550,11 +1001,9 @@ function makeSS(boxId, opt) {
     }
     items.forEach(function(o) {
       var it = document.createElement('div'); it.className = 'ss-item';
-      if (o.isSummary) {
-        it.innerHTML = '<div class="ss-item-main"><span>' + escHtml(o.label) + '</span><span class="ss-item-summary">Summary</span></div>';
-      } else {
-        it.textContent = o.label;
-      }
+      if (o.summary) {
+        it.innerHTML = '<div class="ss-item-main"><span>' + escHtml(o.label) + '</span><span class="ss-item-summary">' + escHtml(o.summary) + '</span></div>';
+      } else it.textContent = o.label;
       function pick(ev) {
         if (ev) { ev.preventDefault(); ev.stopPropagation(); }
         if (multi) {
@@ -1608,206 +1057,29 @@ function makeSS(boxId, opt) {
 
   return {
     getValue: function() { return multi ? val.slice() : val; },
-    getStr: function() { return multi ? val.join(', ') : val; },
+    getStr: function() { return multi ? val.join('\n') : val; },
     getDisplay: function() { return multi ? val.map(function(v) { return objFor(v).label; }).join('، ') : (val ? objFor(val).label : ''); },
     getChatIds: function() {
       if (!multi && val) {
         for (var i = 0; i < recipients.length; i++) {
-          if (recipients[i].systemName === val) return { tg: recipients[i].telegramChatId || '', bale: recipients[i].baleChatId || '' };
+          if (recipients[i].systemName === val) {
+            return { tg: recipients[i].telegramChatId || '', bale: recipients[i].baleChatId || '' };
+          }
         }
       }
       return { tg: '', bale: '' };
     },
     setOpts: function(a) { opts = (a || []).slice(); renderList(inp.value); },
-    setPh: function(p) { placeholder = p; inp.placeholder = p; },
-    clear: function() {
-      val = multi ? [] : '';
-      inp.value = ''; inp.readOnly = false;
-      renderChips(); renderList(''); updateClear();
-    }
-  };
-}
-
-/* ═══ Chips multi-select با چک‌باکس ═══ */
-function makeChipsMulti(boxId, opt) {
-  var box = document.getElementById(boxId);
-  box.innerHTML = '';
-  var opts = (opt.options || []).slice();
-  var val = [];
-  var onCountChange = opt.onCountChange || null;
-
-  var wrap = document.createElement('div');
-  wrap.className = 'chips-checkboxes';
-  box.appendChild(wrap);
-
-  function render() {
-    wrap.innerHTML = '';
-    if (!opts.length) {
-      var e = document.createElement('div');
-      e.className = 'chips-empty';
-      e.textContent = 'گزینه‌ای موجود نیست';
-      wrap.appendChild(e);
-      if (onCountChange) onCountChange(0);
-      return;
-    }
-    opts.forEach(function(o) {
-      var lbl = typeof o === 'string' ? o : (o.label || o.value);
-      var v = typeof o === 'string' ? o : o.value;
-      var isSel = val.indexOf(v) !== -1;
-      var chip = document.createElement('label');
-      chip.className = 'chk-chip' + (isSel ? ' selected' : '');
-      var cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.checked = isSel;
-      cb.onchange = function() {
-        if (cb.checked) {
-          if (val.indexOf(v) === -1) val.push(v);
-        } else {
-          val = val.filter(function(s) { return s !== v; });
-        }
-        render();
-      };
-      var span = document.createElement('span');
-      span.textContent = lbl;
-      chip.appendChild(cb);
-      chip.appendChild(span);
-      wrap.appendChild(chip);
-    });
-    if (onCountChange) onCountChange(val.length);
-  }
-  render();
-
-  return {
-    getStr: function() { return val.join(', '); },
-    getValue: function() { return val.slice(); },
-    setOpts: function(a) { opts = (a || []).slice(); render(); },
-    clear: function() { val = []; render(); },
-    selectAll: function() {
-      val = opts.map(function(o) { return typeof o === 'string' ? o : o.value; });
-      render();
-    }
+    setPh: function(p) { placeholder = p; inp.placeholder = p; }
   };
 }
 
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
-var rptSubjectChips, rptEpcSS, rptFieldSS, rptRelatedSS, rptStatusSS, rptEngSS, rptRecipientSS, rptAddrSS;
-var rptModalRecipientsSS, rptModalEpcSS, rptModalStatusSS, rptModalEngSS, rptModalAddrSS;
-var rptModalOptionsLoaded = false;
 
-function updateHeaderWeather(r) {
-  var el = document.getElementById('headerWeather');
-  if (!el) return;
-  if (!r || !r.ok) { el.textContent = '--°'; return; }
-  var icon = (r.desc || '').match(/^[^\s]+/);
-  var ico = icon ? icon[0] : '🌤️';
-  el.innerHTML = ico + ' ' + Math.round(r.temp) + '° <span class="range">' + Math.round(r.min) + '°/' + Math.round(r.max) + '°</span>';
-}
+function loadPanel() {
+  setLoaderState('loading', 'در حال آماده‌سازی فرم');
+  updateLoaderCount('در حال دریافت لیست مخاطبین و گزینه‌ها');
 
-function loadWeather() {
-  api({ action: 'getTehranWeather' }).then(function(r) {
-    if (!r || !r.ok) { updateHeaderWeather(null); return; }
-    updateHeaderWeather(r);
-
-    if (r.rainAlerts && r.rainAlerts.length > 0) {
-      var parts = [];
-      r.rainAlerts.forEach(function(a) { parts.push(a.emoji + ' ' + a.dayName + ' ' + a.jalali + ' (' + a.prob + '%)'); });
-      var txt = '☔️ پیش‌بینی بارش در هفته آینده:   ' + parts.join('  •  ') + '   — لطفاً هماهنگی‌های لازم را انجام دهید';
-      document.getElementById('rainTickerContent').textContent = txt + '   •   ' + txt;
-      document.getElementById('rainTicker').classList.remove('hidden');
-      document.body.classList.add('has-ticker');
-    } else {
-      document.getElementById('rainTicker').classList.add('hidden');
-      document.body.classList.remove('has-ticker');
-    }
-  }).catch(function() { updateHeaderWeather(null); });
-}
-setTimeout(loadWeather, 1200);
-
-function renderUserCard(u) {
-  if (!u) return;
-  var display = u.systemName || u.fullName || '—';
-  document.getElementById('userInfoName').textContent = display;
-  var ch = display.charAt(0);
-  if (ch && ch !== '—') document.getElementById('userAvatar').textContent = ch;
-
-  var parts = [];
-  if (u.position) parts.push('<span class="user-badge">' + escHtml(u.position) + '</span>');
-  if (u.unit) parts.push('<span class="user-badge">' + escHtml(u.unit) + '</span>');
-  parts.push('<span class="user-badge access">' + escHtml(u.access || '—') + '</span>');
-  document.getElementById('userInfoSub').innerHTML = parts.join('');
-}
-
-function updateBtnGrid() {
-  var grid = document.getElementById('homeBtnGrid');
-  if (!grid) return;
-  var visible = grid.querySelectorAll('.action-tile:not(.hidden)');
-  if (visible.length <= 1) grid.classList.add('single');
-  else grid.classList.remove('single');
-}
-
-function init() {
-  if (!tgUser) {
-    document.getElementById('loading').innerHTML = '<div style="padding:30px; text-align:center; color:#b91c1c;">لطفاً از داخل تلگرام باز کنید</div>';
-    return;
-  }
-  try { buildDates(); updateDateCard(); } catch (e) {}
-  var safety = setTimeout(function() {
-    if (document.getElementById('loading').classList.contains('active')) show('formSection');
-  }, 10000);
-  api({ action: 'getUserStatus', chatId: tgUser.id })
-    .then(function(r) { clearTimeout(safety); handleStatus(r); })
-    .catch(function() { clearTimeout(safety); show('formSection'); });
-}
-
-function handleStatus(r) {
-  if (r && r.registered) {
-    var u = r.userData || {};
-    currentUser = u;
-    var access = String(u.access || '').trim();
-    var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
-    if (active) {
-      renderUserCard(u);
-      document.getElementById('reportsBtn').classList.remove('hidden');
-      if (access === 'ادمین') document.getElementById('adminBtn').classList.remove('hidden');
-      updateBtnGrid();
-      show('activeSection');
-    } else {
-      show('pendingSection');
-    }
-  } else {
-    document.getElementById('tgInfo').innerHTML =
-      '<b>شناسه:</b> ' + tgUser.id + '<br>' +
-      '<b>نام:</b> ' + escHtml(tgUser.first_name + ' ' + (tgUser.last_name || ''));
-    show('formSection');
-  }
-}
-
-init();
-
-document.getElementById('regForm').onsubmit = function(e) {
-  e.preventDefault();
-  var b = document.getElementById('regBtn');
-  b.disabled = true; b.innerText = '⏳ در حال ارسال...';
-  api({
-    action: 'registerUser', chatId: tgUser.id, username: tgUser.username || '',
-    fullName: document.getElementById('fullName').value.trim(),
-    position: document.getElementById('position').value.trim(),
-    unit: document.getElementById('unit').value.trim()
-  })
-  .then(function(r) {
-    b.disabled = false; b.innerText = '📤 ثبت‌نام';
-    if (r && r.ok) { showMsg('formMsg', '✅ ' + r.message, 'ok'); setTimeout(init, 1500); }
-    else showMsg('formMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
-  })
-  .catch(function(err) { b.disabled = false; b.innerText = '📤 ثبت‌نام'; showMsg('formMsg', '❌ ' + err.message, 'err'); });
-};
-
-document.getElementById('adminBtn').onclick = function() { show('adminSection'); loadAdmin(); };
-document.getElementById('backBtn').onclick = function() { show('activeSection'); };
-document.getElementById('reportsBtn').onclick = function() { show('reportsSection'); initReports(); };
-document.getElementById('reportsBackBtn').onclick = function() { show('activeSection'); };
-
-function loadAdmin() {
   ssRecipient = makeSS('recipientWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipient });
   ssSubject = makeSS('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssEpc = makeSS('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
@@ -1816,24 +1088,60 @@ function loadAdmin() {
   ssRelated = makeSS('relatedWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssAddr = makeSS('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
+  var recipientsDone = false;
+  var optionsDone = false;
+  var recipientsCount = 0;
+
+  function checkAllDone() {
+    if (recipientsDone && optionsDone) {
+      panelLoaded = true;
+      updateLoaderCount('لیست مخاطبین: ' + recipientsCount + ' نفر');
+      setTimeout(function() {
+        setLoaderState('ready', 'فرم آماده است');
+        setTimeout(function() { setLoaderState('hide'); }, 2500);
+      }, 300);
+    }
+  }
+
   api({ action: 'getRecipients' }).then(function(r) {
     recipients = (r && r.recipients) || [];
+    recipientsCount = recipients.length;
     if (recipients.length) {
       ssRecipient.setOpts(recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
       ssRecipient.setPh('تایپ کنید (' + recipients.length + ' مخاطب)');
-    } else ssRecipient.setPh('مخاطبی یافت نشد');
-  }).catch(function() { ssRecipient.setPh('خطا'); });
+    } else ssRecipient.setPh('هیچ مخاطبی یافت نشد');
+    recipientsDone = true;
+    updateLoaderCount('دریافت مخاطبین: ' + recipientsCount + ' نفر ✓');
+    checkAllDone();
+  }).catch(function() {
+    ssRecipient.setPh('خطا در بارگذاری');
+    recipientsDone = true;
+    updateLoaderCount('خطا در دریافت مخاطبین');
+    checkAllDone();
+  });
 
   api({ action: 'getFormOptions' }).then(function(r) {
     r = r || {};
-    var s = (r.subjects || []), e = (r.epcs || []), f = (r.fields || []), g = (r.engagementTypes || []), a = (r.addresses || []), rr = (r.relatedRows || []);
-    ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب کنید (' + s.length + ')' : 'تایپ کنید');
-    ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب کنید (' + e.length + ')' : 'تایپ کنید');
-    ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب کنید (' + f.length + ')' : 'تایپ کنید');
-    ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب کنید (' + g.length + ')' : 'تایپ کنید');
-    ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ کنید');
-    ssRelated.setOpts(rr); ssRelated.setPh(rr.length ? 'جستجو کنید (' + rr.length + ')' : 'گزینه‌ای موجود نیست');
-  }).catch(function() {});
+    var s = (r.subjects && r.subjects.options) || [];
+    var e = (r.epcs && r.epcs.options) || [];
+    var f = (r.fields && r.fields.options) || [];
+    var g = (r.engagementTypes && r.engagementTypes.options) || [];
+    var a = (r.addresses && r.addresses.options) || [];
+    var rr = (r.relatedRows && r.relatedRows.options) || [];
+
+    if (ssSubject) { ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب کنید (' + s.length + ')' : 'تایپ کنید'); }
+    if (ssEpc) { ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب کنید (' + e.length + ')' : 'تایپ کنید'); }
+    if (ssField) { ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب کنید (' + f.length + ')' : 'تایپ کنید'); }
+    if (ssEng) { ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب کنید (' + g.length + ')' : 'تایپ کنید'); }
+    if (ssAddr) { ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ کنید'); }
+    if (ssRelated) { ssRelated.setOpts(rr); ssRelated.setPh(rr.length ? 'جستجو کنید (' + rr.length + ')' : 'گزینه‌ای موجود نیست'); }
+    optionsDone = true;
+    checkAllDone();
+  }).catch(function() {
+    optionsDone = true;
+    updateLoaderCount('خطا در دریافت گزینه‌ها');
+    checkAllDone();
+  });
 }
 
 function onRecipient(val) {
@@ -1876,9 +1184,12 @@ document.getElementById('previewBtn').onclick = function() {
   var addr = ssAddr ? ssAddr.getStr() : '';
   var addrD = ssAddr ? ssAddr.getDisplay() : '';
   var desc = document.getElementById('woDesc').value.trim();
-  var y = document.getElementById('woYear').value, m = document.getElementById('woMonth').value, d = document.getElementById('woDay').value;
+  var y = document.getElementById('woYear').value;
+  var m = document.getElementById('woMonth').value;
+  var d = document.getElementById('woDay').value;
   var dur = document.getElementById('woDur').value;
-  var sTg = document.getElementById('chkTg').checked, sBale = document.getElementById('chkBale').checked;
+  var sTg = document.getElementById('chkTg').checked;
+  var sBale = document.getElementById('chkBale').checked;
 
   if (!rec) return showMsg('woMsg', '❌ مخاطب را انتخاب کنید', 'err');
   if (!sub) return showMsg('woMsg', '❌ موضوع را انتخاب کنید', 'err');
@@ -1937,12 +1248,15 @@ document.getElementById('previewBtn').onclick = function() {
   payload = {
     action: 'createWorkOrder', adminChatId: String(tgUser.id),
     recipientSystemName: rec,
-    recipientTelegramChatId: ci.tg, recipientBaleChatId: ci.bale,
+    recipientTelegramChatId: ci.tg,
+    recipientBaleChatId: ci.bale,
     sendTelegram: sTg, sendBale: sBale,
     subject: sub, description: desc, epc: epc, field: fld,
-    engagementType: eng, address: addr, relatedRow: rel,
+    engagementType: eng, address: addr, addressDisplay: addrD,
+    relatedRow: rel,
     startYear: y, startMonth: m, startDay: d, duration: dur,
-    _hasTg: !!ci.tg, _hasBale: !!ci.bale
+    _hasTg: !!ci.tg,
+    _hasBale: !!ci.bale
   };
 
   submitting = false;
@@ -1950,10 +1264,10 @@ document.getElementById('previewBtn').onclick = function() {
   sb.disabled = false; sb.innerText = '✅ ثبت و ارسال';
   document.getElementById('finalMsg').innerText = '';
   document.getElementById('finalMsg').className = '';
-  show('previewSection');
+  navigateTo('previewSection');
 };
 
-document.getElementById('editBtn').onclick = function() { show('adminSection'); };
+document.getElementById('editBtn').onclick = function() { navigateTo('workOrderSection'); };
 
 document.getElementById('submitBtn').onclick = function() {
   if (submitting) return;
@@ -1964,438 +1278,55 @@ document.getElementById('submitBtn').onclick = function() {
   document.getElementById('finalMsg').innerText = '';
   document.getElementById('finalMsg').className = '';
 
-  api(payload).then(function(r) {
-    if (r && r.ok) {
-      var sendHtml = '<div class="send-status-box"><div class="send-status-title">وضعیت ارسال</div>';
-      if (payload.sendTelegram) {
-        var tgOk = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.ok;
-        var tgSent = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.sent;
-        if (!payload._hasTg) sendHtml += '<div class="send-status-row"><span>📱 Telegram</span><span class="send-status-skip">بدون شناسه</span></div>';
-        else if (tgSent && tgOk) sendHtml += '<div class="send-status-row"><span>📱 Telegram</span><span class="send-status-ok">✓</span></div>';
-        else sendHtml += '<div class="send-status-row"><span>📱 Telegram</span><span class="send-status-fail">✗</span></div>';
-      }
-      if (payload.sendBale) {
-        var baleOk = r.sendResult && r.sendResult.bale && r.sendResult.bale.ok;
-        if (!payload._hasBale) sendHtml += '<div class="send-status-row"><span>📨 Bale</span><span class="send-status-skip">بدون شناسه</span></div>';
-        else if (baleOk) sendHtml += '<div class="send-status-row"><span>📨 Bale</span><span class="send-status-ok">✓</span></div>';
-        else sendHtml += '<div class="send-status-row"><span>📨 Bale</span><span class="send-status-fail">✗</span></div>';
-      }
-      sendHtml += '</div>';
+  showGlobalLoader('در حال ثبت و ارسال...');
 
-      var finalEl = document.getElementById('finalMsg');
-      finalEl.className = 'msg msg-ok';
-      finalEl.innerHTML =
-        '<div style="text-align:center;font-size:13px;font-weight:600;">✓ ' + escHtml(r.message || 'ثبت شد') + '</div>' +
-        (r.row ? '<div style="text-align:center;font-size:11px;margin-top:4px;opacity:0.8;">ردیف ' + r.row + '</div>' : '') +
-        sendHtml;
-      b.innerText = '✓ ثبت شد';
-    } else if (r && r.duplicate) {
-      showMsg('finalMsg', '⚠️ ' + r.message, 'err');
-      b.innerText = '⚠️ قبلاً ثبت شده';
-    } else {
+  api(payload)
+    .then(function(r) {
+      hideGlobalLoader();
+      if (r && r.ok) {
+        var sendHtml = '<div class="send-status-box"><div class="send-status-title">📤 وضعیت ارسال پیام</div>';
+        if (payload.sendTelegram) {
+          var tgSent = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.sent;
+          var tgOk = r.sendResult && r.sendResult.telegram && r.sendResult.telegram.ok;
+          if (!payload._hasTg) sendHtml += '<div class="send-status-row"><span class="send-status-name">📱 Telegram</span><span class="send-status-skip">بدون شناسه</span></div>';
+          else if (tgSent && tgOk) sendHtml += '<div class="send-status-row"><span class="send-status-name">📱 Telegram</span><span class="send-status-icon send-status-ok">✅</span></div>';
+          else sendHtml += '<div class="send-status-row"><span class="send-status-name">📱 Telegram</span><span class="send-status-icon send-status-fail">❌</span></div>';
+        }
+        if (payload.sendBale) {
+          var baleOk = r.sendResult && r.sendResult.bale && r.sendResult.bale.ok;
+          if (!payload._hasBale) sendHtml += '<div class="send-status-row"><span class="send-status-name">📨 Bale</span><span class="send-status-skip">بدون شناسه</span></div>';
+          else if (baleOk) sendHtml += '<div class="send-status-row"><span class="send-status-name">📨 Bale</span><span class="send-status-icon send-status-ok">✅</span></div>';
+          else sendHtml += '<div class="send-status-row"><span class="send-status-name">📨 Bale</span><span class="send-status-icon send-status-fail">❌</span></div>';
+        }
+        sendHtml += '</div>';
+
+        var finalEl = document.getElementById('finalMsg');
+        finalEl.className = 'msg msg-ok';
+        finalEl.innerHTML =
+          '<div style="text-align:center;font-size:16px;font-weight:bold;">✅ ' + escHtml(r.message || 'ثبت شد') + '</div>' +
+          (r.row ? '<div style="text-align:center;font-size:13px;margin-top:4px;">ردیف ' + r.row + '</div>' : '') +
+          sendHtml;
+        b.innerText = '✅ ثبت شد';
+      } else if (r && r.duplicate) {
+        showMsg('finalMsg', '⚠️ ' + r.message, 'err');
+        b.innerText = '⚠️ قبلاً ثبت شده';
+      } else {
+        submitting = false;
+        b.disabled = false; b.innerText = '✅ تلاش دوباره';
+        showMsg('finalMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+      }
+      document.getElementById('editBtn').disabled = false;
+    })
+    .catch(function(err) {
+      hideGlobalLoader();
       submitting = false;
-      b.disabled = false; b.innerText = 'تلاش دوباره';
-      showMsg('finalMsg', '✗ ' + ((r && r.message) || 'خطا'), 'err');
-    }
-    document.getElementById('editBtn').disabled = false;
-  }).catch(function(err) {
-    submitting = false;
-    b.disabled = false; b.innerText = 'تلاش دوباره';
-    document.getElementById('editBtn').disabled = false;
-    showMsg('finalMsg', '✗ ' + (err.message || 'خطا'), 'err');
-  });
+      b.disabled = false; b.innerText = '✅ تلاش دوباره';
+      document.getElementById('editBtn').disabled = false;
+      showMsg('finalMsg', '❌ ' + (err.message || 'خطا در ارتباط با سرور'), 'err');
+    });
 };
 
-/* ═══════════ گزارش‌ها ═══════════ */
-var rptFromY, rptFromM, rptFromD, rptToY, rptToM, rptToD;
-
-function rptSubjectSelectAll() {
-  if (rptSubjectChips) rptSubjectChips.selectAll();
-}
-function rptSubjectClearAll() {
-  if (rptSubjectChips) rptSubjectChips.clear();
-}
-
-function initReports() {
-  buildReportDatePickers();
-
-  // ⭐ موضوع ردیف — chips با چک‌باکس (چند انتخابی)
-  rptSubjectChips = makeChipsMulti('rptSubjectChips', {
-    options: [],
-    onCountChange: function(n) {
-      var el = document.getElementById('rptSubjectCount');
-      if (el) el.textContent = n;
-    }
-  });
-
-  rptEpcSS = makeSS('rptEpcWrap', { multi: false, options: [], placeholder: 'همه' });
-  rptFieldSS = makeSS('rptFieldWrap', { multi: false, options: [], placeholder: 'همه' });
-  rptRelatedSS = makeSS('rptRelatedWrap', { multi: false, options: [], placeholder: 'همه' });
-  rptStatusSS = makeSS('rptStatusWrap', { multi: false, options: [], placeholder: 'همه' });
-  rptEngSS = makeSS('rptEngWrap', { multi: false, options: [], placeholder: 'همه' });
-  rptRecipientSS = makeSS('rptRecipientWrap', { multi: false, options: [], placeholder: 'همه' });
-  rptAddrSS = makeSS('rptAddrWrap', { multi: false, options: [], placeholder: 'همه' });
-
-  document.getElementById('reportsResults').innerHTML = '<div class="empty-state">در حال بارگذاری گزینه‌ها...</div>';
-
-  loadModalOptions();
-
-  api({ action: 'getReportFilterOptions', chatId: tgUser.id }).then(function(r) {
-    if (!r || !r.ok) {
-      document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا در دریافت گزینه‌ها</div>';
-      return;
-    }
-    rptSubjectChips.setOpts(r.subjects || []);
-    rptEpcSS.setOpts(r.epcs || []);
-    rptFieldSS.setOpts(r.fields || []);
-    rptRelatedSS.setOpts(r.relateds || []);
-    rptStatusSS.setOpts(r.statuses || []);
-    rptEngSS.setOpts(r.engagements || []);
-    rptRecipientSS.setOpts(r.recipients || []);
-    rptAddrSS.setOpts(r.addresses || []);
-    document.getElementById('reportsResults').innerHTML = '<div class="empty-state">فیلترها را تنظیم و روی «اعمال فیلتر» بزنید</div>';
-  }).catch(function() {
-    document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا در ارتباط</div>';
-  });
-}
-
-function loadModalOptions() {
-  if (rptModalOptionsLoaded) return;
-
-  rptModalRecipientsSS = makeSS('rptModalRecipientsWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
-  rptModalEpcSS = makeSS('rptModalEpcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-  rptModalStatusSS = makeSS('rptModalStatusWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-  rptModalEngSS = makeSS('rptModalEngWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
-  rptModalAddrSS = makeSS('rptModalAddrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
-
-  api({ action: 'getRecipients' }).then(function(r) {
-    var recs = (r && r.recipients) || [];
-    if (recs.length) {
-      rptModalRecipientsSS.setOpts(recs.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
-      rptModalRecipientsSS.setPh('جستجو و انتخاب (' + recs.length + ' مخاطب)');
-    } else rptModalRecipientsSS.setPh('مخاطبی موجود نیست');
-  }).catch(function() { rptModalRecipientsSS.setPh('خطا'); });
-
-  api({ action: 'getFormOptions' }).then(function(r) {
-    r = r || {};
-    var epcs = r.epcs || [];
-    var sts = r.statuses || [];
-    var engs = r.engagementTypes || [];
-    var addrs = r.addresses || [];
-
-    rptModalEpcSS.setOpts(epcs);
-    rptModalEpcSS.setPh(epcs.length ? 'انتخاب (' + epcs.length + ')' : 'تایپ کنید');
-
-    if (!sts.length) sts = ['ابلاغ شده', 'پیش نویس', 'در حال اجرا', 'تکمیل شده', 'متوقف'];
-    rptModalStatusSS.setOpts(sts);
-    rptModalStatusSS.setPh('انتخاب (' + sts.length + ')');
-
-    rptModalEngSS.setOpts(engs);
-    rptModalEngSS.setPh(engs.length ? 'انتخاب (' + engs.length + ')' : 'تایپ کنید');
-
-    rptModalAddrSS.setOpts(addrs);
-    rptModalAddrSS.setPh(addrs.length ? 'چندتایی (' + addrs.length + ')' : 'تایپ کنید');
-
-    rptModalOptionsLoaded = true;
-  }).catch(function() {});
-}
-
-function buildReportDatePickers() {
-  rptFromY = document.getElementById('rptFromYear'); rptFromM = document.getElementById('rptFromMonth'); rptFromD = document.getElementById('rptFromDay');
-  rptToY = document.getElementById('rptToYear'); rptToM = document.getElementById('rptToMonth'); rptToD = document.getElementById('rptToDay');
-  var now = new Date();
-  var t = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
-  var y = t[0];
-
-  [rptFromY, rptToY].forEach(function(sel) {
-    sel.innerHTML = '';
-    var empty = document.createElement('option'); empty.value = ''; empty.textContent = '--'; sel.appendChild(empty);
-    for (var i = y-3; i <= y+2; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o); }
-  });
-  [rptFromM, rptToM].forEach(function(sel) {
-    sel.innerHTML = '';
-    var empty = document.createElement('option'); empty.value = ''; empty.textContent = '--'; sel.appendChild(empty);
-    for (var j = 1; j <= 12; j++) { var o2 = document.createElement('option'); o2.value = j; o2.textContent = MONTHS[j]; sel.appendChild(o2); }
-  });
-  [rptFromD, rptToD].forEach(function(sel) {
-    sel.innerHTML = '';
-    var empty = document.createElement('option'); empty.value = ''; empty.textContent = '--'; sel.appendChild(empty);
-    for (var k = 1; k <= 31; k++) { var o3 = document.createElement('option'); o3.value = k; o3.textContent = k; sel.appendChild(o3); }
-  });
-}
-
-function getRptDate(ySel, mSel, dSel) {
-  var y = ySel.value, m = mSel.value, d = dSel.value;
-  if (!y || !m || !d) return '';
-  return y + '-' + parseInt(m) + '-' + parseInt(d);
-}
-
-function setQuickFilter(type) {
-  var now = new Date();
-  var t = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
-  var fromJ, toJ;
-  if (type === 'today') { fromJ = t; toJ = t; }
-  else if (type === 'week') {
-    var jsDay = now.getDay();
-    var persianDay = (jsDay + 1) % 7;
-    var sat = new Date(now); sat.setDate(now.getDate() - persianDay);
-    var fri = new Date(sat); fri.setDate(sat.getDate() + 6);
-    fromJ = g2j(sat.getFullYear(), sat.getMonth()+1, sat.getDate());
-    toJ = g2j(fri.getFullYear(), fri.getMonth()+1, fri.getDate());
-  } else if (type === 'month') {
-    fromJ = [t[0], t[1], 1];
-    toJ = [t[0], t[1], dim(t[0], t[1])];
-  }
-  rptFromY.value = fromJ[0]; rptFromM.value = fromJ[1]; rptFromD.value = fromJ[2];
-  rptToY.value = toJ[0]; rptToM.value = toJ[1]; rptToD.value = toJ[2];
-}
-
-function clearReportFilters() {
-  rptFromY.value = ''; rptFromM.value = ''; rptFromD.value = '';
-  rptToY.value = ''; rptToM.value = ''; rptToD.value = '';
-  document.getElementById('rptDesc').value = '';
-  if (rptSubjectChips) rptSubjectChips.clear();
-  if (rptEpcSS) rptEpcSS.clear();
-  if (rptFieldSS) rptFieldSS.clear();
-  if (rptRelatedSS) rptRelatedSS.clear();
-  if (rptStatusSS) rptStatusSS.clear();
-  if (rptEngSS) rptEngSS.clear();
-  if (rptRecipientSS) rptRecipientSS.clear();
-  if (rptAddrSS) rptAddrSS.clear();
-  document.getElementById('reportsResults').innerHTML = '<div class="empty-state">فیلترها پاک شدند</div>';
-}
-
-function statusChipClass(status) {
-  if (status === 'ابلاغ شده' || status === 'تکمیل شده') return 'meta-chip-status-ok';
-  if (status === 'پیش نویس' || status === 'متوقف') return 'meta-chip-status-warn';
-  return 'meta-chip-status-info';
-}
-
-document.getElementById('applyFiltersBtn').onclick = function() {
-  var filters = {
-    dateFrom: getRptDate(rptFromY, rptFromM, rptFromD),
-    dateTo: getRptDate(rptToY, rptToM, rptToD),
-    subject: rptSubjectChips ? rptSubjectChips.getStr() : '',
-    epc: rptEpcSS ? rptEpcSS.getStr() : '',
-    field: rptFieldSS ? rptFieldSS.getStr() : '',
-    desc: document.getElementById('rptDesc').value.trim(),
-    related: rptRelatedSS ? rptRelatedSS.getStr() : '',
-    status: rptStatusSS ? rptStatusSS.getStr() : '',
-    engagement: rptEngSS ? rptEngSS.getStr() : '',
-    recipient: rptRecipientSS ? rptRecipientSS.getStr() : '',
-    address: rptAddrSS ? rptAddrSS.getStr() : ''
-  };
-
-  var btn = this;
-  btn.disabled = true; btn.innerText = '⏳ در حال جستجو...';
-  document.getElementById('reportsResults').innerHTML = '<div class="empty-state">در حال جستجو...</div>';
-
-  api({ action: 'getReports', chatId: tgUser.id, filters: filters }).then(function(r) {
-    btn.disabled = false; btn.innerText = '🔍 اعمال فیلتر';
-    if (!r || !r.ok) {
-      document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا: ' + escHtml((r && r.message) || 'نامشخص') + '</div>';
-      return;
-    }
-    currentReportRows = r.rows || [];
-    renderReports(currentReportRows);
-  }).catch(function(err) {
-    btn.disabled = false; btn.innerText = '🔍 اعمال فیلتر';
-    document.getElementById('reportsResults').innerHTML = '<div class="empty-state">خطا: ' + escHtml(err.message || '') + '</div>';
-  });
-};
-
-function truncate(str, n) {
-  str = String(str || '').trim();
-  if (str.length <= n) return str;
-  return str.substring(0, n) + '…';
-}
-
-function renderReports(rows) {
-  if (!rows.length) {
-    document.getElementById('reportsResults').innerHTML = '<div class="empty-state">نتیجه‌ای یافت نشد</div>';
-    return;
-  }
-  var html = '<div class="result-count">' + rows.length + ' نتیجه</div><div class="results-wrap">';
-  rows.forEach(function(row, idx) {
-    var sClass = statusChipClass(row.status);
-    var descShort = row.desc ? truncate(row.desc, 90) : '';
-    html += '<div class="report-card" data-idx="' + idx + '">' +
-      '<div class="report-card-header" onclick="toggleReportCard(this)">' +
-        '<div class="report-card-row1">' +
-          '<div class="report-card-title">' + escHtml(row.subject || '—') + '</div>' +
-          '<div class="report-card-arrow">▼</div>' +
-        '</div>' +
-        (descShort ? '<div class="report-card-desc">' + escHtml(descShort) + '</div>' : '') +
-        '<div class="report-card-meta">' +
-          (row.date ? '<span class="meta-chip meta-chip-date">📅 ' + escHtml(row.date) + '</span>' : '') +
-          (row.status ? '<span class="meta-chip ' + sClass + '">' + escHtml(row.status) + '</span>' : '') +
-          (row.recipient ? '<span class="meta-chip meta-chip-recipient">👤 ' + escHtml(truncate(row.recipient, 25)) + '</span>' : '') +
-          (row.epc ? '<span class="meta-chip meta-chip-epc">' + escHtml(row.epc) + '</span>' : '') +
-          (row.field ? '<span class="meta-chip meta-chip-field">' + escHtml(row.field) + '</span>' : '') +
-        '</div>' +
-      '</div>' +
-      '<div class="report-card-body">' +
-        '<div class="detail-grid">' +
-          '<div class="detail-box"><div class="detail-label">تاریخ شمسی</div><div class="detail-value">' + escHtml(row.date) + '</div></div>' +
-          '<div class="detail-box"><div class="detail-label">EPC</div><div class="detail-value">' + escHtml(row.epc || '—') + '</div></div>' +
-          '<div class="detail-box"><div class="detail-label">رشته</div><div class="detail-value">' + escHtml(row.field || '—') + '</div></div>' +
-          '<div class="detail-box"><div class="detail-label">وضعیت</div><div class="detail-value">' + escHtml(row.status || '—') + '</div></div>' +
-          '<div class="detail-box"><div class="detail-label">پیمانکاری/امانی</div><div class="detail-value">' + escHtml(row.engagement || '—') + '</div></div>' +
-          '<div class="detail-box"><div class="detail-label">پیمانکار / مسئول</div><div class="detail-value">' + escHtml(row.recipient || '—') + '</div></div>' +
-          '<div class="detail-box"><div class="detail-label">آدرس</div><div class="detail-value">' + escHtml(row.address || '—') + '</div></div>' +
-          '<div class="detail-box"><div class="detail-label">ردیف مرتبط</div><div class="detail-value">' + escHtml(row.related || '—') + '</div></div>' +
-          '<div class="detail-box full"><div class="detail-label">شرح عملیات</div><div class="detail-value">' + escHtml(row.desc || '—') + '</div></div>' +
-        '</div>' +
-        '<div class="report-actions">' +
-          '<button class="btn-report" onclick="event.stopPropagation(); openReportModal(' + idx + ', \'report\')">📝 ثبت گزارش</button>' +
-          '<button class="btn-comment" onclick="event.stopPropagation(); openReportModal(' + idx + ', \'comment\')">💬 ثبت کامنت</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  });
-  html += '</div>';
-  document.getElementById('reportsResults').innerHTML = html;
-}
-
-function toggleReportCard(header) {
-  var card = header.parentElement;
-  card.classList.toggle('open');
-}
-
-function openReportModal(idx, type) {
-  var row = currentReportRows[idx];
-  if (!row) return;
-  currentReportTarget = { row: row, type: type };
-
-  var title = document.getElementById('reportModalTitle');
-  var labelEl = document.getElementById('reportModalTextLabel');
-  var parentEl = document.getElementById('reportModalParent');
-  var textEl = document.getElementById('reportModalText');
-  var msgEl = document.getElementById('reportModalMsg');
-
-  if (type === 'report') {
-    title.textContent = '📝 ثبت گزارش';
-    labelEl.textContent = 'متن گزارش *';
-    textEl.placeholder = 'شرح گزارش خود را وارد کنید...';
-  } else {
-    title.textContent = '💬 ثبت کامنت';
-    labelEl.textContent = 'متن کامنت *';
-    textEl.placeholder = 'متن کامنت خود را وارد کنید...';
-  }
-
-  parentEl.innerHTML =
-    '<b>' + escHtml(truncate(row.subject, 60) || '—') + '</b>' +
-    '<br>تاریخ: ' + escHtml(row.date || '—') +
-    '<br>پیمانکار: ' + escHtml(row.recipient || '—') +
-    '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;color:var(--text-soft);">' +
-    '<b>ارث‌بری از والد:</b> رشته: ' + escHtml(row.field || '—') + ' • ردیف مرتبط: ' + escHtml(truncate(row.related, 40) || '—') +
-    '</div>';
-
-  textEl.value = '';
-  msgEl.innerText = '';
-  msgEl.className = '';
-
-  if (rptModalRecipientsSS) rptModalRecipientsSS.clear();
-  if (rptModalEpcSS) rptModalEpcSS.clear();
-  if (rptModalStatusSS) rptModalStatusSS.clear();
-  if (rptModalEngSS) rptModalEngSS.clear();
-  if (rptModalAddrSS) rptModalAddrSS.clear();
-
-  document.getElementById('rptModalChkTg').checked = true;
-  document.getElementById('rptModalChkBale').checked = false;
-  document.getElementById('rptModalChkAll').checked = false;
-
-  document.getElementById('reportModal').classList.remove('hidden');
-  setTimeout(function() { textEl.focus(); }, 100);
-}
-
-function closeReportModal() {
-  document.getElementById('reportModal').classList.add('hidden');
-  currentReportTarget = null;
-}
-
-document.getElementById('reportModalClose').onclick = closeReportModal;
-document.getElementById('reportModalCancel').onclick = closeReportModal;
-document.getElementById('reportModal').onclick = function(e) {
-  if (e.target === this) closeReportModal();
-};
-
-document.getElementById('rptModalChkAll').onchange = function() {
-  var v = this.checked;
-  document.getElementById('rptModalChkTg').checked = v;
-  document.getElementById('rptModalChkBale').checked = v;
-};
-document.getElementById('rptModalChkTg').onchange = function() {
-  var tg = this.checked;
-  var bale = document.getElementById('rptModalChkBale').checked;
-  document.getElementById('rptModalChkAll').checked = tg && bale;
-};
-document.getElementById('rptModalChkBale').onchange = function() {
-  var tg = document.getElementById('rptModalChkTg').checked;
-  var bale = this.checked;
-  document.getElementById('rptModalChkAll').checked = tg && bale;
-};
-
-document.getElementById('reportModalSubmit').onclick = function() {
-  if (!currentReportTarget) return;
-  var text = document.getElementById('reportModalText').value.trim();
-  var msgEl = document.getElementById('reportModalMsg');
-
-  var recipients = rptModalRecipientsSS ? rptModalRecipientsSS.getStr() : '';
-  var epc = rptModalEpcSS ? rptModalEpcSS.getStr() : '';
-  var status = rptModalStatusSS ? rptModalStatusSS.getStr() : '';
-  var engagement = rptModalEngSS ? rptModalEngSS.getStr() : '';
-  var address = rptModalAddrSS ? rptModalAddrSS.getStr() : '';
-  var sendTg = document.getElementById('rptModalChkTg').checked;
-  var sendBale = document.getElementById('rptModalChkBale').checked;
-
-  if (!text) {
-    msgEl.className = 'msg msg-err';
-    msgEl.innerText = 'متن الزامی است';
-    return;
-  }
-  if (!recipients) {
-    msgEl.className = 'msg msg-err';
-    msgEl.innerText = 'حداقل یک مخاطب انتخاب کنید';
-    return;
-  }
-  if (!sendTg && !sendBale) {
-    msgEl.className = 'msg msg-err';
-    msgEl.innerText = 'حداقل یک پلتفورم ارسال را انتخاب کنید';
-    return;
-  }
-
-  var btn = this;
-  btn.disabled = true; btn.innerText = '...';
-
-  api({
-    action: 'submitReport',
-    chatId: tgUser.id,
-    parentRow: currentReportTarget.row.row,
-    reportType: currentReportTarget.type,
-    text: text,
-    recipients: recipients,
-    epc: epc,
-    status: status,
-    engagement: engagement,
-    address: address,
-    sendTelegram: sendTg,
-    sendBale: sendBale
-  }).then(function(r) {
-    btn.disabled = false; btn.innerText = 'ثبت';
-    if (r && r.ok) {
-      closeReportModal();
-      toast('✓ ' + r.message, 'ok');
-    } else {
-      msgEl.className = 'msg msg-err';
-      msgEl.innerText = '✗ ' + ((r && r.message) || 'خطا');
-    }
-  }).catch(function(err) {
-    btn.disabled = false; btn.innerText = 'ثبت';
-    msgEl.className = 'msg msg-err';
-    msgEl.innerText = '✗ ' + (err.message || 'خطا');
-  });
-};
+init();
 </script>
 </body>
 </html>

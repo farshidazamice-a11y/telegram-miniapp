@@ -239,7 +239,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   margin: 0; width: auto;
 }
 .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-#reportSearch { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; }
 
 .tree-container { display: flex; flex-direction: column; gap: 4px; }
 .tree-node {
@@ -409,14 +408,36 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     <h2 class="section-title">📊 گزارش‌ها و گردش کار</h2>
 
     <div class="card">
+      <div style="font-size:13.5px;font-weight:bold;margin-bottom:10px;">📅 فیلتر تاریخ</div>
+      <div class="filter-row">
+        <button class="filter-btn active" data-date="today" onclick="setDateFilter('today')">امروز</button>
+        <button class="filter-btn" data-date="tomorrow" onclick="setDateFilter('tomorrow')">فردا</button>
+        <button class="filter-btn" data-date="week" onclick="setDateFilter('week')">هفته جاری</button>
+      </div>
+      <div class="date-row" style="margin-top:8px;">
+        <div class="col">
+          <input type="text" id="dateFromInput" placeholder="1405-6-1" style="text-align:center;">
+          <div class="date-lbl">از تاریخ</div>
+        </div>
+        <div class="col">
+          <input type="text" id="dateToInput" placeholder="1405-6-30" style="text-align:center;">
+          <div class="date-lbl">تا تاریخ</div>
+        </div>
+      </div>
+      <button id="applyDateFilterBtn">✅ اعمال فیلتر</button>
+    </div>
+
+    <div class="card hidden" id="extraFiltersCard">
+      <div style="font-size:13.5px;font-weight:bold;margin-bottom:10px;">🔎 فیلترهای بیشتر</div>
       <div class="filter-row">
         <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">همه</button>
         <button class="filter-btn" data-filter="order" onclick="setFilter('order')">📋 دستور کار</button>
         <button class="filter-btn" data-filter="report" onclick="setFilter('report')">📊 گزارش</button>
         <button class="filter-btn" data-filter="comment" onclick="setFilter('comment')">💬 کامنت</button>
       </div>
-      <input id="reportSearch" placeholder="🔎 جستجو در کد یا موضوع..." oninput="onSearchChange()">
-      <button id="refreshReportsBtn" style="margin-top:12px;">🔄 بروزرسانی</button>
+      <label style="margin-top:12px;">پیمانکار / شخص مسئول</label>
+      <div id="contractorFilterWrap"></div>
+      <button id="applyExtraFiltersBtn" style="margin-top:12px;">🔄 اعمال فیلترهای بیشتر</button>
     </div>
 
     <div class="form-loader hidden" id="reportsLoader">
@@ -537,6 +558,30 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 </div>
 
+<!-- ============ Modal (جزئیات نود) ============ -->
+<div id="nodeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.55);z-index:99999;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+  <div class="card" style="max-width:640px;width:100%;max-height:90vh;overflow-y:auto;margin:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3 style="margin:0;color:var(--primary);font-size:16px;">جزئیات</h3>
+      <button type="button" onclick="closeNodeModal()" style="width:auto;padding:6px 14px;margin:0;background:#e2e8f0;color:#334155;font-size:14px;">✕</button>
+    </div>
+    <div id="nodeModalContent"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button type="button" id="modalAddReportBtn" style="background:var(--success);">📊 ثبت گزارش</button>
+      <button type="button" id="modalAddCommentBtn" style="background:#64748b;">💬 ثبت کامنت</button>
+    </div>
+    <div id="modalAddForm" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed var(--border);">
+      <label id="modalAddLabel" style="margin-top:0;">متن:</label>
+      <textarea id="modalAddText" placeholder="توضیحات..."></textarea>
+      <div class="btn-row">
+        <button type="button" id="modalCancelAdd" class="btn-sec">انصراف</button>
+        <button type="button" id="modalSubmitAdd" class="btn-ok">✅ ثبت</button>
+      </div>
+      <div id="modalAddMsg"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
 var WEATHER_LAT = 35.91183529343982;
@@ -553,11 +598,6 @@ var weatherData = null;
 var panelLoaded = false;
 var reservedNumbers = [];
 var submitToken = null;
-var reportsData = [];
-var reportsLoaded = false;
-var currentFilter = 'all';
-var currentSearch = '';
-var expandedNodes = {};
 
 var navStack = [];
 var navIndex = -1;
@@ -712,7 +752,10 @@ function renderScreen(screenId) {
     reserveForUser();
   }
   if (screenId === 'reportsSection') {
-    if (!reportsLoaded) loadReports();
+    if (!reportsLoaded) {
+      setDateFilter('today');
+      applyDateFilter();
+    }
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -923,42 +966,164 @@ function reload(showLoading) {
 // ============ Menu ============
 document.getElementById('menuCreateOrder').onclick = function() { navigateTo('workOrderSection'); };
 document.getElementById('menuReports').onclick = function() { navigateTo('reportsSection'); };
-document.getElementById('refreshReportsBtn').onclick = function() { reportsLoaded = false; loadReports(); };
 
 // ============ Reports ============
+var reportsData = [];
+var reportsLoaded = false;
+var currentDateFilter = 'today';
+var currentFilter = 'all';
+var currentContractors = [];
+var expandedNodes = {};
+var currentActiveNode = null;
+var contractorSS = null;
+
+function pad2(n) { return String(n).length < 2 ? '0' + n : String(n); }
+
+function setDateFilter(type) {
+  currentDateFilter = type;
+  var btns = document.querySelectorAll('#reportsSection [data-date]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-date') === type);
+  }
+  if (type !== 'custom') {
+    var f = document.getElementById('dateFromInput');
+    var t = document.getElementById('dateToInput');
+    if (f) f.value = '';
+    if (t) t.value = '';
+  }
+}
+
+function getDateRangeForFilter(type) {
+  var now = new Date();
+  var todayJ = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  var todayStr = todayJ[0] + '-' + pad2(todayJ[1]) + '-' + pad2(todayJ[2]);
+
+  if (type === 'today') return { from: todayStr, to: todayStr };
+
+  if (type === 'tomorrow') {
+    var tm = new Date(now.getTime() + 86400000);
+    var tj = g2j(tm.getFullYear(), tm.getMonth() + 1, tm.getDate());
+    var tmStr = tj[0] + '-' + pad2(tj[1]) + '-' + pad2(tj[2]);
+    return { from: tmStr, to: tmStr };
+  }
+
+  if (type === 'week') {
+    var dow = now.getDay();
+    var daysToSat = (dow - 6 + 7) % 7;
+    var sat = new Date(now.getTime() - daysToSat * 86400000);
+    var fri = new Date(sat.getTime() + 6 * 86400000);
+    var sj = g2j(sat.getFullYear(), sat.getMonth() + 1, sat.getDate());
+    var fj = g2j(fri.getFullYear(), fri.getMonth() + 1, fri.getDate());
+    return {
+      from: sj[0] + '-' + pad2(sj[1]) + '-' + pad2(sj[2]),
+      to: fj[0] + '-' + pad2(fj[1]) + '-' + pad2(fj[2])
+    };
+  }
+
+  return null;
+}
+
+function applyDateFilter() {
+  var range = null;
+  if (currentDateFilter === 'custom') {
+    var f = document.getElementById('dateFromInput').value.trim();
+    var t = document.getElementById('dateToInput').value.trim();
+    if (!f || !t) {
+      alert('لطفاً بازه تاریخ را کامل وارد کنید (مثال: 1405-6-1)');
+      return;
+    }
+    range = { from: f, to: t };
+  } else {
+    range = getDateRangeForFilter(currentDateFilter);
+  }
+  if (!range) { alert('فیلتر تاریخ نامعتبر'); return; }
+  loadReports(range);
+}
+
+document.getElementById('applyDateFilterBtn').onclick = applyDateFilter;
+
+document.getElementById('dateFromInput').addEventListener('input', function() {
+  if (this.value.trim() || document.getElementById('dateToInput').value.trim()) {
+    setDateFilter('custom');
+  }
+});
+document.getElementById('dateToInput').addEventListener('input', function() {
+  if (this.value.trim() || document.getElementById('dateFromInput').value.trim()) {
+    setDateFilter('custom');
+  }
+});
+
 function setFilter(f) {
   currentFilter = f;
-  var btns = document.querySelectorAll('.filter-btn');
+  var btns = document.querySelectorAll('#reportsSection [data-filter]');
   for (var i = 0; i < btns.length; i++) {
     btns[i].classList.toggle('active', btns[i].getAttribute('data-filter') === f);
   }
   renderTree();
 }
-function onSearchChange() {
-  currentSearch = document.getElementById('reportSearch').value.trim().toLowerCase();
-  renderTree();
-}
-function loadReports() {
+
+function loadReports(range) {
   var loader = document.getElementById('reportsLoader');
   var container = document.getElementById('treeContainer');
   if (loader) loader.classList.remove('hidden');
   if (container) container.innerHTML = '';
-  api({ action: 'getWorkOrdersList' })
-    .then(function(r) {
-      if (loader) loader.classList.add('hidden');
-      if (r && r.ok) {
-        reportsData = r.orders || [];
-        reportsLoaded = true;
-        renderTree();
+  if (!range) range = getDateRangeForFilter(currentDateFilter) || { from: '', to: '' };
+
+  var access = currentUser ? String(currentUser.access || '').trim() : '';
+  var sysName = currentUser ? String(currentUser.systemName || currentUser.fullName || '').trim() : '';
+
+  api({
+    action: 'getWorkOrdersList',
+    userAccess: access,
+    userSystemName: sysName,
+    dateFrom: range.from,
+    dateTo: range.to
+  })
+  .then(function(r) {
+    if (loader) loader.classList.add('hidden');
+    if (r && r.ok) {
+      reportsData = r.orders || [];
+      reportsLoaded = true;
+      var extra = document.getElementById('extraFiltersCard');
+      if (access === 'ادمین' || access === 'ستادی') {
+        extra.classList.remove('hidden');
+        if (!contractorSS) initContractorFilter();
       } else {
-        container.innerHTML = '<div class="tree-empty">❌ خطا در بارگذاری گزارش‌ها</div>';
+        extra.classList.add('hidden');
       }
-    })
-    .catch(function(err) {
-      if (loader) loader.classList.add('hidden');
-      container.innerHTML = '<div class="tree-empty">❌ ' + escHtml(err.message || 'خطا در ارتباط') + '</div>';
-    });
+      renderTree();
+    } else {
+      container.innerHTML = '<div class="tree-empty">❌ خطا در بارگذاری گزارش‌ها</div>';
+    }
+  })
+  .catch(function(err) {
+    if (loader) loader.classList.add('hidden');
+    container.innerHTML = '<div class="tree-empty">❌ ' + escHtml(err.message || 'خطا در ارتباط') + '</div>';
+  });
 }
+
+function initContractorFilter() {
+  var uniqueNames = {};
+  var list = [];
+  reportsData.forEach(function(o) {
+    var r = String(o.recipient || '').trim();
+    if (!r) return;
+    if (uniqueNames[r]) return;
+    uniqueNames[r] = true;
+    list.push(r);
+  });
+  contractorSS = makeSS('contractorFilterWrap', {
+    multi: true,
+    options: list.map(function(n) { return { value: n, label: n }; }),
+    placeholder: 'تایپ کنید تا جستجو شود (' + list.length + ')'
+  });
+}
+
+document.getElementById('applyExtraFiltersBtn').onclick = function() {
+  currentContractors = contractorSS ? contractorSS.getValue() : [];
+  renderTree();
+};
+
 function getNodeType(code) {
   if (!code) return 'order';
   var first = code.charAt(0).toUpperCase();
@@ -971,6 +1136,7 @@ function getTypeIcon(type) {
   if (type === 'comment') return '💬';
   return '📋';
 }
+
 function renderTree() {
   var container = document.getElementById('treeContainer');
   if (!container) return;
@@ -981,10 +1147,8 @@ function renderTree() {
       var t = getNodeType(o.code);
       if (t !== currentFilter) return false;
     }
-    if (currentSearch) {
-      var inCode = (o.code || '').toLowerCase().indexOf(currentSearch) !== -1;
-      var inSubj = (o.subject || '').toLowerCase().indexOf(currentSearch) !== -1;
-      if (!inCode && !inSubj) return false;
+    if (currentContractors.length > 0) {
+      if (currentContractors.indexOf(String(o.recipient || '').trim()) === -1) return false;
     }
     return true;
   });
@@ -994,7 +1158,6 @@ function renderTree() {
     return;
   }
 
-  // ساخت map برای فرزندان
   var childrenMap = {};
   filtered.forEach(function(o) {
     var parent = o.parentCode || '';
@@ -1002,21 +1165,22 @@ function renderTree() {
     childrenMap[parent].push(o);
   });
 
-  // پیدا کردن ریشه‌ها (والدشون توی لیست نیست یا والد خالی)
   var codesInList = {};
   filtered.forEach(function(o) { codesInList[o.code] = true; });
+
   var roots = filtered.filter(function(o) {
+    var t = getNodeType(o.code);
+    if (t !== 'order') return false;
     if (!o.parentCode) return true;
     if (!codesInList[o.parentCode]) return true;
     return false;
   });
 
   if (roots.length === 0) {
-    container.innerHTML = '<div class="tree-empty">📭 ریشه‌ای یافت نشد</div>';
+    container.innerHTML = '<div class="tree-empty">📭 دستور کاری یافت نشد</div>';
     return;
   }
 
-  // تابع ساخت نود
   function buildNode(node, depth) {
     var type = getNodeType(node.code);
     var icon = getTypeIcon(type);
@@ -1031,15 +1195,16 @@ function renderTree() {
     var header = document.createElement('div');
     header.className = 'tree-header';
     header.style.paddingRight = (12 + depth * 20) + 'px';
-    header.onclick = function() {
-      if (!hasChildren) return;
-      expandedNodes[nodeId] = !isExpanded;
-      renderTree();
-    };
 
     var toggle = document.createElement('span');
     toggle.className = 'tree-toggle ' + (hasChildren ? (isExpanded ? 'open' : '') : 'leaf');
     toggle.textContent = hasChildren ? '▼' : '•';
+    toggle.onclick = function(ev) {
+      ev.stopPropagation();
+      if (!hasChildren) return;
+      expandedNodes[nodeId] = !isExpanded;
+      renderTree();
+    };
     header.appendChild(toggle);
 
     var iconEl = document.createElement('span');
@@ -1067,9 +1232,9 @@ function renderTree() {
       rEl.textContent = '👤 ' + node.recipient;
       metaEl.appendChild(rEl);
     }
-    if (node.dateShamsi) {
+    if (node.startShamsi || node.endShamsi) {
       var dEl = document.createElement('span');
-      dEl.textContent = '📅 ' + node.dateShamsi;
+      dEl.textContent = '📅 ' + (node.startShamsi || '') + (node.endShamsi ? ' تا ' + node.endShamsi : '');
       metaEl.appendChild(dEl);
     }
     if (node.status) {
@@ -1085,15 +1250,14 @@ function renderTree() {
     info.appendChild(metaEl);
 
     header.appendChild(info);
+    header.onclick = function() { openNodeModal(node); };
     div.appendChild(header);
 
     if (hasChildren) {
       var chDiv = document.createElement('div');
       chDiv.className = 'tree-children' + (isExpanded ? '' : ' hidden');
       children.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
-      children.forEach(function(child) {
-        chDiv.appendChild(buildNode(child, depth + 1));
-      });
+      children.forEach(function(child) { chDiv.appendChild(buildNode(child, depth + 1)); });
       div.appendChild(chDiv);
     }
 
@@ -1101,8 +1265,113 @@ function renderTree() {
   }
 
   roots.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
-  roots.forEach(function(root) {
-    container.appendChild(buildNode(root, 0));
+  roots.forEach(function(root) { container.appendChild(buildNode(root, 0)); });
+}
+
+// ============ Modal ============
+function openNodeModal(node) {
+  currentActiveNode = node;
+  var modal = document.getElementById('nodeModal');
+  var content = document.getElementById('nodeModalContent');
+  var addForm = document.getElementById('modalAddForm');
+  addForm.style.display = 'none';
+  document.getElementById('modalAddText').value = '';
+  document.getElementById('modalAddMsg').innerText = '';
+
+  var type = getNodeType(node.code);
+  var icon = getTypeIcon(type);
+  var typeLabel = type === 'order' ? 'دستور کار' : (type === 'report' ? 'گزارش' : 'کامنت');
+
+  var html = '';
+  html += '<div class="preview-row"><div class="preview-label">نوع:</div><div class="preview-value">' + icon + ' ' + typeLabel + '</div></div>';
+  html += '<div class="preview-row"><div class="preview-label">کد:</div><div class="preview-value" style="font-family:monospace;color:#f59e0b;font-weight:bold;direction:ltr;text-align:right;">' + escHtml(node.code) + '</div></div>';
+  html += '<div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value">' + escHtml(node.subject || '—') + '</div></div>';
+  if (node.description) html += '<div class="preview-row"><div class="preview-label">شرح:</div><div class="preview-value" style="white-space:pre-line;">' + escHtml(node.description) + '</div></div>';
+  if (node.recipient) html += '<div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value">' + escHtml(node.recipient) + '</div></div>';
+  if (node.epc) html += '<div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value">' + escHtml(node.epc) + '</div></div>';
+  if (node.field) html += '<div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value">' + escHtml(node.field) + '</div></div>';
+  if (node.engagement) html += '<div class="preview-row"><div class="preview-label">پیمانکاری:</div><div class="preview-value">' + escHtml(node.engagement) + '</div></div>';
+  if (node.address) html += '<div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value">' + escHtml(node.address) + '</div></div>';
+  if (node.startShamsi) html += '<div class="preview-row"><div class="preview-label">شروع:</div><div class="preview-value">' + escHtml(node.startShamsi) + '</div></div>';
+  if (node.endShamsi) html += '<div class="preview-row"><div class="preview-label">پایان:</div><div class="preview-value">' + escHtml(node.endShamsi) + '</div></div>';
+  if (node.status) html += '<div class="preview-row"><div class="preview-label">وضعیت:</div><div class="preview-value">' + escHtml(node.status) + '</div></div>';
+
+  content.innerHTML = html;
+  modal.style.display = 'flex';
+}
+
+function closeNodeModal() {
+  document.getElementById('nodeModal').style.display = 'none';
+  currentActiveNode = null;
+}
+
+document.getElementById('nodeModal').addEventListener('click', function(e) {
+  if (e.target.id === 'nodeModal') closeNodeModal();
+});
+
+function showAddForm(type) {
+  if (!currentActiveNode) return;
+  var form = document.getElementById('modalAddForm');
+  var label = document.getElementById('modalAddLabel');
+  label.textContent = type === 'R' ? 'متن گزارش:' : 'متن کامنت:';
+  form.style.display = 'block';
+  document.getElementById('modalAddText').value = '';
+  document.getElementById('modalAddMsg').innerText = '';
+  document.getElementById('modalAddText').focus();
+  document.getElementById('modalSubmitAdd').onclick = function() { submitAddNode(type); };
+}
+
+document.getElementById('modalAddReportBtn').onclick = function() { showAddForm('R'); };
+document.getElementById('modalAddCommentBtn').onclick = function() { showAddForm('C'); };
+document.getElementById('modalCancelAdd').onclick = function() {
+  document.getElementById('modalAddForm').style.display = 'none';
+};
+
+function submitAddNode(type) {
+  var text = document.getElementById('modalAddText').value.trim();
+  if (!text) {
+    document.getElementById('modalAddMsg').innerText = '❌ متن الزامی است';
+    document.getElementById('modalAddMsg').className = 'msg msg-err';
+    return;
+  }
+  var btn = document.getElementById('modalSubmitAdd');
+  btn.disabled = true;
+  btn.innerText = 'در حال ارسال...';
+  document.getElementById('modalAddMsg').innerText = '';
+
+  api({
+    action: 'addChildNode',
+    parentCode: currentActiveNode.code,
+    nodeType: type,
+    text: text,
+    actorChatId: String(tgUser.id)
+  })
+  .then(function(r) {
+    btn.disabled = false;
+    btn.innerText = '✅ ثبت';
+    if (r && r.ok) {
+      document.getElementById('modalAddMsg').className = 'msg msg-ok';
+      document.getElementById('modalAddMsg').innerText = '✅ ' + r.message + '\nکد: ' + r.code;
+      document.getElementById('modalAddText').value = '';
+      expandedNodes[currentActiveNode.code] = true;
+      var range = getDateRangeForFilter(currentDateFilter);
+      if (currentDateFilter === 'custom') {
+        range = {
+          from: document.getElementById('dateFromInput').value.trim(),
+          to: document.getElementById('dateToInput').value.trim()
+        };
+      }
+      setTimeout(function() { loadReports(range); }, 500);
+    } else {
+      document.getElementById('modalAddMsg').className = 'msg msg-err';
+      document.getElementById('modalAddMsg').innerText = '❌ ' + ((r && r.message) || 'خطا');
+    }
+  })
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.innerText = '✅ ثبت';
+    document.getElementById('modalAddMsg').className = 'msg msg-err';
+    document.getElementById('modalAddMsg').innerText = '❌ ' + err.message;
   });
 }
 

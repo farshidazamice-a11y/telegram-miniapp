@@ -32,7 +32,6 @@ body {
 
 .container { max-width: 720px; margin: 0 auto; padding: 12px 14px 40px; }
 
-/* Ticker */
 .ticker {
   position: sticky; top: 56px; z-index: 490;
   background: linear-gradient(90deg, #1e40af 0%, #7c3aed 50%, #1e40af 100%);
@@ -229,7 +228,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-row { display: flex; gap: 8px; margin-top: 16px; }
 .btn-row button { flex: 1; margin-top: 0; }
 
-/* ============ Reports Section ============ */
 .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
 .filter-btn {
   flex: 1; min-width: 70px; padding: 8px 10px;
@@ -558,7 +556,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 </div>
 
-<!-- ============ Modal (جزئیات نود) ============ -->
 <div id="nodeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.55);z-index:99999;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
   <div class="card" style="max-width:640px;width:100%;max-height:90vh;overflow-y:auto;margin:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -739,6 +736,9 @@ function renderScreen(screenId) {
   else if (currentUser) uh.classList.remove('hidden');
   else uh.classList.add('hidden');
 
+  if (screenId === 'panelMenuSection') {
+    updateMenuByAccess();
+  }
   if (screenId === 'workOrderSection') {
     if (!panelLoaded) loadPanel();
     else {
@@ -864,6 +864,28 @@ function reserveForUser() {
     .catch(function() {});
 }
 
+// ============ Access-Based Menu ============
+function updateMenuByAccess() {
+  var access = currentUser ? String(currentUser.access || '').trim() : '';
+  var createEl = document.getElementById('menuCreateOrder');
+  var reportsEl = document.getElementById('menuReports');
+  if (!createEl || !reportsEl) return;
+
+  if (access === 'ادمین') {
+    createEl.style.display = '';
+    reportsEl.style.display = '';
+  } else if (access === 'ستادی') {
+    createEl.style.display = 'none';
+    reportsEl.style.display = '';
+  } else if (access === 'پایه') {
+    createEl.style.display = 'none';
+    reportsEl.style.display = '';
+  } else {
+    createEl.style.display = 'none';
+    reportsEl.style.display = 'none';
+  }
+}
+
 // ============ Welcome ============
 function showWelcome(userData) {
   var heroEl = document.getElementById('welcomeHero');
@@ -892,7 +914,9 @@ function showWelcome(userData) {
         '<div class="row"><span>سمت:</span><span class="val">' + escHtml(u.position || '—') + '</span></div>' +
         '<div class="row"><span>واحد:</span><span class="val">' + escHtml(u.unit || '—') + '</span></div>' +
         '<div class="row"><span>سطح دسترسی:</span><span class="val">' + escHtml(access || 'تعیین نشده') + '</span></div>';
-      if (access === 'ادمین') {
+
+      var canEnter = (access === 'ادمین' || access === 'ستادی' || access === 'پایه');
+      if (canEnter) {
         actions.innerHTML =
           '<button class="welcome-btn green" id="goToPanel">🛠 ورود به پنل کاربری</button>' +
           '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد</button>';
@@ -900,7 +924,7 @@ function showWelcome(userData) {
         document.getElementById('refreshBtn').onclick = function() { reload(true); };
       } else {
         actions.innerHTML =
-          '<div class="msg msg-info" style="margin-top:0;">دسترسی شما فعال است اما دسترسی ادمین ندارید.</div>' +
+          '<div class="msg msg-info" style="margin-top:0;">سطح دسترسی شما تعیین نشده است. با ادمین تماس بگیرید.</div>' +
           '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد</button>';
         document.getElementById('refreshBtn').onclick = function() { reload(true); };
       }
@@ -1070,12 +1094,14 @@ function loadReports(range) {
   if (!range) range = getDateRangeForFilter(currentDateFilter) || { from: '', to: '' };
 
   var access = currentUser ? String(currentUser.access || '').trim() : '';
-  var sysName = currentUser ? String(currentUser.systemName || currentUser.fullName || '').trim() : '';
+  var sysName = currentUser ? String(currentUser.systemName || '').trim() : '';
+  var fullName = currentUser ? String(currentUser.fullName || '').trim() : '';
 
   api({
     action: 'getWorkOrdersList',
     userAccess: access,
     userSystemName: sysName,
+    userFullName: fullName,
     dateFrom: range.from,
     dateTo: range.to
   })
@@ -1587,192 +1613,4 @@ function loadPanel() {
     var a = (r.addresses && r.addresses.options) || [];
     var rr = (r.relatedRows && r.relatedRows.options) || [];
     if (ssSubject) { ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب (' + s.length + ')' : 'تایپ'); }
-    if (ssEpc) { ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب (' + e.length + ')' : 'تایپ'); }
-    if (ssField) { ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب (' + f.length + ')' : 'تایپ'); }
-    if (ssEng) { ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب (' + g.length + ')' : 'تایپ'); }
-    if (ssAddr) { ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ'); }
-    if (ssRelated) { ssRelated.setOpts(rr); ssRelated.setPh(rr.length ? 'جستجو (' + rr.length + ')' : 'خالی'); }
-    optionsDone = true; checkAllDone();
-  }).catch(function() { optionsDone = true; checkAllDone(); });
-}
-
-function onRecipient(val) {
-  var cTg = document.getElementById('chkTg'), cBale = document.getElementById('chkBale'), cAll = document.getElementById('chkAll');
-  var rTg = document.getElementById('rowTg'), rBale = document.getElementById('rowBale');
-  cTg.checked = false; cBale.checked = false; cAll.checked = false;
-  rTg.classList.remove('dis'); rBale.classList.remove('dis');
-  cTg.disabled = false; cBale.disabled = false;
-  if (!val) return;
-  var r = null;
-  for (var i = 0; i < recipients.length; i++) if (recipients[i].systemName === val) { r = recipients[i]; break; }
-  if (!r) return;
-  if (r.telegramChatId) cTg.checked = true; else { cTg.disabled = true; rTg.classList.add('dis'); }
-  if (r.baleChatId) cBale.checked = true; else { cBale.disabled = true; rBale.classList.add('dis'); }
-  updateAll();
-}
-function updateAll() {
-  var a = document.getElementById('chkAll');
-  var on = [];
-  if (!document.getElementById('chkTg').disabled) on.push(document.getElementById('chkTg'));
-  if (!document.getElementById('chkBale').disabled) on.push(document.getElementById('chkBale'));
-  a.checked = on.length > 0 && on.every(function(c) { return c.checked; });
-}
-document.getElementById('chkAll').onchange = function() {
-  var v = this.checked;
-  if (!document.getElementById('chkTg').disabled) document.getElementById('chkTg').checked = v;
-  if (!document.getElementById('chkBale').disabled) document.getElementById('chkBale').checked = v;
-};
-document.getElementById('chkTg').onchange = updateAll;
-document.getElementById('chkBale').onchange = updateAll;
-
-// ============ Preview ============
-document.getElementById('previewBtn').onclick = function() {
-  var rec = ssRecipient ? ssRecipient.getStr() : '';
-  var sub = ssSubject ? ssSubject.getStr() : '';
-  var epc = ssEpc ? ssEpc.getStr() : '';
-  var fld = ssField ? ssField.getStr() : '';
-  var eng = ssEng ? ssEng.getStr() : '';
-  var rel = ssRelated ? ssRelated.getStr() : '';
-  var relDisp = ssRelated ? ssRelated.getDisplay() : '';
-  var addr = ssAddr ? ssAddr.getStr() : '';
-  var addrD = ssAddr ? ssAddr.getDisplay() : '';
-  var desc = document.getElementById('woDesc').value.trim();
-  var y = document.getElementById('woYear').value;
-  var m = document.getElementById('woMonth').value;
-  var d = document.getElementById('woDay').value;
-  var dur = document.getElementById('woDur').value;
-  var sTg = document.getElementById('chkTg').checked;
-  var sBale = document.getElementById('chkBale').checked;
-
-  if (!rec) return showMsg('woMsg', '❌ مخاطب را انتخاب کنید', 'err');
-  if (!sub) return showMsg('woMsg', '❌ موضوع را انتخاب کنید', 'err');
-  if (!desc) return showMsg('woMsg', '❌ شرح عملیات الزامی است', 'err');
-  if (!epc) return showMsg('woMsg', '❌ EPC را انتخاب کنید', 'err');
-  if (!fld) return showMsg('woMsg', '❌ رشته را انتخاب کنید', 'err');
-  if (!eng) return showMsg('woMsg', '❌ پیمانکاری/امانی را انتخاب کنید', 'err');
-  if (!rel) return showMsg('woMsg', '❌ ردیف مرتبط را انتخاب کنید', 'err');
-  if (!addr) return showMsg('woMsg', '❌ آدرس را انتخاب کنید', 'err');
-  if (!dur || parseInt(dur, 10) < 1) return showMsg('woMsg', '❌ مدت معتبر نیست', 'err');
-  if (!sTg && !sBale) return showMsg('woMsg', '❌ حداقل یک پلتفورم انتخاب کنید', 'err');
-  if (reservedNumbers.length === 0) return showMsg('woMsg', '⏳ چند لحظه صبر کنید و دوباره امتحان کنید', 'err');
-
-  var sY = parseInt(y), sM = parseInt(m), sD = parseInt(d), n = parseInt(dur);
-  var sg = j2g(sY, sM, sD);
-  var sdt = new Date(sg[0], sg[1]-1, sg[2]);
-  var edt = new Date(sdt.getTime() + (n-1)*86400000);
-  var ej = g2j(edt.getFullYear(), edt.getMonth()+1, edt.getDate());
-  var endSh = ej[0] + '-' + ej[1] + '-' + ej[2];
-  var startSh = sY + '-' + sM + '-' + sD;
-  var now = new Date();
-  var tj = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
-  var todaySh = tj[0] + '-' + tj[1] + '-' + tj[2];
-  var dn = WEEKDAYS[now.getDay()];
-
-  var msg =
-    'از: دفتر کارگاه پروژه ایگل\n' +
-    'به: آقای ' + rec + '\n\n' +
-    '#' + epc + ' #' + fld + ' #' + eng + '\n' +
-    'موضوع: ' + sub + '\n\n' +
-    'ابلاغ شده در تاریخ : #' + todaySh + '  روز ' + dn + '\n' +
-    'به آدرس: ' + addrD + '\n\n' +
-    ' # ' + desc + '\n' +
-    '#برنامه_زمانبندی:\n' +
-    'از تاریخ:  ' + startSh + 'تا تاریخ:' + endSh + ' به مدت ' + n + 'روز\n' +
-    '***در صورت نیاز به هرگونه مقدمات، تدارکات و مصالح، کنترل موجودی و درخواست به موقع آنها، وظیفه پیمانکار/مسئول محترم می باشد';
-
-  document.getElementById('pvRecipient').innerText = rec;
-  var pl = [];
-  if (sTg) pl.push('📱 Telegram');
-  if (sBale) pl.push('📨 Bale');
-  document.getElementById('pvPlatforms').innerText = pl.join(' + ');
-  document.getElementById('pvSubject').innerText = sub;
-  document.getElementById('pvEpc').innerText = epc;
-  document.getElementById('pvField').innerText = fld;
-  document.getElementById('pvEng').innerText = eng;
-  document.getElementById('pvRelated').innerText = relDisp;
-  document.getElementById('pvAddr').innerText = addrD;
-  document.getElementById('pvDesc').innerText = desc;
-  document.getElementById('pvStart').innerText = startSh;
-  document.getElementById('pvDur').innerText = n + ' روز';
-  document.getElementById('pvEnd').innerText = endSh;
-  document.getElementById('pvMsg').innerText = msg;
-
-  var ci = ssRecipient.getChatIds();
-  submitToken = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  payload = {
-    action: 'createWorkOrder', adminChatId: String(tgUser.id),
-    recipientSystemName: rec,
-    recipientTelegramChatId: ci.tg,
-    recipientBaleChatId: ci.bale,
-    sendTelegram: sTg, sendBale: sBale,
-    subject: sub, description: desc, epc: epc, field: fld,
-    engagementType: eng, address: addr, addressDisplay: addrD,
-    relatedRow: rel,
-    startYear: y, startMonth: m, startDay: d, duration: dur,
-    reservedNumber: reservedNumbers[0],
-    submitToken: submitToken,
-    _hasTg: !!ci.tg, _hasBale: !!ci.bale
-  };
-
-  submitting = false;
-  var sb = document.getElementById('submitBtn');
-  sb.disabled = false; sb.innerText = '✅ ثبت و ارسال';
-  document.getElementById('finalMsg').innerText = '';
-  document.getElementById('finalMsg').className = '';
-  navigateTo('previewSection');
-};
-
-document.getElementById('editBtn').onclick = function() { navigateTo('workOrderSection'); };
-
-// ============ Submit ============
-document.getElementById('submitBtn').onclick = function() {
-  if (submitting) return;
-  submitting = true;
-  var b = this;
-  b.disabled = true; b.style.pointerEvents = 'none';
-  b.innerText = '⏳ در حال ارسال...';
-  document.getElementById('editBtn').disabled = true;
-  document.getElementById('finalMsg').innerText = '';
-  document.getElementById('finalMsg').className = '';
-  showGlobalLoader('در حال ثبت و ارسال...');
-
-  api(payload)
-    .then(function(r) {
-      hideGlobalLoader();
-      if (r && r.ok) {
-        var finalEl = document.getElementById('finalMsg');
-        finalEl.className = 'msg msg-ok';
-        finalEl.innerHTML =
-          '<div style="text-align:center;font-size:16px;font-weight:bold;">✅ ' + escHtml(r.message || 'ثبت شد') + '</div>' +
-          (r.row ? '<div style="text-align:center;font-size:13px;margin-top:4px;">ردیف: ' + r.row + '</div>' : '') +
-          (r.code ? '<div style="text-align:center;font-size:14px;margin-top:6px;font-family:monospace;color:#f59e0b;font-weight:bold;">' + escHtml(r.code) + '</div>' : '');
-        b.innerText = '✅ ثبت شد';
-        b.disabled = true;
-        reservedNumbers = [];
-        panelLoaded = false;
-        reportsLoaded = false;
-      } else if (r && r.duplicate) {
-        showMsg('finalMsg', '⚠️ ' + r.message, 'err');
-        b.innerText = '⚠️ قبلاً ثبت شده';
-      } else {
-        submitting = false;
-        b.disabled = false; b.style.pointerEvents = 'auto';
-        b.innerText = '✅ تلاش دوباره';
-        showMsg('finalMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
-      }
-      document.getElementById('editBtn').disabled = false;
-    })
-    .catch(function(err) {
-      hideGlobalLoader();
-      submitting = false;
-      b.disabled = false; b.style.pointerEvents = 'auto';
-      b.innerText = '✅ تلاش دوباره';
-      document.getElementById('editBtn').disabled = false;
-      showMsg('finalMsg', '❌ ' + (err.message || 'خطا'), 'err');
-    });
-};
-
-init();
-</script>
-</body>
-</html>
+    if (ssEpc) { ssEpc.setOpts(e); ssE

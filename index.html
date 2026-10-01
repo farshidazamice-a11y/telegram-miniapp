@@ -173,29 +173,368 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .filter-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
 .reports-sticky { position: sticky; top: var(--sticky-top); z-index: 490; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 11px; margin-bottom: 10px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
 .reports-sticky-title { font-size: 11.5px; font-weight: bold; color: #475569; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
-.tree-container { display: flex; flex-direction: column; gap: 3px; }
-.tree-node { background: #fff; border: 1px solid var(--border); border-radius: 9px; margin-bottom: 3px; overflow: hidden; border-right: 3px solid var(--primary); transition: all .15s; }
-.tree-node:hover { box-shadow: var(--shadow-sm); }
-.tree-node.type-report { border-right-color: var(--success); }
-.tree-node.type-comment { border-right-color: #94a3b8; }
-.tree-node.type-order { border-right-color: var(--primary); }
-.tree-header { padding: 8px 10px; display: flex; align-items: flex-start; gap: 7px; cursor: pointer; user-select: none; }
+
+/* ============================================ */
+/* ====== Tree Cards — نسخه حرفه‌ای (طرح F) ==== */
+/* ============================================ */
+.tree-container { display: flex; flex-direction: column; gap: 7px; padding-bottom: 24px; }
+
+.tree-node {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow .18s, border-color .18s;
+  position: relative;
+  padding-right: 4px;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+}
+.tree-node::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--primary);
+  transition: all .2s;
+}
+.tree-node.type-report::before { background: #10b981; }
+.tree-node.type-comment::before { background: #94a3b8; }
+.tree-node:hover { box-shadow: 0 3px 12px rgba(15,23,42,0.06); border-color: #cbd5e1; }
+.tree-node.open { box-shadow: 0 4px 16px rgba(15,23,42,0.08); border-color: #bfdbfe; }
+
+.tree-header {
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  transition: background .15s;
+}
 .tree-header:hover { background: #f8fafc; }
-.tree-toggle { width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #64748b; flex-shrink: 0; cursor: pointer; background: #f1f5f9; border-radius: 4px; margin-top: 2px; }
-.tree-toggle.open { transform: rotate(-90deg); }
-.tree-toggle.leaf { background: transparent; opacity: .3; cursor: default; }
-.tree-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
-.tree-info { flex: 1; min-width: 0; }
-.tree-code { font-family: monospace; font-size: 10.5px; color: var(--warn); font-weight: bold; margin-bottom: 1px; direction: ltr; text-align: right; }
-.tree-subject { font-size: 12px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tree-snippet { font-size: 10.5px; color: #94a3b8; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-style: italic; }
-.tree-meta { font-size: 10px; color: #64748b; margin-top: 3px; display: flex; gap: 7px; flex-wrap: wrap; }
-.tree-children { border-top: 1px dashed var(--border); padding: 5px 7px; background: #fafbfc; }
-.tree-children.hidden { display: none; }
+.tree-node.open .tree-header {
+  background: linear-gradient(180deg, #f8fbff, #fff);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.tree-row-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+
+.tree-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+  color: #1e40af;
+  flex-shrink: 0;
+  letter-spacing: -.2px;
+  box-shadow: 0 1px 2px rgba(30,64,175,0.08);
+}
+.tree-type-badge.report {
+  background: linear-gradient(135deg, #d1fae5, #ecfdf5);
+  color: #065f46;
+  box-shadow: 0 1px 2px rgba(16,185,129,0.12);
+}
+.tree-type-badge.comment {
+  background: linear-gradient(135deg, #f1f5f9, #f8fafc);
+  color: #475569;
+  box-shadow: 0 1px 2px rgba(100,116,139,0.1);
+}
+
+.tree-code-inline {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-weight: bold;
+  direction: ltr;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  letter-spacing: -.3px;
+}
+
+.tree-badges {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.badge-summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 1px 3px rgba(220,38,38,.35);
+  flex-shrink: 0;
+}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 9.5px;
+  font-weight: bold;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.badge-status.running { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
+.badge-status.draft { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+
+.tree-chevron {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 9px;
+  transition: transform .25s cubic-bezier(.4,0,.2,1), background .2s, color .2s;
+  flex-shrink: 0;
+}
+.tree-node.open .tree-chevron {
+  transform: rotate(180deg);
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+  color: #1e40af;
+}
+
+.tree-title {
+  font-size: 12.5px;
+  font-weight: bold;
+  color: #1e293b;
+  line-height: 1.55;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 2px;
+}
+
+.tree-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 5px;
+}
+.quick-item {
+  background: linear-gradient(135deg, #f8fafc, #fff);
+  border: 1px solid var(--border-soft);
+  border-radius: 7px;
+  padding: 4px 7px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.quick-lbl {
+  font-size: 8.5px;
+  color: #94a3b8;
+  font-weight: bold;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.quick-val {
+  font-size: 10.5px;
+  color: #334155;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-snippet {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 1.55;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  padding-right: 2px;
+  margin-top: 1px;
+}
+
+.tree-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  color: #64748b;
+  padding-top: 2px;
+  min-height: 14px;
+}
+.tree-children-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tree-progress-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-weight: bold;
+  color: #059669;
+  font-size: 9.5px;
+}
+.progress-bar-mini {
+  width: 48px;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill-mini {
+  height: 100%;
+  background: linear-gradient(90deg, #34d399, #059669);
+  border-radius: 2px;
+  transition: width .3s;
+}
+
+.tree-details {
+  display: none;
+  padding: 12px 12px 11px;
+  background: linear-gradient(180deg, #fbfdff, #f8fafc);
+  border-top: 1px solid var(--border-soft);
+}
+.tree-node.open .tree-details { display: block; animation: fadeSlideDown .22s ease-out; }
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tree-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-bottom: 10px;
+}
+.detail-item {
+  display: flex;
+  gap: 5px;
+  font-size: 10.5px;
+  align-items: baseline;
+  min-width: 0;
+}
+.detail-lbl {
+  color: #94a3b8;
+  font-weight: bold;
+  flex-shrink: 0;
+  font-size: 9.5px;
+}
+.detail-val {
+  color: #334155;
+  flex: 1;
+  word-break: break-word;
+  font-weight: 500;
+}
+
+.detail-full-text {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 11px;
+  color: #334155;
+  line-height: 1.85;
+  white-space: pre-line;
+  margin-bottom: 10px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 6px;
+}
+.detail-action-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: transform .1s, box-shadow .15s;
+}
+.detail-action-btn:active { transform: scale(.97); }
+.detail-action-btn.report {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(16,185,129,.2);
+}
+.detail-action-btn.comment {
+  background: #fff;
+  color: #334155;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 1px 3px rgba(15,23,42,.04);
+}
+.detail-action-btn.comment:hover { border-color: var(--primary); color: var(--primary); }
+
+.tree-children {
+  display: none;
+  padding: 8px 22px 8px 8px;
+  border-top: 1px dashed var(--border);
+  background: #f8fafc;
+  position: relative;
+}
+.tree-node.open .tree-children { display: flex; flex-direction: column; gap: 6px; animation: fadeSlideDown .25s ease-out; }
+
+.tree-children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 12px;
+  right: 10px;
+  width: 2px;
+  background: linear-gradient(180deg, #cbd5e1, transparent);
+  border-radius: 1px;
+}
+
+.tree-children > .tree-node .tree-header { padding: 8px 10px; }
+.tree-children > .tree-node .tree-title { font-size: 11.5px; }
+.tree-children > .tree-node .tree-quick-grid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); }
+
 .tree-empty { text-align: center; color: #94a3b8; padding: 30px 16px; font-size: 12.5px; line-height: 1.9; }
+
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(16,185,129,.97); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 12.5px; font-weight: bold; box-shadow: 0 8px 24px rgba(16,185,129,.35); z-index: 99999; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; max-width: 90%; text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
 .toast.error { background: rgba(239,68,68,.97); box-shadow: 0 8px 24px rgba(239,68,68,.35); }
+
 @media (max-width: 480px) {
   :root { --ticker-h: 30px; --topbar-h: 42px; --sticky-top: 72px; }
   .container { padding: 8px 10px 26px; }
@@ -206,6 +545,8 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   .pdp-day { height: 24px; font-size: 10.5px; }
   .filter-btn { font-size: 10.5px; min-width: 48px; padding: 5px 6px; }
   .preview-label { min-width: 72px; }
+  .tree-quick-grid { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
+  .tree-details-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -383,14 +724,10 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 <div id="nodeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,.55);z-index:99999;align-items:center;justify-content:center;padding:14px;overflow-y:auto;">
   <div class="card" style="max-width:620px;width:100%;max-height:90vh;overflow-y:auto;margin:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <h3 style="margin:0;color:var(--primary);font-size:14px;">جزئیات</h3>
+      <h3 style="margin:0;color:var(--primary);font-size:14px;">ثبت جدید</h3>
       <button type="button" onclick="closeNodeModal()" style="width:auto;padding:5px 12px;margin:0;background:#e2e8f0;color:#334155;font-size:12.5px;">✕</button>
     </div>
     <div id="nodeModalContent"></div>
-    <div class="btn-row" style="margin-top:12px;">
-      <button type="button" id="modalAddReportBtn" style="background:var(--success); padding:9px; font-size:12.5px;">📊 ثبت گزارش</button>
-      <button type="button" id="modalAddCommentBtn" style="background:#64748b; padding:9px; font-size:12.5px;">💬 ثبت کامنت</button>
-    </div>
     <div id="modalAddForm" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);">
       <label id="modalAddLabel" style="margin-top:0;">متن:</label>
       <textarea id="modalAddText" placeholder="توضیحات..."></textarea>
@@ -420,7 +757,7 @@ var IRAN_EVENTS = { '1-1':'🎉 نوروز','1-2':'🎉 عید نوروز','1-3'
 var WEATHER_CODES = { 0:{t:'صاف',i:'☀️'},1:{t:'عمدتاً صاف',i:'🌤️'},2:{t:'نیمه ابری',i:'⛅'},3:{t:'ابری',i:'☁️'},45:{t:'مه',i:'🌫️'},51:{t:'نمناک',i:'🌦️'},61:{t:'باران سبک',i:'🌦️'},63:{t:'باران',i:'🌧️'},65:{t:'باران شدید',i:'🌧️'},71:{t:'برف',i:'🌨️'},80:{t:'رگبار',i:'🌦️'},95:{t:'رعد و برق',i:'⛈️'} };
 if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user; }
 
-// ============ Ticker ============
+/* ============ Ticker ============ */
 var tickerIndex = 0, tickerItems = [], tickerIntervalId = null;
 function startTicker() {
   tickerItems = [];
@@ -442,7 +779,6 @@ function updateTickerDisplay() {
   setTimeout(function() { textEl.textContent = item.text; textEl.classList.add('active'); }, 200);
 }
 
-// ============ Toast ============
 function showToast(text, isError) {
   var el = document.getElementById('toastBox');
   if (!el) return;
@@ -452,7 +788,6 @@ function showToast(text, isError) {
   setTimeout(function() { el.classList.remove('show'); }, 2600);
 }
 
-// ============ Loaders ============
 function showGlobalLoader(t) { document.getElementById('globalLoaderText').textContent = t || 'در حال بارگذاری...'; document.getElementById('globalLoader').classList.remove('hidden'); }
 function hideGlobalLoader() { document.getElementById('globalLoader').classList.add('hidden'); }
 function setLoaderState(state, msg) {
@@ -463,7 +798,6 @@ function setLoaderState(state, msg) {
 }
 function updateLoaderCount(t) { var c = document.getElementById('flCount'); if (c) c.textContent = t; }
 
-// ============ Navigation ============
 function navigateTo(id) {
   if (navIndex < navStack.length - 1) navStack = navStack.slice(0, navIndex + 1);
   if (navStack.length > 0 && navStack[navStack.length - 1] === id) return;
@@ -493,6 +827,7 @@ function renderScreen(id) {
     var tc = document.getElementById('treeContainer');
     if (tc) tc.innerHTML = '<div class="tree-empty">📅 برای مشاهده گزارش‌ها، بازه تاریخ را انتخاب کرده و دکمه «اعمال فیلتر» را بزنید</div>';
     dateFilterApplied = false; reportsLoaded = false; reportsData = [];
+    ensureSummaryTasks();
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -515,7 +850,6 @@ function api(data, retries) {
     .catch(function(err) { if (retries > 0) return new Promise(function(r) { setTimeout(r, 700); }).then(function() { return api(data, retries - 1); }); throw err; });
 }
 
-// ============ Jalali ============
 function g2j(gy, gm, gd) {
   var m = [0,31,59,90,120,151,181,212,243,273,304,334];
   var jy = gy <= 1600 ? 0 : 979; gy -= gy <= 1600 ? 621 : 1600;
@@ -542,7 +876,6 @@ function j2g(jy, jm, jd) {
 }
 function dim(y, m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
 
-// ============ PDP ============
 function makePDP(boxId, opts) {
   opts = opts || {};
   var box = document.getElementById(boxId); if (!box) return null;
@@ -686,9 +1019,26 @@ document.getElementById('menuReports').onclick = function() { navigateTo('report
 var reportsData = [], reportsLoaded = false, dateFilterApplied = false, currentDateFilter = 'today', currentFilter = 'all';
 var currentContractors = [], expandedNodes = {}, currentActiveNode = null, contractorSS = null;
 var pdpFromDate = null, pdpToDate = null, pdpStartDate = null;
-var scheduleTasks = [], statusOptions = [];
+var scheduleTasks = [], statusOptions = [], summaryTaskSet = {};
 var modalRelatedSS = null, modalStatusSS = null;
 var modalSubmitting = false;
+
+function ensureSummaryTasks() {
+  if (Object.keys(summaryTaskSet).length > 0) return;
+  if (scheduleTasks.length > 0) {
+    scheduleTasks.forEach(function(t) { if (t.isSummary) summaryTaskSet[t.value] = true; });
+    return;
+  }
+  api({ action: 'getFormOptions' }).then(function(r) {
+    r = r || {};
+    var rr = (r.relatedRows && r.relatedRows.options) || [];
+    scheduleTasks = rr.slice();
+    var so = (r.statusOptions && r.statusOptions.options) || [];
+    statusOptions = so.slice();
+    rr.forEach(function(t) { if (t.isSummary) summaryTaskSet[t.value] = true; });
+    if (reportsData.length > 0) renderTree();
+  }).catch(function() {});
+}
 
 function pad2(n) { return String(n).length < 2 ? '0' + n : String(n); }
 function setDateFilter(type) {
@@ -730,6 +1080,7 @@ function loadReports(range) {
   var access = currentUser ? String(currentUser.access || '').trim() : '';
   var sysName = currentUser ? String(currentUser.systemName || '').trim() : '';
   var fullName = currentUser ? String(currentUser.fullName || '').trim() : '';
+  ensureSummaryTasks();
   api({ action: 'getWorkOrdersList', userAccess: access, userSystemName: sysName, userFullName: fullName, dateFrom: range.from, dateTo: range.to })
     .then(function(r) {
       if (loader) loader.classList.add('hidden');
@@ -752,8 +1103,8 @@ function initContractorFilter() {
 document.getElementById('applyExtraFiltersBtn').onclick = function() { currentContractors = contractorSS ? contractorSS.getValue() : []; renderTree(); };
 
 function getNodeType(code) { if (!code) return 'order'; var f = code.charAt(0).toUpperCase(); if (f === 'R') return 'report'; if (f === 'C') return 'comment'; return 'order'; }
-function getTypeIcon(t) { if (t === 'report') return '📊'; if (t === 'comment') return '💬'; return '📋'; }
 
+/* ============ Tree Rendering (طرح F) ============ */
 function renderTree() {
   var container = document.getElementById('treeContainer'); if (!container) return;
   container.innerHTML = '';
@@ -767,99 +1118,243 @@ function renderTree() {
   var codesInList = {}; filtered.forEach(function(o) { codesInList[o.code] = true; });
   var roots = filtered.filter(function(o) { var t = getNodeType(o.code); if (t !== 'order') return false; if (!o.parentDirect) return true; if (!codesInList[o.parentDirect]) return true; return false; });
   if (roots.length === 0) { container.innerHTML = '<div class="tree-empty">📭 دستور کاری یافت نشد</div>'; return; }
+
   function buildNode(node, depth) {
-    var type = getNodeType(node.code), icon = getTypeIcon(type);
-    var children = childrenMap[node.code] || []; var hasChildren = children.length > 0;
-    var nodeId = node.code; var isExpanded = expandedNodes[nodeId] === true;
-    var div = document.createElement('div'); div.className = 'tree-node type-' + type;
-    var header = document.createElement('div'); header.className = 'tree-header'; header.style.paddingRight = (10 + depth * 16) + 'px';
-    var toggle = document.createElement('span'); toggle.className = 'tree-toggle ' + (hasChildren ? (isExpanded ? 'open' : '') : 'leaf'); toggle.textContent = hasChildren ? '▼' : '•';
-    toggle.onclick = function(ev) { ev.stopPropagation(); if (!hasChildren) return; expandedNodes[nodeId] = !isExpanded; renderTree(); };
-    header.appendChild(toggle);
-    var iconEl = document.createElement('span'); iconEl.className = 'tree-icon'; iconEl.textContent = icon; header.appendChild(iconEl);
-    var info = document.createElement('div'); info.className = 'tree-info';
-    var codeEl = document.createElement('div'); codeEl.className = 'tree-code'; codeEl.textContent = node.code; info.appendChild(codeEl);
-    var subjEl = document.createElement('div'); subjEl.className = 'tree-subject'; subjEl.textContent = node.subject || '—'; info.appendChild(subjEl);
-    if (node.description) {
-      var snip = document.createElement('div'); snip.className = 'tree-snippet';
-      snip.textContent = '« ' + node.description.substring(0, 70).replace(/\s+/g, ' ') + (node.description.length > 70 ? '…' : '') + ' »';
-      info.appendChild(snip);
+    var type = getNodeType(node.code);
+    var children = childrenMap[node.code] || [];
+    var hasChildren = children.length > 0;
+    var nodeId = node.code;
+    var isExpanded = expandedNodes[nodeId] === true;
+
+    var div = document.createElement('div');
+    div.className = 'tree-node type-' + type + (isExpanded ? ' open' : '');
+
+    /* Header */
+    var header = document.createElement('div');
+    header.className = 'tree-header';
+    header.onclick = function(e) {
+      if (e) e.stopPropagation();
+      expandedNodes[nodeId] = !isExpanded;
+      renderTree();
+    };
+
+    /* Row 1 */
+    var rowTop = document.createElement('div');
+    rowTop.className = 'tree-row-top';
+
+    var typeBadge = document.createElement('span');
+    typeBadge.className = 'tree-type-badge' + (type === 'order' ? '' : ' ' + type);
+    typeBadge.textContent = type === 'order' ? '📋 دستور کار' : (type === 'report' ? '📊 گزارش' : '💬 کامنت');
+    rowTop.appendChild(typeBadge);
+
+    var codeEl = document.createElement('span');
+    codeEl.className = 'tree-code-inline';
+    codeEl.textContent = node.code || '';
+    codeEl.title = node.code || '';
+    rowTop.appendChild(codeEl);
+
+    var badgesWrap = document.createElement('span');
+    badgesWrap.className = 'tree-badges';
+
+    if (node.relatedTask && summaryTaskSet[node.relatedTask]) {
+      var sumBadge = document.createElement('span');
+      sumBadge.className = 'badge-summary';
+      sumBadge.textContent = 'S';
+      sumBadge.title = 'Summary';
+      badgesWrap.appendChild(sumBadge);
     }
-    var metaEl = document.createElement('div'); metaEl.className = 'tree-meta';
-    if (node.recipient) { var rEl = document.createElement('span'); rEl.textContent = '👤 ' + node.recipient; metaEl.appendChild(rEl); }
-    if (node.startShamsi || node.endShamsi) { var dEl = document.createElement('span'); dEl.textContent = '📅 ' + (node.startShamsi || '') + (node.endShamsi ? ' تا ' + node.endShamsi : ''); metaEl.appendChild(dEl); }
-    if (node.status) { var sEl = document.createElement('span'); sEl.textContent = '🔹 ' + node.status; metaEl.appendChild(sEl); }
-    if (hasChildren) { var cEl = document.createElement('span'); cEl.textContent = '📎 ' + children.length; metaEl.appendChild(cEl); }
-    info.appendChild(metaEl);
-    header.appendChild(info);
-    header.onclick = function() { openNodeModal(node); };
-    div.appendChild(header);
+
+    if (node.status) {
+      var stBadge = document.createElement('span');
+      stBadge.className = 'badge-status';
+      if (node.status.indexOf('در حال') !== -1) stBadge.classList.add('running');
+      else if (node.status.indexOf('پیش') !== -1 || node.status.indexOf('نویس') !== -1) stBadge.classList.add('draft');
+      stBadge.textContent = node.status;
+      badgesWrap.appendChild(stBadge);
+    }
+
+    var chev = document.createElement('span');
+    chev.className = 'tree-chevron';
+    chev.textContent = '▼';
+    badgesWrap.appendChild(chev);
+
+    rowTop.appendChild(badgesWrap);
+    header.appendChild(rowTop);
+
+    /* Title */
+    var title = document.createElement('div');
+    title.className = 'tree-title';
+    title.textContent = node.subject || '—';
+    title.title = node.subject || '';
+    header.appendChild(title);
+
+    /* Quick grid */
+    var qg = document.createElement('div');
+    qg.className = 'tree-quick-grid';
+    function addQuick(lbl, val) {
+      if (!val) return;
+      var it = document.createElement('div');
+      it.className = 'quick-item';
+      var l = document.createElement('div'); l.className = 'quick-lbl'; l.textContent = lbl;
+      var v = document.createElement('div'); v.className = 'quick-val'; v.textContent = val; v.title = val;
+      it.appendChild(l); it.appendChild(v);
+      qg.appendChild(it);
+    }
+    addQuick('👤 مخاطب', node.recipient);
+    addQuick('📅 شروع', node.startShamsi);
+    addQuick('📅 پایان', node.endShamsi);
+    addQuick('🔗 مرتبط', node.relatedTask);
+    if (qg.children.length > 0) header.appendChild(qg);
+
+    /* Snippet */
+    if (node.description) {
+      var snip = document.createElement('div');
+      snip.className = 'tree-snippet';
+      snip.textContent = '📝 ' + node.description;
+      header.appendChild(snip);
+    }
+
+    /* Bottom row */
+    var rowBot = document.createElement('div');
+    rowBot.className = 'tree-row-bottom';
+
+    var cnt = document.createElement('span');
+    cnt.className = 'tree-children-count';
     if (hasChildren) {
-      var chDiv = document.createElement('div'); chDiv.className = 'tree-children' + (isExpanded ? '' : ' hidden');
+      var rCount = 0, repCount = 0, cmtCount = 0;
+      children.forEach(function(c) {
+        var t = getNodeType(c.code);
+        if (t === 'order') rCount++;
+        else if (t === 'report') repCount++;
+        else if (t === 'comment') cmtCount++;
+      });
+      var parts = [];
+      if (rCount) parts.push(rCount + ' کار');
+      if (repCount) parts.push(repCount + ' گزارش');
+      if (cmtCount) parts.push(cmtCount + ' کامنت');
+      cnt.textContent = '📎 ' + children.length + ' زیرمجموعه (' + parts.join('، ') + ')';
+    }
+    rowBot.appendChild(cnt);
+
+    var progNum = parseFloat(node.progress) || 0;
+    if (progNum > 0 && progNum < 1) progNum *= 100;
+    var progWrap = document.createElement('span');
+    progWrap.className = 'tree-progress-mini';
+    var bar = document.createElement('span'); bar.className = 'progress-bar-mini';
+    var fill = document.createElement('span'); fill.className = 'progress-fill-mini';
+    fill.style.width = Math.min(100, Math.max(0, progNum)) + '%';
+    bar.appendChild(fill);
+    var progTxt = document.createElement('span');
+    progTxt.textContent = Math.round(progNum) + '%';
+    progWrap.appendChild(bar); progWrap.appendChild(progTxt);
+    rowBot.appendChild(progWrap);
+
+    header.appendChild(rowBot);
+    div.appendChild(header);
+
+    /* Details */
+    var details = document.createElement('div');
+    details.className = 'tree-details';
+
+    var dgrid = document.createElement('div');
+    dgrid.className = 'tree-details-grid';
+    function addDetail(lbl, val) {
+      if (!val) return;
+      var it = document.createElement('div');
+      it.className = 'detail-item';
+      var l = document.createElement('span'); l.className = 'detail-lbl'; l.textContent = lbl;
+      var v = document.createElement('span'); v.className = 'detail-val'; v.textContent = val;
+      it.appendChild(l); it.appendChild(v);
+      dgrid.appendChild(it);
+    }
+    addDetail('EPC:', node.epc);
+    addDetail('رشته:', node.field);
+    addDetail('نوع کار:', node.engagement);
+    addDetail('آدرس:', node.address);
+    addDetail('مرتبط:', node.relatedTask);
+    addDetail('تاریخ:', node.dateShamsi);
+    if (dgrid.children.length > 0) details.appendChild(dgrid);
+
+    if (node.description) {
+      var dt = document.createElement('div');
+      dt.className = 'detail-full-text';
+      dt.textContent = node.description;
+      details.appendChild(dt);
+    }
+
+    var dActions = document.createElement('div');
+    dActions.className = 'detail-actions';
+    var btnR = document.createElement('button');
+    btnR.className = 'detail-action-btn report';
+    btnR.type = 'button';
+    btnR.textContent = '📊 ثبت گزارش';
+    btnR.onclick = function(e) { e.stopPropagation(); openAddOnly(node, 'R'); };
+    var btnC = document.createElement('button');
+    btnC.className = 'detail-action-btn comment';
+    btnC.type = 'button';
+    btnC.textContent = '💬 ثبت کامنت';
+    btnC.onclick = function(e) { e.stopPropagation(); openAddOnly(node, 'C'); };
+    dActions.appendChild(btnR); dActions.appendChild(btnC);
+    details.appendChild(dActions);
+    div.appendChild(details);
+
+    /* Children */
+    if (hasChildren) {
+      var chDiv = document.createElement('div');
+      chDiv.className = 'tree-children';
       children.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
       children.forEach(function(child) { chDiv.appendChild(buildNode(child, depth + 1)); });
       div.appendChild(chDiv);
     }
+
     return div;
   }
+
   roots.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
   roots.forEach(function(root) { container.appendChild(buildNode(root, 0)); });
 }
 
-// ============ Modal ============
-function openNodeModal(node) {
+/* ============ Modal (فقط برای ثبت گزارش/کامنت) ============ */
+function openAddOnly(node, type) {
   currentActiveNode = node;
-  var modal = document.getElementById('nodeModal'), content = document.getElementById('nodeModalContent');
-  var addForm = document.getElementById('modalAddForm'); addForm.style.display = 'none';
-  document.getElementById('modalAddText').value = ''; document.getElementById('modalAddMsg').innerText = '';
-  var type = getNodeType(node.code), icon = getTypeIcon(type);
-  var typeLabel = type === 'order' ? 'دستور کار' : (type === 'report' ? 'گزارش' : 'کامنت');
-  var html = '';
-  html += '<div class="preview-row"><div class="preview-label">نوع:</div><div class="preview-value">' + icon + ' ' + typeLabel + '</div></div>';
-  html += '<div class="preview-row"><div class="preview-label">کد:</div><div class="preview-value" style="font-family:monospace;color:#f59e0b;font-weight:bold;direction:ltr;text-align:right;">' + escHtml(node.code) + '</div></div>';
-  html += '<div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value">' + escHtml(node.subject || '—') + '</div></div>';
-  if (node.description) html += '<div class="preview-row"><div class="preview-label">شرح:</div><div class="preview-value" style="white-space:pre-line;">' + escHtml(node.description) + '</div></div>';
-  if (node.relatedTask) html += '<div class="preview-row"><div class="preview-label">مرتبط با برنامه:</div><div class="preview-value">' + escHtml(node.relatedTask) + '</div></div>';
-  if (node.recipient) html += '<div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value">' + escHtml(node.recipient) + '</div></div>';
-  if (node.epc) html += '<div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value">' + escHtml(node.epc) + '</div></div>';
-  if (node.field) html += '<div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value">' + escHtml(node.field) + '</div></div>';
-  if (node.engagement) html += '<div class="preview-row"><div class="preview-label">پیمانکاری:</div><div class="preview-value">' + escHtml(node.engagement) + '</div></div>';
-  if (node.address) html += '<div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value">' + escHtml(node.address) + '</div></div>';
-  if (node.startShamsi) html += '<div class="preview-row"><div class="preview-label">شروع:</div><div class="preview-value">' + escHtml(node.startShamsi) + '</div></div>';
-  if (node.endShamsi) html += '<div class="preview-row"><div class="preview-label">پایان:</div><div class="preview-value">' + escHtml(node.endShamsi) + '</div></div>';
-  if (node.status) html += '<div class="preview-row"><div class="preview-label">وضعیت:</div><div class="preview-value">' + escHtml(node.status) + '</div></div>';
-  content.innerHTML = html;
-  modal.style.display = 'flex';
-}
-function closeNodeModal() { document.getElementById('nodeModal').style.display = 'none'; currentActiveNode = null; modalSubmitting = false; }
-document.getElementById('nodeModal').addEventListener('click', function(e) { if (e.target.id === 'nodeModal') closeNodeModal(); });
+  var modal = document.getElementById('nodeModal');
+  var content = document.getElementById('nodeModalContent');
+  var addForm = document.getElementById('modalAddForm');
 
-function showAddForm(type) {
-  if (!currentActiveNode) return;
-  var form = document.getElementById('modalAddForm');
-  var label = document.getElementById('modalAddLabel');
-  label.textContent = type === 'R' ? 'متن گزارش:' : 'متن کامنت:';
-  form.style.display = 'block';
+  content.innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:6px;padding:4px 0;">' +
+      '<div><span style="font-family:monospace;color:#92400e;font-weight:bold;direction:ltr;background:#fef3c7;padding:3px 8px;border-radius:5px;font-size:11px;display:inline-block;">' + escHtml(node.code || '') + '</span></div>' +
+      '<div style="font-size:12.5px;font-weight:bold;color:#1e293b;line-height:1.6;">' + escHtml(node.subject || '—') + '</div>' +
+      (node.recipient ? '<div style="font-size:11px;color:#64748b;">👤 ' + escHtml(node.recipient) + '</div>' : '') +
+      (node.startShamsi ? '<div style="font-size:11px;color:#64748b;">📅 ' + escHtml(node.startShamsi) + (node.endShamsi ? ' تا ' + escHtml(node.endShamsi) : '') + '</div>' : '') +
+    '</div>';
+
   document.getElementById('modalAddText').value = '';
   document.getElementById('modalAddMsg').innerText = '';
-  // ساخت PDP مرتبط با برنامه (اختیاری)
+  document.getElementById('modalSubmitAdd').disabled = false;
+  document.getElementById('modalSubmitAdd').innerText = '✅ ثبت';
+
   var schedOpts = scheduleTasks.map(function(t) { return { value: t.value, label: t.label, isSummary: t.isSummary }; });
-  if (modalRelatedSS) {
-    try { document.getElementById('modalRelatedWrap').innerHTML = ''; } catch (e) {}
-  }
   modalRelatedSS = makeSS('modalRelatedWrap', { multi: false, options: schedOpts, placeholder: 'اختیاری - تایپ کنید' });
-  // وضعیت
   var stOpts = statusOptions.map(function(s) { return { value: s, label: s }; });
   modalStatusSS = makeSS('modalStatusWrap', { multi: false, options: stOpts, placeholder: 'اختیاری - انتخاب وضعیت' });
-  // مقدار پیش‌فرض
-  if (currentActiveNode.relatedTask && modalRelatedSS) modalRelatedSS.setValue(currentActiveNode.relatedTask);
-  document.getElementById('modalAddText').focus();
-  document.getElementById('modalSubmitAdd').disabled = false;
+  if (node.relatedTask && modalRelatedSS) modalRelatedSS.setValue(node.relatedTask);
+
+  document.getElementById('modalAddLabel').textContent = type === 'R' ? 'متن گزارش:' : 'متن کامنت:';
+  addForm.style.display = 'block';
   document.getElementById('modalSubmitAdd').onclick = function() { submitAddNode(type); };
+
+  modal.style.display = 'flex';
+  setTimeout(function() { document.getElementById('modalAddText').focus(); }, 150);
 }
-document.getElementById('modalAddReportBtn').onclick = function() { showAddForm('R'); };
-document.getElementById('modalAddCommentBtn').onclick = function() { showAddForm('C'); };
-document.getElementById('modalCancelAdd').onclick = function() { document.getElementById('modalAddForm').style.display = 'none'; };
+
+function closeNodeModal() {
+  document.getElementById('nodeModal').style.display = 'none';
+  currentActiveNode = null;
+  modalSubmitting = false;
+}
+document.getElementById('nodeModal').addEventListener('click', function(e) { if (e.target.id === 'nodeModal') closeNodeModal(); });
+document.getElementById('modalCancelAdd').onclick = function() { closeNodeModal(); };
 
 function submitAddNode(type) {
   if (modalSubmitting) return;
@@ -888,10 +1383,8 @@ function submitAddNode(type) {
   })
   .then(function(r) {
     if (r && r.ok) {
-      // بستن مودال + نمایش پیام
       closeNodeModal();
       showToast('✅ ' + r.message + ' — با تشکر', false);
-      // بازخوانی لیست
       var range = getDateRangeForFilter(currentDateFilter);
       if (currentDateFilter === 'custom') range = { from: pdpFromDate ? pdpFromDate.getValue() : '', to: pdpToDate ? pdpToDate.getValue() : '' };
       setTimeout(function() { loadReports(range); }, 400);
@@ -919,7 +1412,7 @@ document.getElementById('regForm').onsubmit = function(e) {
     .catch(function(err) { hideGlobalLoader(); b.disabled = false; b.innerText = '📨 ارسال ثبت‌نام'; showMsg('formMsg', '❌ ' + err.message, 'err'); });
 };
 
-// ============ Searchable Select ============
+/* ============ Searchable Select ============ */
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId); if (!box) return null;
   box.innerHTML = ''; box.className = 'ss-box';
@@ -1013,6 +1506,8 @@ function loadPanel() {
     var rr = (r.relatedRows && r.relatedRows.options) || [];
     var so = (r.statusOptions && r.statusOptions.options) || [];
     scheduleTasks = rr.slice(); statusOptions = so.slice();
+    summaryTaskSet = {};
+    rr.forEach(function(t) { if (t.isSummary) summaryTaskSet[t.value] = true; });
     if (ssSubject) { ssSubject.setOpts(s); ssSubject.setPh(s.length ? 'انتخاب (' + s.length + ')' : 'تایپ'); }
     if (ssEpc) { ssEpc.setOpts(e); ssEpc.setPh(e.length ? 'انتخاب (' + e.length + ')' : 'تایپ'); }
     if (ssField) { ssField.setOpts(f); ssField.setPh(f.length ? 'انتخاب (' + f.length + ')' : 'تایپ'); }

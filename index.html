@@ -1,930 +1,1614 @@
-const SHEET_NAME = 'Registered_user';
-const PLATFORM = 'Telegram';
-const ADMIN_CHAT_ID = '98414927';
-const POOL_META_CELL = 'CA1';
-const POOL_DATA_CELL = 'CB1';
-const RESERVATION_TIMEOUT_MIN = 5;
-
-function getProp(key) {
-  return PropertiesService.getScriptProperties().getProperty(key);
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>سیستم مدیریت کارگاهی ایگل</title>
+<style>
+:root {
+  --text: var(--tg-theme-text-color, #0f172a);
+  --hint: var(--tg-theme-hint-color, #64748b);
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --primary: #229ED9;
+  --success: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --purple: #8b5cf6;
+  --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  --radius: 12px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+.hidden { display: none !important; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: Tahoma, 'Segoe UI', sans-serif;
+  direction: rtl;
+  background: linear-gradient(180deg, #f0f9ff 0%, #f8fafc 100%);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
 }
 
-function getSheet() {
-  const id = getProp('SPREADSHEET_ID');
-  const ss = SpreadsheetApp.openById(id);
-  const sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) throw new Error('شیت Registered_user پیدا نشد');
-  return sheet;
+.container { max-width: 720px; margin: 0 auto; padding: 12px 14px 40px; }
+
+.ticker {
+  position: sticky; top: 56px; z-index: 490;
+  background: linear-gradient(90deg, #1e40af 0%, #7c3aed 50%, #1e40af 100%);
+  background-size: 200% 100%;
+  color: #fff; padding: 10px 14px;
+  font-size: 13.5px; font-weight: bold;
+  display: flex; align-items: center; gap: 10px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+  animation: tickerBg 12s linear infinite;
+}
+@keyframes tickerBg {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.ticker.hidden { display: none; }
+.ticker-icon { font-size: 18px; flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.15);} }
+.ticker-content { flex: 1; overflow: hidden; position: relative; height: 22px; }
+.ticker-text {
+  position: absolute; top: 0; left: 0; right: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.ticker-text.active { opacity: 1; transform: translateY(0); }
+
+.global-loader {
+  position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
+  background: rgba(30, 64, 175, 0.95); color: #fff;
+  padding: 10px 20px; border-radius: 30px;
+  z-index: 9999; display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: bold;
+}
+.global-loader.hidden { display: none; }
+.gl-spinner {
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.topbar {
+  position: sticky; top: 0; z-index: 500;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: var(--shadow);
+}
+.topbar.hidden { display: none; }
+.nav-btn {
+  width: 40px; height: 40px; border: none; border-radius: 10px;
+  background: #f1f5f9; color: #334155; font-size: 18px; cursor: pointer;
+  flex-shrink: 0;
+}
+.nav-btn:active { transform: scale(0.94); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.nav-btn.home { background: #dbeafe; color: #1e40af; }
+.topbar-title {
+  flex: 1; font-size: 14px; font-weight: bold; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-function getWorkOrderSheet() {
-  const id = getProp('SPREADSHEET_ID');
-  const ss = SpreadsheetApp.openById(id);
-  const sheets = ss.getSheets();
-  for (let i = 0; i < sheets.length; i++) {
-    if (sheets[i].getName().indexOf('برنامه') !== -1) return sheets[i];
+.user-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff; border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+}
+.user-header.hidden { display: none; }
+.uh-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.uh-name { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 15px; }
+.uh-access { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.uh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 12.5px; }
+.uh-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); padding: 6px 10px; border-radius: 8px; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+#loading.active { display: flex; }
+#loading { flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; text-align: center; min-height: 70vh; }
+.spinner { width: 54px; height: 54px; border: 5px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.9s linear infinite; }
+
+.form-loader {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #bfdbfe; border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px;
+  position: relative; overflow: hidden;
+}
+.form-loader::before {
+  content: ''; position: absolute; top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: shimmer 1.8s infinite;
+}
+@keyframes shimmer { 0%{left:-100%;} 100%{left:100%;} }
+.form-loader.ready { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #6ee7b7; }
+.form-loader.ready::before { display: none; }
+.form-loader.hide { opacity: 0; max-height: 0; padding: 0; margin: 0; border: 0; pointer-events: none; }
+.fl-spinner { width: 24px; height: 24px; border: 3px solid #93c5fd; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+.form-loader.ready .fl-spinner { border: none; background: #10b981; display: flex; align-items: center; justify-content: center; animation: none; color: #fff; font-size: 15px; font-weight: bold; }
+.form-loader.ready .fl-spinner::after { content: '✓'; }
+.fl-text { flex: 1; font-size: 13.5px; font-weight: bold; color: #1e40af; }
+.form-loader.ready .fl-text { color: #065f46; }
+.fl-count { font-size: 11.5px; display: block; margin-top: 2px; font-weight: normal; color: #64748b; }
+.form-loader .fl-dot { animation: dotPulse 1.4s infinite; }
+.form-loader .fl-dot:nth-child(2) { animation-delay: 0.2s; }
+.form-loader .fl-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse { 0%,60%,100%{opacity:0.3;} 30%{opacity:1;} }
+
+.welcome-box { background: var(--card); border-radius: 18px; padding: 26px 20px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.welcome-hero { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+.welcome-title { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 6px; }
+.welcome-project { font-size: 15px; color: var(--primary); font-weight: bold; margin-bottom: 16px; }
+.welcome-sub { font-size: 13.5px; color: var(--hint); line-height: 1.9; margin-bottom: 20px; }
+.welcome-user-info { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 18px; text-align: right; font-size: 13.5px; }
+.welcome-user-info.hidden { display: none; }
+.welcome-user-info .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
+.welcome-user-info .row:last-child { border-bottom: none; }
+.welcome-user-info .val { color: #334155; font-weight: 500; }
+.welcome-btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 15.5px; font-weight: bold; cursor: pointer; color: #fff; background: var(--primary); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.welcome-btn:active { transform: scale(0.98); }
+.welcome-btn.green { background: var(--success); }
+.welcome-btn.orange { background: var(--warn); }
+.welcome-btn.gray { background: #64748b; }
+
+.panel-menu-title { text-align: center; font-size: 18px; font-weight: bold; margin: 16px 0 6px; }
+.panel-menu-sub { text-align: center; font-size: 13px; color: var(--hint); margin-bottom: 20px; }
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.menu-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 14px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.menu-card:active { transform: translateY(-2px); border-color: var(--primary); }
+.menu-card .icon { font-size: 34px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #dbeafe, #e0e7ff); border-radius: 14px; }
+.menu-card .label { font-size: 14px; font-weight: bold; }
+.menu-card .desc { font-size: 11.5px; color: var(--hint); }
+.menu-card.disabled { opacity: 0.5; cursor: not-allowed; }
+
+.card { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+h2.section-title { text-align: center; color: var(--primary); margin: 8px 0 18px; font-size: 20px; }
+h3.section-h { color: var(--primary); margin: 20px 0 10px; font-size: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0f2fe; }
+label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 13.5px; font-weight: bold; color: #334155; }
+input, select, textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; background: #fff; color: var(--text); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(34, 158, 217, 0.1); }
+textarea { min-height: 90px; resize: vertical; }
+button { width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: 11px; background: var(--primary); color: #fff; font-size: 15.5px; font-weight: bold; cursor: pointer; font-family: inherit; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sec { background: #e2e8f0; color: #334155; margin-bottom: 12px; margin-top: 0; }
+.btn-ok { background: var(--success); }
+
+.msg { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 13.5px; }
+.msg-ok { background: #d1fae5; color: #065f46; }
+.msg-err { background: #fee2e2; color: #991b1b; }
+.msg-info { background: #dbeafe; color: #1e40af; }
+.msg-warn { background: #fef3c7; color: #92400e; }
+
+.date-row { display: flex; gap: 8px; }
+.date-row .col { flex: 1; }
+.date-row .col select { text-align: center; font-weight: bold; padding: 14px 8px; }
+.date-lbl { font-size: 11px; text-align: center; color: var(--hint); margin-top: 4px; }
+.quick-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.btn-q { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: 10px; background: #f8fafc; color: #334155; font-size: 13.5px; font-weight: bold; cursor: pointer; margin: 0; }
+
+.plat-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
+.plat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.plat-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
+.plat-row label { margin: 0; flex: 1; font-weight: normal; cursor: pointer; font-size: 14px; }
+.plat-row.dis { opacity: 0.45; }
+.plat-row.all { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 4px; }
+.plat-row.all label { font-weight: bold; }
+
+.ss-box { position: relative; margin-top: 6px; }
+.ss-in { width: 100%; padding: 12px 40px 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; background: #fff; }
+.ss-in[readonly] { background: #e8f5e9; border-color: var(--success); font-weight: bold; color: #065f46; }
+.ss-arrow { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); font-size: 11px; color: #94a3b8; pointer-events: none; }
+.ss-clear { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); cursor: pointer; color: #ef4444; font-weight: bold; font-size: 16px; padding: 4px 8px; }
+.ss-clear.hidden { display: none; }
+.ss-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 240px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12); z-index: 100; }
+.ss-list.hidden { display: none; }
+.ss-item { padding: 12px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+.ss-item:last-child { border-bottom: none; }
+.ss-empty { padding: 16px; color: var(--hint); text-align: center; font-size: 13px; }
+.ss-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ss-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--primary); color: #fff; border-radius: 20px; font-size: 13px; }
+.ss-chip-x { cursor: pointer; font-weight: bold; font-size: 16px; }
+
+.preview-card { background: linear-gradient(135deg, #f0f9ff, #f8fafc); border: 2px solid var(--primary); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+.preview-title { font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 14px; font-size: 15px; padding-bottom: 10px; border-bottom: 1px dashed #bfdbfe; }
+.preview-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 13.5px; gap: 8px; }
+.preview-row:last-child { border-bottom: none; }
+.preview-label { font-weight: bold; min-width: 90px; color: #475569; flex-shrink: 0; }
+.preview-value { flex: 1; word-break: break-word; }
+.preview-msg { background: #fff; border-radius: 10px; padding: 14px; font-size: 12.5px; white-space: pre-line; line-height: 1.85; border: 1px solid var(--border); max-height: 320px; overflow-y: auto; }
+.btn-row { display: flex; gap: 8px; margin-top: 16px; }
+.btn-row button { flex: 1; margin-top: 0; }
+
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.filter-btn {
+  flex: 1; min-width: 60px; padding: 8px 10px;
+  border: 1.5px solid var(--border); border-radius: 20px;
+  background: #fff; color: #334155;
+  font-size: 12.5px; font-weight: bold; cursor: pointer;
+  margin: 0; width: auto;
+}
+.filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.tree-container { display: flex; flex-direction: column; gap: 4px; }
+.tree-node {
+  background: #fff; border: 1.5px solid var(--border); border-radius: 10px;
+  margin-bottom: 4px; overflow: hidden;
+  border-right: 4px solid var(--primary);
+  transition: all 0.2s;
+}
+.tree-node:hover { box-shadow: var(--shadow); }
+.tree-node.type-report { border-right-color: var(--success); }
+.tree-node.type-comment { border-right-color: #94a3b8; }
+.tree-node.type-order { border-right-color: var(--primary); }
+
+.tree-header {
+  padding: 10px 12px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.tree-header:hover { background: #f8fafc; }
+.tree-toggle {
+  width: 22px; height: 22px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 12px; color: #64748b;
+  flex-shrink: 0; cursor: pointer;
+  background: #f1f5f9; border-radius: 5px;
+}
+.tree-toggle.open { transform: rotate(-90deg); }
+.tree-toggle.leaf { background: transparent; opacity: 0.3; cursor: default; }
+.tree-icon { font-size: 16px; flex-shrink: 0; }
+.tree-info { flex: 1; min-width: 0; }
+.tree-code {
+  font-family: monospace; font-size: 11.5px;
+  color: #f59e0b; font-weight: bold;
+  margin-bottom: 2px;
+  direction: ltr; text-align: right;
+}
+.tree-subject {
+  font-size: 13.5px; font-weight: bold;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tree-meta {
+  font-size: 11px; color: #64748b; margin-top: 3px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.tree-children {
+  border-top: 1px dashed #e2e8f0;
+  padding: 6px 8px;
+  background: #fafbfc;
+}
+.tree-children.hidden { display: none; }
+.tree-empty {
+  text-align: center; color: #94a3b8;
+  padding: 40px 20px; font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .container { padding: 10px 12px 30px; }
+  .uh-grid { grid-template-columns: 1fr 1fr; }
+  .menu-grid { grid-template-columns: 1fr 1fr; }
+  .nav-btn { width: 36px; height: 36px; font-size: 16px; }
+  .ticker { font-size: 12.5px; padding: 8px 12px; }
+  .filter-btn { font-size: 11.5px; min-width: 55px; }
+}
+</style>
+</head>
+<body>
+
+<div id="globalLoader" class="global-loader hidden">
+  <div class="gl-spinner"></div>
+  <span id="globalLoaderText">در حال بارگذاری...</span>
+</div>
+
+<div id="topbar" class="topbar hidden">
+  <button class="nav-btn home" id="navHome">🏠</button>
+  <button class="nav-btn" id="navBack">▶</button>
+  <button class="nav-btn" id="navForward">◀</button>
+  <div class="topbar-title" id="topbarTitle">سیستم مدیریت کارگاهی</div>
+</div>
+
+<div id="ticker" class="ticker hidden">
+  <span class="ticker-icon" id="tickerIcon">🌤️</span>
+  <div class="ticker-content">
+    <div class="ticker-text active" id="tickerText">در حال بارگذاری...</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="userHeader" class="user-header hidden">
+    <div class="uh-top">
+      <div class="uh-name">
+        <span>👤</span>
+        <span id="uhName">—</span>
+      </div>
+      <span class="uh-access" id="uhAccess">—</span>
+    </div>
+    <div class="uh-grid">
+      <div class="uh-item"><span>🆔</span><span id="uhId">—</span></div>
+      <div class="uh-item"><span>📅</span><span id="uhDate">—</span></div>
+      <div class="uh-item"><span>🕐</span><span id="uhTime">—</span></div>
+      <div class="uh-item"><span>🏗️</span><span>پروژه ویلایی ایگل</span></div>
+    </div>
+  </div>
+
+  <div id="loading" class="screen active">
+    <div class="spinner"></div>
+    <p style="color:#64748b; margin-top:18px;">در حال بارگذاری...</p>
+  </div>
+
+  <div id="welcomeSection" class="screen">
+    <div class="welcome-box">
+      <div class="welcome-hero" id="welcomeHero">👋</div>
+      <div class="welcome-title" id="welcomeTitle">به سیستم مدیریت کارگاهی خوش آمدید</div>
+      <div class="welcome-project">🏗️ پروژه ویلایی ایگل</div>
+      <div class="welcome-sub" id="welcomeSub">—</div>
+      <div class="welcome-user-info hidden" id="welcomeUserBox"></div>
+      <div id="welcomeActions"></div>
+    </div>
+  </div>
+
+  <div id="formSection" class="screen">
+    <h2 class="section-title">📝 فرم ثبت‌نام</h2>
+    <div class="card">
+      <div class="msg msg-info" id="tgInfo"></div>
+      <form id="regForm">
+        <label>نام و نام خانوادگی *</label>
+        <input id="fullName" required>
+        <label>سمت *</label>
+        <input id="position" required>
+        <label>واحد *</label>
+        <input id="unit" required>
+        <button type="submit" id="regBtn">📨 ارسال ثبت‌نام</button>
+      </form>
+      <div id="formMsg"></div>
+    </div>
+  </div>
+
+  <div id="panelMenuSection" class="screen">
+    <div class="panel-menu-title">🎯 پنل کاربری</div>
+    <div class="panel-menu-sub">لطفاً یک گزینه را انتخاب کنید</div>
+    <div class="menu-grid">
+      <div class="menu-card" id="menuCreateOrder">
+        <div class="icon">📋</div>
+        <div class="label">ثبت دستور کار</div>
+        <div class="desc">ایجاد و ارسال دستور کار جدید</div>
+      </div>
+      <div class="menu-card" id="menuReports">
+        <div class="icon">📊</div>
+        <div class="label">گزارش‌ها و گردش کار</div>
+        <div class="desc">نمایش درختی دستور کارها</div>
+      </div>
+      <div class="menu-card disabled">
+        <div class="icon">👥</div>
+        <div class="label">مدیریت کاربران</div>
+        <div class="desc">به‌زودی</div>
+      </div>
+      <div class="menu-card disabled">
+        <div class="icon">⚙️</div>
+        <div class="label">تنظیمات</div>
+        <div class="desc">به‌زودی</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="reportsSection" class="screen">
+    <h2 class="section-title">📊 گزارش‌ها و گردش کار</h2>
+
+    <div class="card">
+      <div style="font-size:13.5px;font-weight:bold;margin-bottom:10px;">📅 فیلتر تاریخ</div>
+      <div class="filter-row">
+        <button class="filter-btn active" data-date="all" onclick="setDateFilter('all')">همه</button>
+        <button class="filter-btn" data-date="today" onclick="setDateFilter('today')">امروز</button>
+        <button class="filter-btn" data-date="tomorrow" onclick="setDateFilter('tomorrow')">فردا</button>
+        <button class="filter-btn" data-date="week" onclick="setDateFilter('week')">هفته جاری</button>
+      </div>
+      <div class="date-row" style="margin-top:8px;">
+        <div class="col">
+          <input type="text" id="dateFromInput" placeholder="1405-6-1" style="text-align:center;">
+          <div class="date-lbl">از تاریخ</div>
+        </div>
+        <div class="col">
+          <input type="text" id="dateToInput" placeholder="1405-6-30" style="text-align:center;">
+          <div class="date-lbl">تا تاریخ</div>
+        </div>
+      </div>
+      <button id="applyDateFilterBtn">✅ اعمال فیلتر</button>
+    </div>
+
+    <div class="card hidden" id="extraFiltersCard">
+      <div style="font-size:13.5px;font-weight:bold;margin-bottom:10px;">🔎 فیلترهای بیشتر</div>
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">همه</button>
+        <button class="filter-btn" data-filter="order" onclick="setFilter('order')">📋 دستور کار</button>
+        <button class="filter-btn" data-filter="report" onclick="setFilter('report')">📊 گزارش</button>
+        <button class="filter-btn" data-filter="comment" onclick="setFilter('comment')">💬 کامنت</button>
+      </div>
+      <label style="margin-top:12px;">پیمانکار / شخص مسئول</label>
+      <div id="contractorFilterWrap"></div>
+      <button id="applyExtraFiltersBtn" style="margin-top:12px;">🔄 اعمال فیلترهای بیشتر</button>
+    </div>
+
+    <div class="form-loader hidden" id="reportsLoader">
+      <div class="fl-spinner"></div>
+      <div class="fl-text">
+        در حال بارگذاری گزارش‌ها<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span>
+      </div>
+    </div>
+
+    <div id="treeContainer" class="tree-container"></div>
+  </div>
+
+  <div id="workOrderSection" class="screen">
+    <h2 class="section-title">📋 ثبت دستور کار</h2>
+
+    <div class="form-loader" id="formLoader">
+      <div class="fl-spinner"></div>
+      <div class="fl-text">
+        در حال آماده‌سازی فرم<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span>
+        <span class="fl-count" id="flCount">در حال بارگذاری داده‌ها</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-h">👥 مخاطب</h3>
+      <label>انتخاب مخاطب *</label>
+      <div id="recipientWrap"></div>
+
+      <div class="plat-box" style="margin-top:14px;">
+        <div style="font-size:13px; font-weight:bold; margin-bottom:6px;">📡 پلتفورم ارسال پیام:</div>
+        <div class="plat-row all">
+          <input type="checkbox" id="chkAll">
+          <label for="chkAll">🌐 همه پلتفورم‌ها</label>
+        </div>
+        <div class="plat-row" id="rowTg">
+          <input type="checkbox" id="chkTg">
+          <label for="chkTg">📱 Telegram</label>
+        </div>
+        <div class="plat-row" id="rowBale">
+          <input type="checkbox" id="chkBale">
+          <label for="chkBale">📨 Bale</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-h">📝 اطلاعات دستور کار</h3>
+      <form id="woForm" onsubmit="return false;">
+        <label>موضوع ردیف *</label>
+        <div id="subjectWrap"></div>
+
+        <label>شرح عملیات *</label>
+        <textarea id="woDesc" placeholder="توضیحات کامل عملیات..."></textarea>
+
+        <label>EPC *</label>
+        <div id="epcWrap"></div>
+
+        <label>رشته *</label>
+        <div id="fieldWrap"></div>
+
+        <label>پیمانکاری / امانی *</label>
+        <div id="engWrap"></div>
+
+        <label>در ارتباط با کدام ردیف برنامه کلی *</label>
+        <div id="relatedWrap"></div>
+
+        <label>آدرس / محل *</label>
+        <div id="addrWrap"></div>
+
+        <label>تاریخ شروع (شمسی) *</label>
+        <div class="quick-row">
+          <button type="button" class="btn-q" onclick="setToday()">📅 امروز</button>
+          <button type="button" class="btn-q" onclick="setTomorrow()">📅 فردا</button>
+        </div>
+        <div class="date-row">
+          <div class="col"><select id="woYear"></select><div class="date-lbl">سال</div></div>
+          <div class="col"><select id="woMonth"></select><div class="date-lbl">ماه</div></div>
+          <div class="col"><select id="woDay"></select><div class="date-lbl">روز</div></div>
+        </div>
+
+        <label>مدت زمان (روز) *</label>
+        <input id="woDur" type="number" min="1" placeholder="مثال: 3">
+
+        <button type="button" id="previewBtn">👁 پیش‌نمایش دستور کار</button>
+      </form>
+      <div id="woMsg"></div>
+    </div>
+  </div>
+
+  <div id="previewSection" class="screen">
+    <h2 class="section-title">👁 پیش‌نمایش دستور کار</h2>
+
+    <div class="preview-card">
+      <div class="preview-title">📋 اطلاعات دستور کار</div>
+      <div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value" id="pvRecipient">—</div></div>
+      <div class="preview-row"><div class="preview-label">پلتفورم:</div><div class="preview-value" id="pvPlatforms">—</div></div>
+      <div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value" id="pvSubject">—</div></div>
+      <div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value" id="pvEpc">—</div></div>
+      <div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value" id="pvField">—</div></div>
+      <div class="preview-row"><div class="preview-label">پیمانکاری:</div><div class="preview-value" id="pvEng">—</div></div>
+      <div class="preview-row"><div class="preview-label">ردیف مرتبط:</div><div class="preview-value" id="pvRelated">—</div></div>
+      <div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value" id="pvAddr">—</div></div>
+      <div class="preview-row"><div class="preview-label">شرح:</div><div class="preview-value" id="pvDesc">—</div></div>
+      <div class="preview-row"><div class="preview-label">تاریخ شروع:</div><div class="preview-value" id="pvStart">—</div></div>
+      <div class="preview-row"><div class="preview-label">مدت:</div><div class="preview-value" id="pvDur">—</div></div>
+      <div class="preview-row"><div class="preview-label">تاریخ پایان:</div><div class="preview-value" id="pvEnd">—</div></div>
+    </div>
+
+    <div class="preview-title" style="text-align:right; margin-top:16px;">📩 متن پیام نهایی:</div>
+    <div class="preview-msg" id="pvMsg"></div>
+
+    <div class="btn-row">
+      <button id="editBtn" class="btn-sec">← ویرایش</button>
+      <button id="submitBtn" class="btn-ok">✅ ثبت و ارسال</button>
+    </div>
+    <div id="finalMsg"></div>
+  </div>
+
+</div>
+
+<div id="nodeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.55);z-index:99999;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+  <div class="card" style="max-width:640px;width:100%;max-height:90vh;overflow-y:auto;margin:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3 style="margin:0;color:var(--primary);font-size:16px;">جزئیات</h3>
+      <button type="button" onclick="closeNodeModal()" style="width:auto;padding:6px 14px;margin:0;background:#e2e8f0;color:#334155;font-size:14px;">✕</button>
+    </div>
+    <div id="nodeModalContent"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button type="button" id="modalAddReportBtn" style="background:var(--success);">📊 ثبت گزارش</button>
+      <button type="button" id="modalAddCommentBtn" style="background:#64748b;">💬 ثبت کامنت</button>
+    </div>
+    <div id="modalAddForm" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed var(--border);">
+      <label id="modalAddLabel" style="margin-top:0;">متن:</label>
+      <textarea id="modalAddText" placeholder="توضیحات..."></textarea>
+      <div class="btn-row">
+        <button type="button" id="modalCancelAdd" class="btn-sec">انصراف</button>
+        <button type="button" id="modalSubmitAdd" class="btn-ok">✅ ثبت</button>
+      </div>
+      <div id="modalAddMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbwTDAaHVdo6qXtNHXYeQ24EynNfCLttO5tlOjWloH0fUHtF5r31DfgFcvrvox43eh78lQ/exec';
+var WEATHER_LAT = 35.91183529343982;
+var WEATHER_LON = 51.48856941941395;
+var WEATHER_CITY = 'روستای ایگل';
+
+var tg = window.Telegram && window.Telegram.WebApp;
+var tgUser = null;
+var recipients = [];
+var payload = null;
+var submitting = false;
+var currentUser = null;
+var weatherData = null;
+var panelLoaded = false;
+var reservedNumbers = [];
+var submitToken = null;
+
+var navStack = [];
+var navIndex = -1;
+
+var MONTHS = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+var WEEKDAYS = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+
+var IRAN_EVENTS = {
+  '1-1': '🎉 نوروز باستانی - آغاز سال نو',
+  '1-2': '🎉 عید نوروز', '1-3': '🎉 عید نوروز', '1-4': '🎉 عید نوروز',
+  '1-12': '🇮🇷 روز جمهوری اسلامی', '1-13': '🌿 سیزده بدر',
+  '2-2': '📚 روز معلم',
+  '3-14': '🕊️ رحلت حضرت امام خمینی', '3-15': '🔥 قیام ۱۵ خرداد',
+  '4-7': '⚖️ شهادت آیت‌الله بهشتی',
+  '7-8': '🛡️ هفته دفاع مقدس',
+  '8-13': '✊ روز مبارزه با استکبار',
+  '11-22': '🇮🇷 پیروزی انقلاب اسلامی',
+  '12-29': '🛢️ روز ملی شدن صنعت نفت'
+};
+
+var WEATHER_CODES = {
+  0: {t:'صاف', i:'☀️'}, 1: {t:'عمدتاً صاف', i:'🌤️'}, 2: {t:'نیمه ابری', i:'⛅'},
+  3: {t:'ابری', i:'☁️'}, 45: {t:'مه', i:'🌫️'}, 48: {t:'مه یخ‌زده', i:'🌫️'},
+  51: {t:'نمناک', i:'🌦️'}, 53: {t:'نمناک', i:'🌦️'}, 55: {t:'نمناک شدید', i:'🌧️'},
+  61: {t:'باران سبک', i:'🌦️'}, 63: {t:'باران', i:'🌧️'}, 65: {t:'باران شدید', i:'🌧️'},
+  71: {t:'برف سبک', i:'🌨️'}, 73: {t:'برف', i:'🌨️'}, 75: {t:'برف شدید', i:'❄️'},
+  80: {t:'رگبار', i:'🌦️'}, 81: {t:'رگبار شدید', i:'🌧️'}, 82: {t:'رگبار شدید', i:'⛈️'},
+  95: {t:'رعد و برق', i:'⛈️'}, 96: {t:'رعد و برق با تگرگ', i:'⛈️'}, 99: {t:'رعد و برق شدید', i:'⛈️'}
+};
+
+if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user; }
+
+// ============ Ticker ============
+var tickerIndex = 0;
+var tickerItems = [];
+var tickerIntervalId = null;
+
+function startTicker() {
+  tickerItems = [];
+  if (weatherData) {
+    tickerItems.push({ icon: weatherData.icon, text: '🌤️ ' + WEATHER_CITY + ' — ' + weatherData.temp + '°C ' + weatherData.text });
+  } else {
+    tickerItems.push({ icon: '🌤️', text: '🌤️ در حال دریافت آب و هوا...' });
   }
-  throw new Error('شیت برنامه ریزی پیدا نشد');
+  var now = new Date();
+  var j = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  var ev = IRAN_EVENTS[j[1] + '-' + j[2]];
+  if (ev) tickerItems.push({ icon: '🎉', text: ev });
+  else tickerItems.push({ icon: '📅', text: '📅 امروز: ' + WEEKDAYS[now.getDay()] + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0] });
+
+  tickerIndex = 0;
+  updateTickerDisplay();
+  if (tickerIntervalId) clearInterval(tickerIntervalId);
+  tickerIntervalId = setInterval(function() {
+    tickerIndex = (tickerIndex + 1) % tickerItems.length;
+    updateTickerDisplay();
+  }, 4000);
 }
 
-// ============================================
-// تاریخ شمسی
-// ============================================
+function updateTickerDisplay() {
+  var iconEl = document.getElementById('tickerIcon');
+  var textEl = document.getElementById('tickerText');
+  if (!iconEl || !textEl) return;
+  var item = tickerItems[tickerIndex];
+  if (!item) return;
+  iconEl.textContent = item.icon;
+  textEl.classList.remove('active');
+  setTimeout(function() {
+    textEl.textContent = item.text;
+    textEl.classList.add('active');
+  }, 200);
+}
 
-function gregorianToJalali(gy, gm, gd) {
-  var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
-  var jy = (gy <= 1600) ? 0 : 979;
-  gy -= (gy <= 1600) ? 621 : 1600;
-  var gy2 = (gm > 2) ? (gy + 1) : gy;
-  var days = (365 * gy) + parseInt((gy2 + 3) / 4) - parseInt((gy2 + 99) / 100) + parseInt((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
-  jy += 33 * parseInt(days / 12053);
-  days %= 12053;
-  jy += 4 * parseInt(days / 1461);
-  days %= 1461;
-  if (days > 365) { jy += parseInt((days - 1) / 365); days = (days - 1) % 365; }
-  var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
-  var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+// ============ Loader ============
+function showGlobalLoader(text) {
+  document.getElementById('globalLoaderText').textContent = text || 'در حال بارگذاری...';
+  document.getElementById('globalLoader').classList.remove('hidden');
+}
+function hideGlobalLoader() {
+  document.getElementById('globalLoader').classList.add('hidden');
+}
+function setLoaderState(state, msg) {
+  var loader = document.getElementById('formLoader');
+  var countEl = document.getElementById('flCount');
+  if (!loader) return;
+  if (state === 'loading') {
+    loader.classList.remove('ready', 'hide');
+    var txt = loader.querySelector('.fl-text');
+    if (txt) txt.innerHTML = msg + '<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-count" id="flCount">در حال بارگذاری داده‌ها</span>';
+  } else if (state === 'ready') {
+    loader.classList.add('ready');
+    loader.classList.remove('hide');
+    var txt2 = loader.querySelector('.fl-text');
+    if (txt2) txt2.innerHTML = '✅ ' + msg + '<span class="fl-count">' + (countEl ? countEl.textContent : '') + '</span>';
+  } else if (state === 'hide') {
+    loader.classList.add('hide');
+  }
+}
+function updateLoaderCount(text) {
+  var countEl = document.getElementById('flCount');
+  if (countEl) countEl.textContent = text;
+}
+
+// ============ Navigation ============
+function navigateTo(screenId) {
+  if (navIndex < navStack.length - 1) navStack = navStack.slice(0, navIndex + 1);
+  if (navStack.length > 0 && navStack[navStack.length - 1] === screenId) return;
+  navStack.push(screenId);
+  navIndex = navStack.length - 1;
+  renderScreen(screenId);
+  updateNavBtns();
+}
+function renderScreen(screenId) {
+  ['loading','welcomeSection','formSection','panelMenuSection','reportsSection','workOrderSection','previewSection'].forEach(function(x) {
+    var el = document.getElementById(x);
+    if (el) el.classList.remove('active');
+  });
+  var t = document.getElementById(screenId);
+  if (t) t.classList.add('active');
+
+  var topbar = document.getElementById('topbar');
+  var ticker = document.getElementById('ticker');
+  if (screenId === 'loading') {
+    topbar.classList.add('hidden');
+    ticker.classList.add('hidden');
+  } else {
+    topbar.classList.remove('hidden');
+    if (currentUser) ticker.classList.remove('hidden');
+    else ticker.classList.add('hidden');
+  }
+
+  var titles = {
+    'welcomeSection': 'صفحه اصلی', 'formSection': 'ثبت‌نام',
+    'panelMenuSection': 'پنل کاربری', 'reportsSection': 'گزارش‌ها و گردش کار',
+    'workOrderSection': 'ثبت دستور کار', 'previewSection': 'پیش‌نمایش دستور کار'
+  };
+  document.getElementById('topbarTitle').textContent = titles[screenId] || 'سیستم';
+
+  var uh = document.getElementById('userHeader');
+  if (screenId === 'formSection' || screenId === 'loading') uh.classList.add('hidden');
+  else if (currentUser) uh.classList.remove('hidden');
+  else uh.classList.add('hidden');
+
+  if (screenId === 'panelMenuSection') {
+    updateMenuByAccess();
+  }
+  if (screenId === 'workOrderSection') {
+    if (!panelLoaded) loadPanel();
+    else {
+      setLoaderState('loading', 'در حال آماده‌سازی فرم');
+      updateLoaderCount('استفاده از داده‌های ذخیره‌شده');
+      setTimeout(function() {
+        setLoaderState('ready', 'فرم آماده است');
+        setTimeout(function() { setLoaderState('hide'); }, 2000);
+      }, 500);
+    }
+    reserveForUser();
+  }
+  if (screenId === 'reportsSection') {
+    if (!reportsLoaded) {
+      setDateFilter('all');
+      applyDateFilter();
+    }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goBack() { if (navIndex > 0) { navIndex--; renderScreen(navStack[navIndex]); updateNavBtns(); } }
+function goForward() { if (navIndex < navStack.length - 1) { navIndex++; renderScreen(navStack[navIndex]); updateNavBtns(); } }
+function goHome() { navStack = ['welcomeSection']; navIndex = 0; renderScreen('welcomeSection'); updateNavBtns(); }
+function updateNavBtns() {
+  document.getElementById('navBack').disabled = navIndex <= 0;
+  document.getElementById('navForward').disabled = navIndex >= navStack.length - 1;
+}
+document.getElementById('navHome').onclick = goHome;
+document.getElementById('navBack').onclick = goBack;
+document.getElementById('navForward').onclick = goForward;
+if (tg && tg.BackButton) tg.BackButton.onClick(function() { goBack(); });
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function api(data, retries) {
+  if (data.action === 'createWorkOrder') retries = 0;
+  else if (retries === undefined) retries = 1;
+  return fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(data),
+    redirect: 'follow', cache: 'no-store'
+  })
+  .then(function(r) { return r.text(); })
+  .then(function(t) { try { return JSON.parse(t); } catch (e) { throw new Error('bad response'); } })
+  .catch(function(err) {
+    if (retries > 0) return new Promise(function(r) { setTimeout(r, 700); }).then(function() { return api(data, retries - 1); });
+    throw err;
+  });
+}
+
+// ============ Jalali ============
+function g2j(gy, gm, gd) {
+  var m = [0,31,59,90,120,151,181,212,243,273,304,334];
+  var jy = gy <= 1600 ? 0 : 979;
+  gy -= gy <= 1600 ? 621 : 1600;
+  var gy2 = gm > 2 ? gy + 1 : gy;
+  var d = (365*gy) + parseInt((gy2+3)/4) - parseInt((gy2+99)/100) + parseInt((gy2+399)/400) - 80 + gd + m[gm-1];
+  jy += 33*parseInt(d/12053); d %= 12053;
+  jy += 4*parseInt(d/1461); d %= 1461;
+  if (d > 365) { jy += parseInt((d-1)/365); d = (d-1)%365; }
+  var jm = d < 186 ? 1+parseInt(d/31) : 7+parseInt((d-186)/30);
+  var jd = 1 + (d < 186 ? d%31 : (d-186)%30);
   return [jy, jm, jd];
 }
-
-function jalaliToGregorian(jy, jm, jd) {
+function j2g(jy, jm, jd) {
   jy += 1595;
-  var days = -355668 + (365 * jy) + (parseInt(jy / 33) * 8) + parseInt(((jy % 33) + 3) / 4) + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
-  var gy = 400 * parseInt(days / 146097);
-  days %= 146097;
-  if (days > 36524) { gy += 100 * parseInt(--days / 36524); days %= 36524; if (days >= 365) days++; }
-  gy += 4 * parseInt(days / 1461);
-  days %= 1461;
-  if (days > 365) { gy += parseInt((days - 1) / 365); days = (days - 1) % 365; }
-  var gd = days + 1;
-  var sal_a = [0,31,((gy%4===0&&gy%100!==0)||(gy%400===0))?29:28,31,30,31,30,31,31,30,31,30,31];
+  var d = -355668 + 365*jy + parseInt(jy/33)*8 + parseInt(((jy%33)+3)/4) + jd + (jm<7 ? (jm-1)*31 : (jm-7)*30+186);
+  var gy = 400*parseInt(d/146097); d %= 146097;
+  if (d > 36524) { gy += 100*parseInt(--d/36524); d %= 36524; if (d >= 365) d++; }
+  gy += 4*parseInt(d/1461); d %= 1461;
+  if (d > 365) { gy += parseInt((d-1)/365); d = (d-1)%365; }
+  var gd = d+1;
+  var sa = [0,31,((gy%4===0&&gy%100!==0)||(gy%400===0))?29:28,31,30,31,30,31,31,30,31,30,31];
   var gm;
-  for (gm = 0; gm < 13; gm++) { var v = sal_a[gm]; if (gd <= v) break; gd -= v; }
+  for (gm = 0; gm < 13; gm++) { var v = sa[gm]; if (gd <= v) break; gd -= v; }
   return [gy, gm, gd];
 }
+function dim(y, m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
 
-function getPersianMonthName(m) {
-  var names = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-  return names[m] || '';
+// ============ Header ============
+function updateHeaderDateTime() {
+  if (!currentUser) return;
+  var now = new Date();
+  var j = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  document.getElementById('uhDate').textContent = WEEKDAYS[now.getDay()] + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0];
+  document.getElementById('uhTime').textContent = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 }
-
-function getPersianDayName(jsDay) {
-  var names = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
-  return names[jsDay] || '';
+function updateHeaderUser() {
+  if (!currentUser) return;
+  var u = currentUser;
+  document.getElementById('uhName').textContent = u.systemName || u.fullName || '—';
+  document.getElementById('uhId').textContent = String(tgUser.id);
+  document.getElementById('uhAccess').textContent = u.access || 'تعیین نشده';
 }
-
-function getEnglishDayName(jsDay) {
-  var names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return names[jsDay] || '';
-}
-
-function formatMiladi(date) {
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return date.getDate() + '-' + months[date.getMonth()] + '-' + date.getFullYear();
-}
-
-function formatTimestamp(date) {
-  var j = gregorianToJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-  return j[0] + '-' + j[1] + '-' + j[2] + ' ' +
-         String(date.getHours()).padStart(2, '0') + ':' +
-         String(date.getMinutes()).padStart(2, '0');
-}
-
-function parseShamsiNum(s) {
-  if (!s) return null;
-  var p = String(s).split('-').map(function(x) { return parseInt(x, 10); });
-  if (p.length !== 3 || isNaN(p[0]) || isNaN(p[1]) || isNaN(p[2])) return null;
-  return p[0] * 10000 + p[1] * 100 + p[2];
-}
-
-// ============================================
-// Pool System
-// ============================================
-
-function readPoolMeta() {
-  try {
-    var sheet = getWorkOrderSheet();
-    var raw = String(sheet.getRange(POOL_META_CELL).getValue() || '').trim();
-    if (!raw) return { lastCounter: 0, lastUpdate: '' };
-    return JSON.parse(raw);
-  } catch (e) { return { lastCounter: 0, lastUpdate: '' }; }
-}
-
-function writePoolMeta(meta) {
-  try { getWorkOrderSheet().getRange(POOL_META_CELL).setValue(JSON.stringify(meta)); } catch (e) {}
-}
-
-function readPoolData() {
-  try {
-    var sheet = getWorkOrderSheet();
-    var raw = String(sheet.getRange(POOL_DATA_CELL).getValue() || '').trim();
-    if (!raw) return {};
-    return JSON.parse(raw);
-  } catch (e) { return {}; }
-}
-
-function writePoolData(pool) {
-  try { getWorkOrderSheet().getRange(POOL_DATA_CELL).setValue(JSON.stringify(pool)); } catch (e) {}
-}
-
-function reserveNumbers(chatId, count) {
-  count = parseInt(count, 10) || 5;
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) return { ok: false, message: 'سیستم مشغول است' };
-  try {
-    var meta = readPoolMeta();
-    var pool = readPoolData();
-    var now = new Date().getTime();
-    var nowStr = formatTimestamp(new Date());
-    var existing = [];
-    for (var k in pool) {
-      var v = String(pool[k] || '');
-      if (v.indexOf('r:' + chatId + ':') === 0) {
-        var parts = v.split(':');
-        var ts = parseInt(parts[2], 10);
-        if (now - ts < RESERVATION_TIMEOUT_MIN * 60 * 1000) existing.push(parseInt(k, 10));
-        else pool[k] = 'f';
+function fetchWeather() {
+  return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + WEATHER_LAT + '&longitude=' + WEATHER_LON + '&current=temperature_2m,weather_code&timezone=Asia/Tehran')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.current) {
+        var code = d.current.weather_code;
+        var temp = Math.round(d.current.temperature_2m);
+        var w = WEATHER_CODES[code] || { t: 'نامشخص', i: '🌡️' };
+        weatherData = { temp: temp, text: w.t, icon: w.i };
+        if (tickerItems.length > 0) tickerItems[0] = { icon: w.i, text: '🌤️ ' + WEATHER_CITY + ' — ' + temp + '°C ' + w.t };
       }
-    }
-    if (existing.length >= count) {
-      writePoolData(pool);
-      lock.releaseLock();
-      return { ok: true, numbers: existing.slice(0, count), reused: true };
-    }
-    var freeNumbers = [];
-    for (var n = 1; n <= meta.lastCounter; n++) {
-      var val = String(pool[n] || '');
-      if (val === '' || val === 'f') { freeNumbers.push(n); if (freeNumbers.length >= count) break; }
-    }
-    while (freeNumbers.length < count) { meta.lastCounter++; freeNumbers.push(meta.lastCounter); }
-    for (var i = 0; i < freeNumbers.length; i++) pool[freeNumbers[i]] = 'r:' + chatId + ':' + now;
-    meta.lastUpdate = nowStr;
-    writePoolData(pool);
-    writePoolMeta(meta);
-    lock.releaseLock();
-    return { ok: true, numbers: freeNumbers };
-  } catch (err) {
-    try { lock.releaseLock(); } catch (e) {}
-    return { ok: false, message: 'خطا: ' + err.message };
-  }
+    })
+    .catch(function() {});
 }
+setInterval(function() { if (currentUser) updateHeaderDateTime(); }, 60000);
 
-function useNumber(chatId, number, rowNum) {
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) return { ok: false, message: 'سیستم مشغول است' };
-  try {
-    var pool = readPoolData();
-    var val = String(pool[number] || '');
-    if (val.indexOf('r:' + chatId + ':') !== 0) {
-      lock.releaseLock();
-      return { ok: false, message: 'رزرو منقضی شده یا نامعتبر است' };
-    }
-    pool[number] = 'u:' + rowNum;
-    for (var k in pool) {
-      var v = String(pool[k] || '');
-      if (v.indexOf('r:' + chatId + ':') === 0) pool[k] = 'f';
-    }
-    writePoolData(pool);
-    lock.releaseLock();
-    return { ok: true };
-  } catch (err) {
-    try { lock.releaseLock(); } catch (e) {}
-    return { ok: false, message: 'خطا: ' + err.message };
-  }
-}
-
-function releaseExpiredReservations() {
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) return { ok: false, message: 'busy' };
-  try {
-    var pool = readPoolData();
-    var now = new Date().getTime();
-    var released = 0;
-    for (var k in pool) {
-      var v = String(pool[k] || '');
-      if (v.indexOf('r:') === 0) {
-        var parts = v.split(':');
-        var ts = parseInt(parts[2], 10);
-        if (now - ts > RESERVATION_TIMEOUT_MIN * 60 * 1000) { pool[k] = 'f'; released++; }
+// ============ Reserve ============
+function reserveForUser() {
+  if (!currentUser || !tgUser) return;
+  if (reservedNumbers.length > 0) return;
+  api({ action: 'reserveNumbers', chatId: String(tgUser.id), count: 5 })
+    .then(function(r) {
+      if (r && r.ok && r.numbers && r.numbers.length > 0) {
+        reservedNumbers = r.numbers;
       }
-    }
-    if (released > 0) writePoolData(pool);
-    lock.releaseLock();
-    return { ok: true, released: released };
-  } catch (err) {
-    try { lock.releaseLock(); } catch (e) {}
-    return { ok: false, message: err.message };
+    })
+    .catch(function() {});
+}
+
+// ============ Access-Based Menu ============
+function updateMenuByAccess() {
+  var access = currentUser ? String(currentUser.access || '').trim() : '';
+  var createEl = document.getElementById('menuCreateOrder');
+  var reportsEl = document.getElementById('menuReports');
+  if (!createEl || !reportsEl) return;
+
+  if (access === 'ادمین') {
+    createEl.style.display = '';
+    reportsEl.style.display = '';
+  } else if (access === 'ستادی') {
+    createEl.style.display = 'none';
+    reportsEl.style.display = '';
+  } else if (access === 'پایه') {
+    createEl.style.display = 'none';
+    reportsEl.style.display = '';
+  } else {
+    createEl.style.display = 'none';
+    reportsEl.style.display = 'none';
   }
 }
 
-// ============================================
-// کاربران
-// ============================================
+// ============ Welcome ============
+function showWelcome(userData) {
+  var heroEl = document.getElementById('welcomeHero');
+  var subEl = document.getElementById('welcomeSub');
+  var userBox = document.getElementById('welcomeUserBox');
+  var actions = document.getElementById('welcomeActions');
+  userBox.innerHTML = '';
+  userBox.classList.add('hidden');
+  actions.innerHTML = '';
 
-function checkUserExists(chatId) {
-  const sheet = getSheet();
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === String(chatId) && String(data[i][1]).trim() === PLATFORM) {
-      return { exists: true, data: data[i] };
-    }
-  }
-  return { exists: false };
-}
+  if (!userData) {
+    heroEl.textContent = '🚫';
+    subEl.textContent = 'برای استفاده از سیستم، ابتدا باید ثبت‌نام کنید.';
+    actions.innerHTML = '<button class="welcome-btn" id="goToRegister">📝 ثبت‌نام در سیستم</button>';
+    document.getElementById('goToRegister').onclick = function() { navigateTo('formSection'); };
+  } else {
+    var u = userData;
+    var access = String(u.access || '').trim();
+    var active = (u.active === true || u.active === 'TRUE' || u.active === 'true');
+    if (active) {
+      heroEl.textContent = '👋';
+      subEl.textContent = 'سیستم با موفقیت آماده استفاده است.';
+      userBox.classList.remove('hidden');
+      userBox.innerHTML =
+        '<div class="row"><span>نام:</span><span class="val">' + escHtml(u.fullName || '—') + '</span></div>' +
+        '<div class="row"><span>سمت:</span><span class="val">' + escHtml(u.position || '—') + '</span></div>' +
+        '<div class="row"><span>واحد:</span><span class="val">' + escHtml(u.unit || '—') + '</span></div>' +
+        '<div class="row"><span>سطح دسترسی:</span><span class="val">' + escHtml(access || 'تعیین نشده') + '</span></div>';
 
-function getUserStatus(chatId) {
-  try {
-    const check = checkUserExists(chatId);
-    if (check.exists) {
-      return {
-        registered: true,
-        userData: {
-          chatId: check.data[0],
-          fullName: check.data[3],
-          position: check.data[4],
-          unit: check.data[5],
-          active: check.data[6],
-          systemName: check.data[7],
-          access: check.data[9]
-        }
-      };
-    }
-    return { registered: false };
-  } catch (err) {
-    return { registered: false, error: err.message };
-  }
-}
-
-function getRecipientsList() {
-  try {
-    var workSheet = getWorkOrderSheet();
-    var lastRow = workSheet.getLastRow();
-    if (lastRow < 3) return [];
-    var workData = workSheet.getRange(3, 25, lastRow - 2, 1).getValues();
-    var uniqueNames = {};
-    var names = [];
-    for (var i = 0; i < workData.length; i++) {
-      var nm = String(workData[i][0] || '').trim();
-      if (!nm) continue;
-      if (uniqueNames[nm]) continue;
-      uniqueNames[nm] = true;
-      names.push(nm);
-    }
-    var adminCheck = checkUserExists(ADMIN_CHAT_ID);
-    if (adminCheck.exists) {
-      var adminName = String(adminCheck.data[7] || adminCheck.data[3] || '').trim();
-      if (adminName && !uniqueNames[adminName]) { uniqueNames[adminName] = true; names.push(adminName); }
-    }
-    var regSheet = getSheet();
-    var regData = regSheet.getDataRange().getValues();
-    var regMap = {};
-    for (var j = 1; j < regData.length; j++) {
-      var active = regData[j][6];
-      var isActive = (active === true || active === 'TRUE' || active === 'true');
-      if (!isActive) continue;
-      var regSysName = String(regData[j][7] || '').trim();
-      var regFullName = String(regData[j][3] || '').trim();
-      var platform = String(regData[j][1] || '').trim();
-      var chatId = String(regData[j][0] || '').trim();
-      var keys = [];
-      if (regSysName) keys.push(regSysName);
-      if (regFullName && regFullName !== regSysName) keys.push(regFullName);
-      for (var k = 0; k < keys.length; k++) {
-        var key = keys[k];
-        if (!regMap[key]) regMap[key] = { telegramChatId: null, baleChatId: null };
-        if (platform === 'Telegram') regMap[key].telegramChatId = chatId;
-        else if (platform === 'Bale') regMap[key].baleChatId = chatId;
+      var canEnter = (access === 'ادمین' || access === 'ستادی' || access === 'پایه');
+      if (canEnter) {
+        actions.innerHTML =
+          '<button class="welcome-btn green" id="goToPanel">🛠 ورود به پنل کاربری</button>' +
+          '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد</button>';
+        document.getElementById('goToPanel').onclick = function() { navigateTo('panelMenuSection'); };
+        document.getElementById('refreshBtn').onclick = function() { reload(true); };
+      } else {
+        actions.innerHTML =
+          '<div class="msg msg-info" style="margin-top:0;">سطح دسترسی شما تعیین نشده است. با ادمین تماس بگیرید.</div>' +
+          '<button class="welcome-btn gray" id="refreshBtn">🔄 بررسی مجدد</button>';
+        document.getElementById('refreshBtn').onclick = function() { reload(true); };
       }
+    } else {
+      heroEl.textContent = '⏳';
+      subEl.textContent = 'ثبت‌نام شما انجام شد. منتظر تأیید ادمین بمانید.';
+      userBox.classList.remove('hidden');
+      userBox.innerHTML =
+        '<div class="row"><span>نام:</span><span class="val">' + escHtml(u.fullName || '—') + '</span></div>' +
+        '<div class="row"><span>سمت:</span><span class="val">' + escHtml(u.position || '—') + '</span></div>' +
+        '<div class="row"><span>وضعیت:</span><span class="val" style="color:#b45309;font-weight:bold;">در انتظار تأیید</span></div>';
+      actions.innerHTML = '<button class="welcome-btn orange" id="refreshBtn">🔄 بررسی مجدد</button>';
+      document.getElementById('refreshBtn').onclick = function() { reload(true); };
     }
-    var result = [];
-    for (var m = 0; m < names.length; m++) {
-      var name = names[m];
-      var info = regMap[name] || { telegramChatId: null, baleChatId: null };
-      var platforms = [];
-      if (info.telegramChatId) platforms.push('Telegram');
-      if (info.baleChatId) platforms.push('Bale');
-      var statusText = platforms.length > 0 ? platforms.join(', ') : 'ثبت نام نشده';
-      result.push({
-        systemName: name,
-        displayName: name + ' (' + statusText + ')',
-        telegramChatId: info.telegramChatId,
-        baleChatId: info.baleChatId,
-        registered: platforms.length > 0
-      });
-    }
-    result.sort(function(a, b) { return a.systemName.localeCompare(b.systemName, 'fa'); });
-    return result;
-  } catch (e) { return []; }
-}
-
-function registerUser(payload) {
-  try {
-    const chatId = String(payload.chatId || '').trim();
-    const username = String(payload.username || '').trim();
-    const fullName = String(payload.fullName || '').trim();
-    const position = String(payload.position || '').trim();
-    const unit = String(payload.unit || '').trim();
-    if (!chatId) return { ok: false, message: 'شناسه کاربری دریافت نشد' };
-    if (!fullName) return { ok: false, message: 'نام و نام خانوادگی الزامی است' };
-    if (!position) return { ok: false, message: 'سمت الزامی است' };
-    if (!unit) return { ok: false, message: 'واحد الزامی است' };
-    if (checkUserExists(chatId).exists) {
-      return { ok: false, message: 'شما قبلاً ثبت‌نام کرده‌اید', alreadyRegistered: true };
-    }
-    const sheet = getSheet();
-    sheet.appendRow([chatId, PLATFORM, username, fullName, position, unit, '', '', new Date(), '']);
-    sheet.getRange(sheet.getLastRow(), 7).insertCheckboxes();
-    return { ok: true, message: 'ثبت‌نام با موفقیت انجام شد' };
-  } catch (err) {
-    return { ok: false, message: 'خطا: ' + err.message };
   }
 }
 
-function getColumnInfo(colIndex) {
-  var result = { hasValidation: false, options: [], source: 'none' };
-  try {
-    var sheet = getWorkOrderSheet();
-    var lastRow = Math.max(sheet.getLastRow(), 3);
-    var startRow = 3;
-    var endRow = Math.min(lastRow + 10, 1000);
-    var numRows = endRow - startRow + 1;
-    if (numRows < 1) return result;
-    var seen = {};
-    var options = [];
-    try {
-      var range = sheet.getRange(startRow, colIndex, numRows, 1);
-      var validations = range.getDataValidations();
-      for (var row = 0; row < validations.length; row++) {
-        var rule = validations[row][0];
-        if (!rule) continue;
-        var critVals;
-        try { critVals = rule.getCriteriaValues(); } catch (e) { continue; }
-        if (!critVals || critVals.length === 0) continue;
-        var first = critVals[0];
-        if (first && typeof first.getValues === 'function') {
-          try {
-            var rv = first.getValues();
-            for (var r = 0; r < rv.length; r++) {
-              for (var c = 0; c < rv[r].length; c++) {
-                var v = String(rv[r][c] || '').trim();
-                if (v && !seen[v]) { seen[v] = true; options.push(v); }
-              }
-            }
-          } catch (e) {}
-        } else if (Array.isArray(first)) {
-          for (var k = 0; k < first.length; k++) {
-            var v2 = String(first[k] || '').trim();
-            if (v2 && !seen[v2]) { seen[v2] = true; options.push(v2); }
-          }
-        }
-        if (options.length > 0) { result.hasValidation = true; result.source = 'validation'; break; }
-      }
-    } catch (e) {}
-    if (options.length === 0) {
-      try {
-        var values = sheet.getRange(startRow, colIndex, numRows, 1).getValues();
-        for (var j = 0; j < values.length; j++) {
-          var raw = String(values[j][0] || '').trim();
-          if (!raw) continue;
-          var parts = raw.split(/[\n,،]/);
-          for (var p = 0; p < parts.length; p++) {
-            var pv = parts[p].trim();
-            if (pv && pv.length < 100 && !seen[pv]) { seen[pv] = true; options.push(pv); }
-          }
-        }
-        result.source = options.length > 0 ? 'history' : 'none';
-      } catch (e) {}
-    }
-    result.options = options;
-  } catch (e) { result.error = e.message; }
-  return result;
+function init() {
+  if (!tgUser) {
+    document.getElementById('loading').innerHTML = '<div style="padding:30px;text-align:center;color:#c00;">لطفاً از داخل تلگرام باز کنید</div>';
+    return;
+  }
+  try { buildDates(); } catch (e) {}
+  var safety = setTimeout(function() {
+    if (document.getElementById('loading').classList.contains('active')) navigateTo('welcomeSection');
+  }, 10000);
+  api({ action: 'getUserStatus', chatId: tgUser.id })
+    .then(function(r) { clearTimeout(safety); handleStatus(r); })
+    .catch(function() { clearTimeout(safety); navigateTo('welcomeSection'); });
+  fetchWeather();
+  startTicker();
+}
+function handleStatus(r) {
+  if (r && r.registered && r.userData) {
+    currentUser = r.userData;
+    updateHeaderUser();
+    updateHeaderDateTime();
+    showWelcome(r.userData);
+  } else {
+    currentUser = null;
+    document.getElementById('tgInfo').innerHTML =
+      '<b>شناسه:</b> ' + tgUser.id + '<br><b>نام:</b> ' + escHtml(tgUser.first_name + ' ' + (tgUser.last_name || ''));
+    showWelcome(null);
+  }
+  navigateTo('welcomeSection');
+  updateNavBtns();
+}
+function reload(showLoading) {
+  if (showLoading) {
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('welcomeSection').classList.remove('active');
+    document.getElementById('topbar').classList.add('hidden');
+    document.getElementById('ticker').classList.add('hidden');
+  }
+  panelLoaded = false;
+  reportsLoaded = false;
+  reservedNumbers = [];
+  api({ action: 'getUserStatus', chatId: tgUser.id })
+    .then(function(r) { handleStatus(r); fetchWeather(); })
+    .catch(function() { navigateTo('welcomeSection'); });
 }
 
-function getRelatedRows() {
-  try {
-    var sheet = getWorkOrderSheet();
-    var lastRow = sheet.getLastRow();
-    if (lastRow < 3) return { options: [] };
-    var data = sheet.getRange(3, 1, lastRow - 2, 55).getValues();
-    var options = [];
-    for (var i = 0; i < data.length; i++) {
-      var code = String(data[i][9] || '').trim();
-      var subject = String(data[i][10] || '').trim();
-      if (!code || !subject) continue;
-      options.push({
-        value: code,
-        label: code + ' | ' + subject.substring(0, 70)
-      });
-    }
-    return { options: options };
-  } catch (e) {
-    return { options: [], error: e.message };
+// ============ Menu ============
+document.getElementById('menuCreateOrder').onclick = function() { navigateTo('workOrderSection'); };
+document.getElementById('menuReports').onclick = function() { navigateTo('reportsSection'); };
+
+// ============ Reports ============
+var reportsData = [];
+var reportsLoaded = false;
+var currentDateFilter = 'all';
+var currentFilter = 'all';
+var currentContractors = [];
+var expandedNodes = {};
+var currentActiveNode = null;
+var contractorSS = null;
+
+function pad2(n) { return String(n).length < 2 ? '0' + n : String(n); }
+
+function setDateFilter(type) {
+  currentDateFilter = type;
+  var btns = document.querySelectorAll('#reportsSection [data-date]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-date') === type);
+  }
+  if (type !== 'custom') {
+    var f = document.getElementById('dateFromInput');
+    var t = document.getElementById('dateToInput');
+    if (f) f.value = '';
+    if (t) t.value = '';
   }
 }
 
-function getFormOptions() {
-  try {
+function getDateRangeForFilter(type) {
+  if (type === 'all') return { from: '', to: '' };
+
+  var now = new Date();
+  var todayJ = g2j(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  var todayStr = todayJ[0] + '-' + pad2(todayJ[1]) + '-' + pad2(todayJ[2]);
+
+  if (type === 'today') return { from: todayStr, to: todayStr };
+
+  if (type === 'tomorrow') {
+    var tm = new Date(now.getTime() + 86400000);
+    var tj = g2j(tm.getFullYear(), tm.getMonth() + 1, tm.getDate());
+    var tmStr = tj[0] + '-' + pad2(tj[1]) + '-' + pad2(tj[2]);
+    return { from: tmStr, to: tmStr };
+  }
+
+  if (type === 'week') {
+    var dow = now.getDay();
+    var daysToSat = (dow - 6 + 7) % 7;
+    var sat = new Date(now.getTime() - daysToSat * 86400000);
+    var fri = new Date(sat.getTime() + 6 * 86400000);
+    var sj = g2j(sat.getFullYear(), sat.getMonth() + 1, sat.getDate());
+    var fj = g2j(fri.getFullYear(), fri.getMonth() + 1, fri.getDate());
     return {
-      ok: true,
-      subjects: getColumnInfo(11),
-      epcs: getColumnInfo(12),
-      fields: getColumnInfo(13),
-      engagementTypes: getColumnInfo(24),
-      addresses: getColumnInfo(26),
-      relatedRows: getRelatedRows()
+      from: sj[0] + '-' + pad2(sj[1]) + '-' + pad2(sj[2]),
+      to:   fj[0] + '-' + pad2(fj[1]) + '-' + pad2(fj[2])
     };
-  } catch (e) {
-    return { ok: false, error: e.message };
   }
+
+  return { from: '', to: '' };
 }
 
-function getInitData(chatId) {
-  var userStatus = getUserStatus(chatId);
-  var recipients = [];
-  var formOptions = { ok: true };
-  if (userStatus.registered && userStatus.userData &&
-      String(userStatus.userData.access || '').trim() === 'ادمین' &&
-      (userStatus.userData.active === true || userStatus.userData.active === 'TRUE' || userStatus.userData.active === 'true')) {
-    recipients = getRecipientsList();
-    formOptions = getFormOptions();
+function applyDateFilter() {
+  var range = null;
+  if (currentDateFilter === 'custom') {
+    var f = document.getElementById('dateFromInput').value.trim();
+    var t = document.getElementById('dateToInput').value.trim();
+    if (!f || !t) {
+      alert('لطفاً بازه تاریخ را کامل وارد کنید (مثال: 1405-6-1)');
+      return;
+    }
+    range = { from: f, to: t };
+  } else {
+    range = getDateRangeForFilter(currentDateFilter);
   }
-  return { ok: true, userStatus: userStatus, recipients: recipients, formOptions: formOptions };
+  if (!range) { alert('فیلتر تاریخ نامعتبر'); return; }
+  loadReports(range);
 }
 
-function sendTelegramMessage(chatId, text) {
-  try {
-    var token = getProp('TELEGRAM_BOT_TOKEN');
-    var url = 'https://api.telegram.org/bot' + token + '/sendMessage';
-    var res = UrlFetchApp.fetch(url, {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify({ chat_id: String(chatId), text: text }),
-      muteHttpExceptions: true
+document.getElementById('applyDateFilterBtn').onclick = applyDateFilter;
+
+document.getElementById('dateFromInput').addEventListener('input', function() {
+  if (this.value.trim() || document.getElementById('dateToInput').value.trim()) {
+    setDateFilter('custom');
+  }
+});
+document.getElementById('dateToInput').addEventListener('input', function() {
+  if (this.value.trim() || document.getElementById('dateFromInput').value.trim()) {
+    setDateFilter('custom');
+  }
+});
+
+function setFilter(f) {
+  currentFilter = f;
+  var btns = document.querySelectorAll('#reportsSection [data-filter]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-filter') === f);
+  }
+  renderTree();
+}
+
+function loadReports(range) {
+  var loader = document.getElementById('reportsLoader');
+  var container = document.getElementById('treeContainer');
+  if (loader) loader.classList.remove('hidden');
+  if (container) container.innerHTML = '';
+  if (!range) range = getDateRangeForFilter(currentDateFilter) || { from: '', to: '' };
+
+  var access = currentUser ? String(currentUser.access || '').trim() : '';
+  var sysName = currentUser ? String(currentUser.systemName || '').trim() : '';
+  var fullName = currentUser ? String(currentUser.fullName || '').trim() : '';
+
+  api({
+    action: 'getWorkOrdersList',
+    userAccess: access,
+    userSystemName: sysName,
+    userFullName: fullName,
+    dateFrom: range.from,
+    dateTo: range.to
+  })
+  .then(function(r) {
+    if (loader) loader.classList.add('hidden');
+    if (r && r.ok) {
+      reportsData = r.orders || [];
+      reportsLoaded = true;
+      var extra = document.getElementById('extraFiltersCard');
+      if (access === 'ادمین' || access === 'ستادی') {
+        extra.classList.remove('hidden');
+        if (!contractorSS) initContractorFilter();
+      } else {
+        extra.classList.add('hidden');
+      }
+      renderTree();
+    } else {
+      container.innerHTML = '<div class="tree-empty">❌ خطا در بارگذاری گزارش‌ها</div>';
+    }
+  })
+  .catch(function(err) {
+    if (loader) loader.classList.add('hidden');
+    container.innerHTML = '<div class="tree-empty">❌ ' + escHtml(err.message || 'خطا در ارتباط') + '</div>';
+  });
+}
+
+function initContractorFilter() {
+  var uniqueNames = {};
+  var list = [];
+  reportsData.forEach(function(o) {
+    var r = String(o.recipient || '').trim();
+    if (!r) return;
+    if (uniqueNames[r]) return;
+    uniqueNames[r] = true;
+    list.push(r);
+  });
+  contractorSS = makeSS('contractorFilterWrap', {
+    multi: true,
+    options: list.map(function(n) { return { value: n, label: n }; }),
+    placeholder: 'تایپ کنید تا جستجو شود (' + list.length + ')'
+  });
+}
+
+document.getElementById('applyExtraFiltersBtn').onclick = function() {
+  currentContractors = contractorSS ? contractorSS.getValue() : [];
+  renderTree();
+};
+
+function getNodeType(code) {
+  if (!code) return 'order';
+  var first = code.charAt(0).toUpperCase();
+  if (first === 'R') return 'report';
+  if (first === 'C') return 'comment';
+  return 'order';
+}
+function getTypeIcon(type) {
+  if (type === 'report') return '📊';
+  if (type === 'comment') return '💬';
+  return '📋';
+}
+
+function renderTree() {
+  var container = document.getElementById('treeContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  var filtered = reportsData.filter(function(o) {
+    if (currentFilter !== 'all') {
+      var t = getNodeType(o.code);
+      if (t !== currentFilter) return false;
+    }
+    if (currentContractors.length > 0) {
+      if (currentContractors.indexOf(String(o.recipient || '').trim()) === -1) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="tree-empty">📭 هیچ موردی یافت نشد</div>';
+    return;
+  }
+
+  var childrenMap = {};
+  filtered.forEach(function(o) {
+    var parent = o.parentCode || '';
+    if (!childrenMap[parent]) childrenMap[parent] = [];
+    childrenMap[parent].push(o);
+  });
+
+  var codesInList = {};
+  filtered.forEach(function(o) { codesInList[o.code] = true; });
+
+  var roots = filtered.filter(function(o) {
+    var t = getNodeType(o.code);
+    if (t !== 'order') return false;
+    if (!o.parentCode) return true;
+    if (!codesInList[o.parentCode]) return true;
+    return false;
+  });
+
+  if (roots.length === 0) {
+    container.innerHTML = '<div class="tree-empty">📭 دستور کاری یافت نشد</div>';
+    return;
+  }
+
+  function buildNode(node, depth) {
+    var type = getNodeType(node.code);
+    var icon = getTypeIcon(type);
+    var children = childrenMap[node.code] || [];
+    var hasChildren = children.length > 0;
+    var nodeId = node.code;
+    var isExpanded = expandedNodes[nodeId] === true;
+
+    var div = document.createElement('div');
+    div.className = 'tree-node type-' + type;
+
+    var header = document.createElement('div');
+    header.className = 'tree-header';
+    header.style.paddingRight = (12 + depth * 20) + 'px';
+
+    var toggle = document.createElement('span');
+    toggle.className = 'tree-toggle ' + (hasChildren ? (isExpanded ? 'open' : '') : 'leaf');
+    toggle.textContent = hasChildren ? '▼' : '•';
+    toggle.onclick = function(ev) {
+      ev.stopPropagation();
+      if (!hasChildren) return;
+      expandedNodes[nodeId] = !isExpanded;
+      renderTree();
+    };
+    header.appendChild(toggle);
+
+    var iconEl = document.createElement('span');
+    iconEl.className = 'tree-icon';
+    iconEl.textContent = icon;
+    header.appendChild(iconEl);
+
+    var info = document.createElement('div');
+    info.className = 'tree-info';
+
+    var codeEl = document.createElement('div');
+    codeEl.className = 'tree-code';
+    codeEl.textContent = node.code;
+    info.appendChild(codeEl);
+
+    var subjEl = document.createElement('div');
+    subjEl.className = 'tree-subject';
+    subjEl.textContent = node.subject || '—';
+    info.appendChild(subjEl);
+
+    var metaEl = document.createElement('div');
+    metaEl.className = 'tree-meta';
+    if (node.recipient) {
+      var rEl = document.createElement('span');
+      rEl.textContent = '👤 ' + node.recipient;
+      metaEl.appendChild(rEl);
+    }
+    if (node.startShamsi || node.endShamsi) {
+      var dEl = document.createElement('span');
+      dEl.textContent = '📅 ' + (node.startShamsi || '') + (node.endShamsi ? ' تا ' + node.endShamsi : '');
+      metaEl.appendChild(dEl);
+    }
+    if (node.status) {
+      var sEl = document.createElement('span');
+      sEl.textContent = '🔹 ' + node.status;
+      metaEl.appendChild(sEl);
+    }
+    if (hasChildren) {
+      var cEl = document.createElement('span');
+      cEl.textContent = '📎 ' + children.length + ' زیرمجموعه';
+      metaEl.appendChild(cEl);
+    }
+    info.appendChild(metaEl);
+
+    header.appendChild(info);
+    header.onclick = function() { openNodeModal(node); };
+    div.appendChild(header);
+
+    if (hasChildren) {
+      var chDiv = document.createElement('div');
+      chDiv.className = 'tree-children' + (isExpanded ? '' : ' hidden');
+      children.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
+      children.forEach(function(child) { chDiv.appendChild(buildNode(child, depth + 1)); });
+      div.appendChild(chDiv);
+    }
+
+    return div;
+  }
+
+  roots.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
+  roots.forEach(function(root) { container.appendChild(buildNode(root, 0)); });
+}
+
+// ============ Modal ============
+function openNodeModal(node) {
+  currentActiveNode = node;
+  var modal = document.getElementById('nodeModal');
+  var content = document.getElementById('nodeModalContent');
+  var addForm = document.getElementById('modalAddForm');
+  addForm.style.display = 'none';
+  document.getElementById('modalAddText').value = '';
+  document.getElementById('modalAddMsg').innerText = '';
+
+  var type = getNodeType(node.code);
+  var icon = getTypeIcon(type);
+  var typeLabel = type === 'order' ? 'دستور کار' : (type === 'report' ? 'گزارش' : 'کامنت');
+
+  var html = '';
+  html += '<div class="preview-row"><div class="preview-label">نوع:</div><div class="preview-value">' + icon + ' ' + typeLabel + '</div></div>';
+  html += '<div class="preview-row"><div class="preview-label">کد:</div><div class="preview-value" style="font-family:monospace;color:#f59e0b;font-weight:bold;direction:ltr;text-align:right;">' + escHtml(node.code) + '</div></div>';
+  html += '<div class="preview-row"><div class="preview-label">موضوع:</div><div class="preview-value">' + escHtml(node.subject || '—') + '</div></div>';
+  if (node.description) html += '<div class="preview-row"><div class="preview-label">شرح:</div><div class="preview-value" style="white-space:pre-line;">' + escHtml(node.description) + '</div></div>';
+  if (node.recipient) html += '<div class="preview-row"><div class="preview-label">مخاطب:</div><div class="preview-value">' + escHtml(node.recipient) + '</div></div>';
+  if (node.epc) html += '<div class="preview-row"><div class="preview-label">EPC:</div><div class="preview-value">' + escHtml(node.epc) + '</div></div>';
+  if (node.field) html += '<div class="preview-row"><div class="preview-label">رشته:</div><div class="preview-value">' + escHtml(node.field) + '</div></div>';
+  if (node.engagement) html += '<div class="preview-row"><div class="preview-label">پیمانکاری:</div><div class="preview-value">' + escHtml(node.engagement) + '</div></div>';
+  if (node.address) html += '<div class="preview-row"><div class="preview-label">آدرس:</div><div class="preview-value">' + escHtml(node.address) + '</div></div>';
+  if (node.startShamsi) html += '<div class="preview-row"><div class="preview-label">شروع:</div><div class="preview-value">' + escHtml(node.startShamsi) + '</div></div>';
+  if (node.endShamsi) html += '<div class="preview-row"><div class="preview-label">پایان:</div><div class="preview-value">' + escHtml(node.endShamsi) + '</div></div>';
+  if (node.status) html += '<div class="preview-row"><div class="preview-label">وضعیت:</div><div class="preview-value">' + escHtml(node.status) + '</div></div>';
+
+  content.innerHTML = html;
+  modal.style.display = 'flex';
+}
+
+function closeNodeModal() {
+  document.getElementById('nodeModal').style.display = 'none';
+  currentActiveNode = null;
+}
+
+document.getElementById('nodeModal').addEventListener('click', function(e) {
+  if (e.target.id === 'nodeModal') closeNodeModal();
+});
+
+function showAddForm(type) {
+  if (!currentActiveNode) return;
+  var form = document.getElementById('modalAddForm');
+  var label = document.getElementById('modalAddLabel');
+  label.textContent = type === 'R' ? 'متن گزارش:' : 'متن کامنت:';
+  form.style.display = 'block';
+  document.getElementById('modalAddText').value = '';
+  document.getElementById('modalAddMsg').innerText = '';
+  document.getElementById('modalAddText').focus();
+  document.getElementById('modalSubmitAdd').onclick = function() { submitAddNode(type); };
+}
+
+document.getElementById('modalAddReportBtn').onclick = function() { showAddForm('R'); };
+document.getElementById('modalAddCommentBtn').onclick = function() { showAddForm('C'); };
+document.getElementById('modalCancelAdd').onclick = function() {
+  document.getElementById('modalAddForm').style.display = 'none';
+};
+
+function submitAddNode(type) {
+  var text = document.getElementById('modalAddText').value.trim();
+  if (!text) {
+    document.getElementById('modalAddMsg').innerText = '❌ متن الزامی است';
+    document.getElementById('modalAddMsg').className = 'msg msg-err';
+    return;
+  }
+  var btn = document.getElementById('modalSubmitAdd');
+  btn.disabled = true;
+  btn.innerText = 'در حال ارسال...';
+  document.getElementById('modalAddMsg').innerText = '';
+
+  api({
+    action: 'addChildNode',
+    parentCode: currentActiveNode.code,
+    nodeType: type,
+    text: text,
+    actorChatId: String(tgUser.id)
+  })
+  .then(function(r) {
+    btn.disabled = false;
+    btn.innerText = '✅ ثبت';
+    if (r && r.ok) {
+      document.getElementById('modalAddMsg').className = 'msg msg-ok';
+      document.getElementById('modalAddMsg').innerText = '✅ ' + r.message + '\nکد: ' + r.code;
+      document.getElementById('modalAddText').value = '';
+      expandedNodes[currentActiveNode.code] = true;
+      var range = getDateRangeForFilter(currentDateFilter);
+      if (currentDateFilter === 'custom') {
+        range = {
+          from: document.getElementById('dateFromInput').value.trim(),
+          to: document.getElementById('dateToInput').value.trim()
+        };
+      }
+      setTimeout(function() { loadReports(range); }, 500);
+    } else {
+      document.getElementById('modalAddMsg').className = 'msg msg-err';
+      document.getElementById('modalAddMsg').innerText = '❌ ' + ((r && r.message) || 'خطا');
+    }
+  })
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.innerText = '✅ ثبت';
+    document.getElementById('modalAddMsg').className = 'msg msg-err';
+    document.getElementById('modalAddMsg').innerText = '❌ ' + err.message;
+  });
+}
+
+// ============ Register Form ============
+document.getElementById('regForm').onsubmit = function(e) {
+  e.preventDefault();
+  var b = document.getElementById('regBtn');
+  b.disabled = true; b.innerText = 'در حال ارسال...';
+  showGlobalLoader('در حال ارسال ثبت‌نام...');
+  api({
+    action: 'registerUser', chatId: tgUser.id, username: tgUser.username || '',
+    fullName: document.getElementById('fullName').value.trim(),
+    position: document.getElementById('position').value.trim(),
+    unit: document.getElementById('unit').value.trim()
+  })
+  .then(function(r) {
+    hideGlobalLoader();
+    b.disabled = false; b.innerText = '📨 ارسال ثبت‌نام';
+    if (r && r.ok) {
+      showMsg('formMsg', '✅ ' + r.message, 'ok');
+      setTimeout(function() { reload(true); }, 1500);
+    } else showMsg('formMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+  })
+  .catch(function(err) {
+    hideGlobalLoader();
+    b.disabled = false; b.innerText = '📨 ارسال ثبت‌نام';
+    showMsg('formMsg', '❌ ' + err.message, 'err');
+  });
+};
+
+// ============ Jalali Pickers ============
+var yS, mS, dS;
+function buildDates() {
+  yS = document.getElementById('woYear'); mS = document.getElementById('woMonth'); dS = document.getElementById('woDay');
+  var now = new Date();
+  var t = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
+  var y = t[0];
+  yS.innerHTML = '';
+  for (var i = y-2; i <= y+3; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; yS.appendChild(o); }
+  yS.value = y;
+  mS.innerHTML = '';
+  for (var j = 1; j <= 12; j++) { var o2 = document.createElement('option'); o2.value = j; o2.textContent = MONTHS[j]; mS.appendChild(o2); }
+  mS.value = t[1];
+  function refresh() {
+    var yy = parseInt(yS.value), mm = parseInt(mS.value);
+    var mx = dim(yy, mm), cur = parseInt(dS.value) || 1;
+    dS.innerHTML = '';
+    for (var k = 1; k <= mx; k++) { var o3 = document.createElement('option'); o3.value = k; o3.textContent = k; dS.appendChild(o3); }
+    dS.value = Math.min(cur, mx);
+  }
+  yS.onchange = refresh; mS.onchange = refresh;
+  refresh();
+  dS.value = t[2];
+}
+function setD(y, m, d) {
+  yS.value = y; mS.value = m;
+  var ev = document.createEvent('HTMLEvents'); ev.initEvent('change', true, false);
+  mS.dispatchEvent(ev);
+  dS.value = d;
+}
+function setToday() { var now = new Date(); var j = g2j(now.getFullYear(), now.getMonth()+1, now.getDate()); setD(j[0], j[1], j[2]); }
+function setTomorrow() { var t = new Date(); t.setDate(t.getDate()+1); var j = g2j(t.getFullYear(), t.getMonth()+1, t.getDate()); setD(j[0], j[1], j[2]); }
+
+// ============ Searchable Select ============
+function makeSS(boxId, opt) {
+  var box = document.getElementById(boxId);
+  box.innerHTML = ''; box.className = 'ss-box';
+  var multi = opt.multi === true;
+  var opts = (opt.options || []).slice();
+  var placeholder = opt.placeholder || 'تایپ کنید...';
+  var val = multi ? [] : '';
+  var onChange = opt.onChange || null;
+
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'ss-in'; inp.placeholder = placeholder; inp.autocomplete = 'off';
+  box.appendChild(inp);
+  var ar = document.createElement('span'); ar.className = 'ss-arrow'; ar.textContent = '▼'; box.appendChild(ar);
+  var clr = document.createElement('span'); clr.className = 'ss-clear hidden'; clr.textContent = '✕'; box.appendChild(clr);
+  var list = document.createElement('div'); list.className = 'ss-list hidden'; box.appendChild(list);
+  var chips = document.createElement('div'); chips.className = 'ss-chips'; box.appendChild(chips);
+
+  function norm(o) { return typeof o === 'string' ? { value: o, label: o } : { value: o.value, label: o.label || o.value }; }
+  function objFor(v) { for (var i = 0; i < opts.length; i++) { if (norm(opts[i]).value === v) return norm(opts[i]); } return { value: v, label: v }; }
+  function updateClear() { clr.classList.toggle('hidden', multi ? val.length === 0 : !val); }
+
+  function renderList(q) {
+    q = String(q || '').toLowerCase().trim();
+    list.innerHTML = '';
+    var items = [];
+    opts.forEach(function(o) {
+      o = norm(o);
+      if (multi && val.indexOf(o.value) !== -1) return;
+      if (!multi && val === o.value && !q) return;
+      if (q && o.label.toLowerCase().indexOf(q) === -1 && o.value.toLowerCase().indexOf(q) === -1) return;
+      items.push(o);
     });
-    return JSON.parse(res.getContentText());
-  } catch (e) {
-    return { ok: false, error: e.message };
-  }
-}
-
-function findFirstEmptyRow(sheet) {
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 3) return 3;
-  var bValues = sheet.getRange(3, 2, lastRow - 2, 1).getValues();
-  for (var i = bValues.length - 1; i >= 0; i--) {
-    if (String(bValues[i][0] || '').trim()) return i + 4;
-  }
-  return 3;
-}
-
-function writeCellSafe(sheet, row, col, value) {
-  if (value === '' || value === null || value === undefined) return;
-  try {
-    var cell = sheet.getRange(row, col);
-    var savedRule = null;
-    try { savedRule = cell.getDataValidation(); } catch (e) {}
-    if (savedRule) { try { cell.clearDataValidations(); } catch (e) {} }
-    cell.setValue(value);
-    if (savedRule) { try { cell.setDataValidation(savedRule); } catch (e) {} }
-  } catch (e) {}
-}
-
-function detectPrefix(subject, epc, field, engagement) {
-  var s = String(subject || '');
-  var e = String(epc || '');
-  var f = String(field || '');
-  var g = String(engagement || '');
-  var letter2 = 'P';
-  if (s.indexOf('تامین') !== -1 || s.indexOf('تدارک') !== -1) letter2 = 'S';
-  else if (s.indexOf('نقشه') !== -1 || s.indexOf('درخواست_نقشه') !== -1) letter2 = 'D';
-  else if (s.indexOf('تست') !== -1 || s.indexOf('بازرسی') !== -1) letter2 = 'T';
-  else if (s.indexOf('مالی') !== -1) letter2 = 'F';
-  else if (s.indexOf('پرسنلی') !== -1) letter2 = 'H';
-  var letter3 = 'C';
-  if (e.indexOf('خرید') !== -1 || e.indexOf('تدارکات') !== -1) letter3 = 'P';
-  else if (e.indexOf('مهندسی') !== -1) letter3 = 'E';
-  else if (e.indexOf('مالی') !== -1) letter3 = 'F';
-  else if (e.indexOf('پرسنلی') !== -1) letter3 = 'N';
-  var letter4 = 'A';
-  if (f.indexOf('مکانیکال') !== -1) letter4 = 'M';
-  else if (f.indexOf('الکتریکال') !== -1) letter4 = 'E';
-  else if (f.indexOf('عمومی') !== -1 || f.indexOf('چندرشته') !== -1) letter4 = 'G';
-  var letter5 = 'A';
-  if (g.indexOf('پیمانکاری') !== -1) letter5 = 'K';
-  else if (g.indexOf('فریلنسر') !== -1) letter5 = 'F';
-  return 'W' + letter2 + letter3 + letter4 + letter5;
-}
-
-function getNextChildNumber(sheet, parentWbs) {
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 3) return 1;
-  var wbsColumn = sheet.getRange(3, 46, lastRow - 2, 1).getValues();
-  var prefix = parentWbs + '.';
-  var maxChild = 0;
-  for (var i = 0; i < wbsColumn.length; i++) {
-    var w = String(wbsColumn[i][0] || '').trim();
-    if (w.indexOf(prefix) === 0) {
-      var rest = w.substring(prefix.length);
-      if (rest.indexOf('.') === -1) {
-        var n = parseInt(rest, 10);
-        if (!isNaN(n) && n > maxChild) maxChild = n;
-      }
+    if (!items.length) {
+      var e = document.createElement('div'); e.className = 'ss-empty';
+      e.textContent = opts.length ? 'نتیجه‌ای یافت نشد' : 'گزینه‌ای موجود نیست';
+      list.appendChild(e); return;
     }
-  }
-  return maxChild + 1;
-}
-
-// ============================================
-// ایجاد دستور کار
-// ============================================
-
-function createWorkOrder(payload) {
-  try {
-    var adminChatId = String(payload.adminChatId || '').trim();
-    if (adminChatId !== ADMIN_CHAT_ID) return { ok: false, message: 'دسترسی ادمین ندارید' };
-
-    var number = parseInt(payload.reservedNumber || 0, 10);
-    var recipientName = String(payload.recipientSystemName || '').trim();
-    var recipientTgChatId = String(payload.recipientTelegramChatId || '').trim();
-    var recipientBaleChatId = String(payload.recipientBaleChatId || '').trim();
-    var sendTelegram = payload.sendTelegram === true;
-    var sendBale = payload.sendBale === true;
-    var subject = String(payload.subject || '').trim();
-    var description = String(payload.description || '').trim();
-    var epc = String(payload.epc || '').trim();
-    var field = String(payload.field || '').trim();
-    var address = String(payload.address || '').trim();
-    var addressDisplay = String(payload.addressDisplay || address).trim();
-    var engagementType = String(payload.engagementType || '').trim();
-    var parentCodeIn = String(payload.relatedRow || '').trim();
-    var startYear = parseInt(payload.startYear, 10);
-    var startMonth = parseInt(payload.startMonth, 10);
-    var startDay = parseInt(payload.startDay, 10);
-    var durationDays = parseInt(payload.duration, 10);
-
-    if (!recipientName) return { ok: false, message: 'مخاطب الزامی است' };
-    if (!subject) return { ok: false, message: 'موضوع الزامی است' };
-    if (!description) return { ok: false, message: 'شرح عملیات الزامی است' };
-    if (!epc) return { ok: false, message: 'EPC الزامی است' };
-    if (!field) return { ok: false, message: 'رشته الزامی است' };
-    if (!address) return { ok: false, message: 'آدرس الزامی است' };
-    if (!engagementType) return { ok: false, message: 'پیمانکاری/امانی الزامی است' };
-    if (!startYear || !startMonth || !startDay) return { ok: false, message: 'تاریخ شروع الزامی است' };
-    if (!durationDays || durationDays < 1) return { ok: false, message: 'مدت معتبر نیست' };
-    if (sendTelegram && !recipientTgChatId) return { ok: false, message: 'این مخاطب در تلگرام نیست' };
-    if (sendBale && !recipientBaleChatId) return { ok: false, message: 'این مخاطب در بله نیست' };
-    if (!sendTelegram && !sendBale) return { ok: false, message: 'حداقل یک پلتفورم انتخاب کنید' };
-    if (!number || number < 1) return { ok: false, message: 'شماره یکتا رزرو نشده است' };
-
-    var startShamsiStr = startYear + '-' + startMonth + '-' + startDay;
-    var sheet = getWorkOrderSheet();
-    var targetRow = findFirstEmptyRow(sheet);
-    var rowIndex = targetRow - 2;
-
-    var useRes = useNumber(adminChatId, number, targetRow);
-    if (!useRes.ok) return { ok: false, message: useRes.message };
-
-    var prefix = detectPrefix(subject, epc, field, engagementType);
-    var wbs, level, parentCodeOut = '';
-
-    if (parentCodeIn) {
-      var lastRow2 = sheet.getLastRow();
-      var allData2 = sheet.getRange(3, 1, lastRow2 - 2, 55).getValues();
-      for (var pi = 0; pi < allData2.length; pi++) {
-        if (String(allData2[pi][9] || '').trim() === parentCodeIn) {
-          var pWbs = String(allData2[pi][45] || '').trim();
-          var pLevel = parseInt(allData2[pi][46], 10) || 0;
-          if (pWbs) {
-            var childNum = getNextChildNumber(sheet, pWbs);
-            wbs = pWbs + '.' + childNum;
-            level = pLevel + 1;
-            parentCodeOut = parentCodeIn;
-          } else {
-            wbs = String(number);
-            level = 0;
-          }
-          break;
+    items.forEach(function(o) {
+      var it = document.createElement('div'); it.className = 'ss-item'; it.textContent = o.label;
+      function pick(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (multi) {
+          if (val.indexOf(o.value) === -1) val.push(o.value);
+          inp.value = ''; renderChips(); renderList(''); updateClear();
+          if (onChange) onChange(val.slice());
+        } else {
+          val = o.value; inp.value = o.label; inp.readOnly = true;
+          list.classList.add('hidden'); updateClear();
+          if (onChange) onChange(val);
         }
       }
-    }
-
-    if (!wbs) {
-      wbs = String(number);
-      level = 0;
-      parentCodeOut = '';
-    }
-
-    var uniqueCode = prefix + '-' + wbs;
-    var startG = jalaliToGregorian(startYear, startMonth, startDay);
-    var startDate = new Date(startG[0], startG[1] - 1, startG[2]);
-    var startMiladi = formatMiladi(startDate);
-
-    var now = new Date();
-    var todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
-    var todayShamsi = todayJ[0] + '-' + todayJ[1] + '-' + todayJ[2];
-    var todayDayName = getPersianDayName(now.getDay());
-    var todayWeekday = getEnglishDayName(now.getDay());
-    var workStatus = (recipientTgChatId || recipientBaleChatId) ? 'ابلاغ شده' : 'پیش نویس';
-
-    var writes = [
-      { col: 1, val: String(rowIndex) },
-      { col: 2, val: todayShamsi },
-      { col: 3, val: formatMiladi(now) },
-      { col: 4, val: todayWeekday },
-      { col: 5, val: todayDayName },
-      { col: 6, val: 'مینی‌اپ تلگرام' },
-      { col: 7, val: 'فرشید اعظمی' },
-      { col: 10, val: uniqueCode },
-      { col: 11, val: subject },
-      { col: 12, val: epc },
-      { col: 13, val: field },
-      { col: 15, val: description },
-      { col: 16, val: parentCodeOut },
-      { col: 19, val: startMiladi },
-      { col: 20, val: String(durationDays) },
-      { col: 23, val: workStatus },
-      { col: 24, val: engagementType },
-      { col: 25, val: recipientName },
-      { col: 26, val: address },
-      { col: 39, val: String(todayJ[1]) },
-      { col: 40, val: getPersianMonthName(todayJ[1]) },
-      { col: 41, val: String(todayJ[0]) },
-      { col: 42, val: getPersianMonthName(todayJ[1]) + ' ' + todayJ[0] },
-      { col: 43, val: String(todayJ[2]) },
-      { col: 46, val: wbs },
-      { col: 47, val: String(level) },
-      { col: 48, val: prefix },
-      { col: 50, val: parentCodeOut }
-    ];
-
-    for (var i = 0; i < writes.length; i++) writeCellSafe(sheet, targetRow, writes[i].col, writes[i].val);
-
-    try {
-      var abCell = sheet.getRange(targetRow, 28);
-      abCell.clearDataValidations();
-      abCell.insertCheckboxes();
-      abCell.setValue(true);
-    } catch (e) {}
-
-    try { SpreadsheetApp.flush(); } catch (e) {}
-
-    var generatedMessage = '';
-    try { generatedMessage = String(sheet.getRange(targetRow, 29).getValue() || '').trim(); } catch (e) {}
-    if (!generatedMessage) {
-      generatedMessage = 'از: دفتر کارگاه پروژه ایگل\nبه: آقای ' + recipientName + '\n\n#' + epc + ' #' + field + ' #' + engagementType + '\nموضوع: ' + subject + '\n\n' + description;
-    }
-
-    var sends = [];
-    if (sendTelegram && recipientTgChatId) {
-      try {
-        var tgRes = sendTelegramMessage(recipientTgChatId, generatedMessage);
-        sends.push('Telegram:' + (tgRes && tgRes.ok ? '✅' : '❌'));
-      } catch (e) { sends.push('Telegram:❌'); }
-    }
-    if (sendBale && recipientBaleChatId) sends.push('Bale:⏳');
-
-    return {
-      ok: true,
-      message: 'دستور کار ثبت شد',
-      row: targetRow,
-      number: number,
-      code: uniqueCode,
-      recipient: recipientName,
-      status: workStatus,
-      sends: sends.join(' | ')
-    };
-  } catch (err) {
-    return { ok: false, message: 'خطا: ' + err.message };
+      it.addEventListener('mousedown', pick);
+      it.addEventListener('touchstart', pick, { passive: false });
+      list.appendChild(it);
+    });
   }
-}
+  function renderChips() {
+    chips.innerHTML = '';
+    if (!multi) return;
+    val.forEach(function(v) {
+      var o = objFor(v);
+      var c = document.createElement('span'); c.className = 'ss-chip';
+      var t = document.createElement('span'); t.textContent = o.label;
+      var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×';
+      x.onclick = function(ev) {
+        ev.stopPropagation();
+        val = val.filter(function(s) { return s !== v; });
+        renderChips(); renderList(inp.value); updateClear();
+        if (onChange) onChange(val.slice());
+      };
+      c.appendChild(t); c.appendChild(x); chips.appendChild(c);
+    });
+  }
+  clr.onclick = function(ev) {
+    ev.stopPropagation();
+    val = multi ? [] : '';
+    inp.value = ''; inp.readOnly = false;
+    renderChips(); renderList(''); updateClear();
+    if (onChange) onChange(multi ? [] : '');
+  };
+  inp.onfocus = function() { if (!inp.readOnly) { list.classList.remove('hidden'); renderList(inp.value); } };
+  inp.oninput = function() {
+    if (inp.readOnly) return;
+    if (!multi && inp.value !== objFor(val).label) { val = ''; updateClear(); if (onChange) onChange(''); }
+    list.classList.remove('hidden'); renderList(inp.value);
+  };
+  document.addEventListener('click', function(e) { if (!box.contains(e.target)) list.classList.add('hidden'); });
+  renderList(''); updateClear();
 
-// ============================================
-// لیست دستور کارها با فیلتر تاریخ و کاربر
-// ============================================
-
-function getWorkOrdersList(filters) {
-  filters = filters || {};
-  try {
-    var sheet = getWorkOrderSheet();
-    var lastRow = sheet.getLastRow();
-    if (lastRow < 3) return { ok: true, orders: [] };
-
-    var data = sheet.getRange(3, 1, lastRow - 2, 55).getValues();
-    var orders = [];
-
-    var userAccess = String(filters.userAccess || '').trim();
-    var userSystemName = String(filters.userSystemName || '').trim();
-    var userFullName = String(filters.userFullName || '').trim();
-    var isBasicUser = (userAccess === 'پایه');
-
-    var ownNames = [];
-    if (userSystemName) ownNames.push(userSystemName);
-    if (userFullName && userFullName !== userSystemName) ownNames.push(userFullName);
-
-    var dateFrom = filters.dateFrom ? parseShamsiNum(filters.dateFrom) : null;
-    var dateTo = filters.dateTo ? parseShamsiNum(filters.dateTo) : null;
-
-    for (var i = 0; i < data.length; i++) {
-      var r = data[i];
-      var code = String(r[9] || '').trim();
-      var subject = String(r[10] || '').trim();
-      if (!code || !subject) continue;
-
-      var recipient = String(r[24] || '').trim();
-
-      if (isBasicUser) {
-        if (ownNames.length === 0) continue;
-        if (ownNames.indexOf(recipient) === -1) continue;
-      }
-
-      var startShamsi = String(r[17] || '').trim();
-      var endShamsi = String(r[20] || '').trim();
-
-      if (dateFrom !== null || dateTo !== null) {
-        var sNum = parseShamsiNum(startShamsi);
-        var eNum = parseShamsiNum(endShamsi);
-        if (sNum === null || eNum === null) continue;
-        if (dateFrom !== null && dateTo !== null) {
-          if (!(sNum <= dateTo && eNum >= dateFrom)) continue;
-        } else if (dateFrom !== null) {
-          if (eNum < dateFrom) continue;
-        } else if (dateTo !== null) {
-          if (sNum > dateTo) continue;
+  return {
+    getValue: function() { return multi ? val.slice() : val; },
+    getStr: function() { return multi ? val.join('\n') : val; },
+    getDisplay: function() { return multi ? val.map(function(v) { return objFor(v).label; }).join('، ') : (val ? objFor(val).label : ''); },
+    getChatIds: function() {
+      if (!multi && val) {
+        for (var i = 0; i < recipients.length; i++) {
+          if (recipients[i].systemName === val) return { tg: recipients[i].telegramChatId || '', bale: recipients[i].baleChatId || '' };
         }
       }
-
-      orders.push({
-        row: i + 3,
-        code: code,
-        subject: subject,
-        epc: String(r[11] || '').trim(),
-        field: String(r[12] || '').trim(),
-        description: String(r[14] || '').trim(),
-        relatedRow: String(r[15] || '').trim(),
-        status: String(r[22] || '').trim(),
-        engagement: String(r[23] || '').trim(),
-        recipient: recipient,
-        address: String(r[25] || '').trim(),
-        progress: r[26] || 0,
-        dateShamsi: String(r[1] || '').trim(),
-        startShamsi: startShamsi,
-        endShamsi: endShamsi,
-        wbs: String(r[45] || '').trim(),
-        level: parseInt(r[46], 10) || 0,
-        prefix: String(r[47] || '').trim(),
-        parentCode: String(r[49] || '').trim()
-      });
-    }
-
-    return { ok: true, orders: orders };
-  } catch (e) {
-    return { ok: false, message: e.message };
-  }
+      return { tg: '', bale: '' };
+    },
+    setOpts: function(a) { opts = (a || []).slice(); renderList(inp.value); },
+    setPh: function(p) { placeholder = p; inp.placeholder = p; }
+  };
 }
 
-// ============================================
-// افزودن فرزند (دستور کار / گزارش / کامنت)
-// ============================================
+var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr;
 
-function addChildNode(payload) {
-  try {
-    var parentCode = String(payload.parentCode || '').trim();
-    var nodeType = String(payload.nodeType || 'W').trim().toUpperCase();
-    var text = String(payload.text || '').trim();
-    var actorChatId = String(payload.actorChatId || '').trim();
+function loadPanel() {
+  setLoaderState('loading', 'در حال آماده‌سازی فرم');
+  updateLoaderCount('در حال دریافت لیست مخاطبین و گزینه‌ها');
+  ssRecipient = makeSS('recipientWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipient });
+  ssSubject = makeSS('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssEpc = makeSS('epcWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssField = makeSS('fieldWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssEng = makeSS('engWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssRelated = makeSS('relatedWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
+  ssAddr = makeSS('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
 
-    if (!parentCode) return { ok: false, message: 'والد الزامی است' };
-    if (!text) return { ok: false, message: 'متن الزامی است' };
-    if (nodeType !== 'W' && nodeType !== 'R' && nodeType !== 'C') {
-      return { ok: false, message: 'نوع نود نامعتبر' };
-    }
-
-    var sheet = getWorkOrderSheet();
-    var lastRow = sheet.getLastRow();
-    if (lastRow < 3) return { ok: false, message: 'شیت خالی' };
-
-    var data = sheet.getRange(3, 1, lastRow - 2, 55).getValues();
-    var parentIdx = -1;
-    for (var i = 0; i < data.length; i++) {
-      if (String(data[i][9] || '').trim() === parentCode) { parentIdx = i; break; }
-    }
-    if (parentIdx === -1) return { ok: false, message: 'والد پیدا نشد' };
-
-    var parentWbs = String(data[parentIdx][45] || '').trim();
-    var parentLevel = parseInt(data[parentIdx][46], 10) || 0;
-    var parentPrefix = String(data[parentIdx][47] || '').trim();
-    var parentRecipient = String(data[parentIdx][24] || '').trim();
-    var parentEpC = String(data[parentIdx][11] || '').trim();
-    var parentField = String(data[parentIdx][12] || '').trim();
-
-    if (!parentWbs) return { ok: false, message: 'والد WBS ندارد' };
-
-    var childNum = 1;
-    var prefixCheck = parentWbs + '.';
-    for (var k = 0; k < data.length; k++) {
-      var w = String(data[k][45] || '').trim();
-      if (w.indexOf(prefixCheck) === 0) {
-        var rest = w.substring(prefixCheck.length);
-        if (rest.indexOf('.') === -1) {
-          var n = parseInt(rest, 10);
-          if (!isNaN(n) && n >= childNum) childNum = n + 1;
-        }
-      }
-    }
-
-    var newWbs = parentWbs + '.' + childNum;
-    var newLevel = parentLevel + 1;
-    var newPrefix = nodeType + parentPrefix.substring(1);
-    var newCode = newPrefix + '-' + newWbs;
-
-    var targetRow = findFirstEmptyRow(sheet);
-    var rowIndex = targetRow - 2;
-
-    var now = new Date();
-    var todayJ = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
-    var todayShamsi = todayJ[0] + '-' + todayJ[1] + '-' + todayJ[2];
-    var todayDayName = getPersianDayName(now.getDay());
-    var todayWeekday = getEnglishDayName(now.getDay());
-
-    var nodeSubject = nodeType === 'W' ? text.substring(0, 80) : (nodeType === 'R' ? 'گزارش: ' + text.substring(0, 70) : 'کامنت: ' + text.substring(0, 70));
-
-    var writes = [
-      { col: 1, val: String(rowIndex) },
-      { col: 2, val: todayShamsi },
-      { col: 3, val: formatMiladi(now) },
-      { col: 4, val: todayWeekday },
-      { col: 5, val: todayDayName },
-      { col: 6, val: 'مینی‌اپ تلگرام' },
-      { col: 7, val: 'فرشید اعظمی' },
-      { col: 10, val: newCode },
-      { col: 11, val: nodeSubject },
-      { col: 12, val: parentEpC },
-      { col: 13, val: parentField },
-      { col: 15, val: text },
-      { col: 16, val: parentCode },
-      { col: 23, val: 'در حال اجرا' },
-      { col: 24, val: parentRecipient },
-      { col: 46, val: newWbs },
-      { col: 47, val: String(newLevel) },
-      { col: 48, val: newPrefix },
-      { col: 50, val: parentCode }
-    ];
-
-    for (var j = 0; j < writes.length; j++) writeCellSafe(sheet, targetRow, writes[j].col, writes[j].val);
-
-    try { SpreadsheetApp.flush(); } catch (e) {}
-
-    return {
-      ok: true,
-      message: nodeType === 'W' ? 'دستور کار فرزند ثبت شد' : (nodeType === 'R' ? 'گزارش ثبت شد' : 'کامنت ثبت شد'),
-      code: newCode,
-      wbs: newWbs,
-      level: newLevel,
-      row: targetRow
-    };
-  } catch (err) {
-    return { ok: false, message: 'خطا: ' + err.message };
-  }
-}
-
-// ============================================
-// API
-// ============================================
-
-function doPost(e) {
-  try {
-    var body = JSON.parse(e.postData.contents);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ ok: false, message: 'bad request' })).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var result;
-  if (body.action === 'getUserStatus') result = getUserStatus(body.chatId);
-  else if (body.action === 'registerUser') result = registerUser(body);
-  else if (body.action === 'getRecipients') result = { ok: true, recipients: getRecipientsList() };
-  else if (body.action === 'getFormOptions') result = getFormOptions();
-  else if (body.action === 'getInitData') result = getInitData(body.chatId);
-  else if (body.action === 'createWorkOrder') result = createWorkOrder(body);
-  else if (body.action === 'reserveNumbers') result = reserveNumbers(body.chatId, body.count);
-  else if (body.action === 'releaseExpired') result = releaseExpiredReservations();
-  else if (body.action === 'getWorkOrdersList') result = getWorkOrdersList(body);
-  else if (body.action === 'addChildNode') result = addChildNode(body);
-  else result = { ok: false, message: 'action ناشناخته: ' + body.action };
-
-  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
-}
-
-function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({ ok: true, message: 'API is running' })).setMimeType(ContentService.MimeType.JSON);
-}
-
-function setupCronTrigger() {
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === 'releaseExpiredReservations') {
-      ScriptApp.deleteTrigger(triggers[i]);
+  var recipientsDone = false, optionsDone = false, recipientsCount = 0;
+  function checkAllDone() {
+    if (recipientsDone && optionsDone) {
+      panelLoaded = true;
+      updateLoaderCount('لیست مخاطبین: ' + recipientsCount + ' نفر');
+      setTimeout(function() {
+        setLoaderState('ready', 'فرم آماده است');
+        setTimeout(function() { setLoaderState('hide'); }, 2500);
+      }, 300);
     }
   }
-  ScriptApp.newTrigger('releaseExpiredReservations').timeBased().everyMinutes(5).create();
-  Logger.log('Cron trigger set up');
-}
+  api({ action: 'getRecipients' }).then(function(r) {
+    recipients = (r && r.recipients) || [];
+    recipientsCount = recipients.length;
+    if (recipients.length) {
+      ssRecipient.setOpts(recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; }));
+      ssRecipient.setPh('تایپ کنید (' + recipients.length + ' مخاطب)');
+    } else ssRecipient.setPh('هیچ مخاطبی یافت نشد');
+    recipientsDone = true;
+    updateLoaderCount('دریافت مخاطبین: ' + recipientsCount + ' نفر ✓');
+    checkAllDone();
+  }).catch(function() { ssRecipient.setPh('خطا'); recipientsDone = true; checkAllDone(); });
+
+  api({ action: 'getFormOptions' }).then(function(r) {
+   

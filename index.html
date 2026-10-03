@@ -15,9 +15,8 @@
   --shadow: 0 2px 8px rgba(15,23,42,0.05);
   --radius: 11px; --radius-sm: 8px;
   --ticker-h: 32px; --topbar-h: 46px;
-  --sticky-date-h: 122px;
   --sticky-top: 78px;
-  --sticky-extra-top: 206px;
+  --sticky-extra-top: 200px;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 .hidden { display: none !important; }
@@ -170,32 +169,13 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .preview-msg { background: #fff; border-radius: 9px; padding: 11px; font-size: 11.5px; white-space: pre-line; line-height: 1.8; border: 1px solid var(--border); max-height: 300px; overflow-y: auto; }
 .btn-row { display: flex; gap: 6px; margin-top: 12px; }
 .btn-row button { flex: 1; margin-top: 0; }
-
-/* ===== Filters ===== */
 .filter-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
 .filter-btn { flex: 1; min-width: 46px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: #334155; font-size: 10.5px; font-weight: bold; cursor: pointer; margin: 0; width: auto; font-family: inherit; transition: all .15s; }
 .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .filter-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
-
-/* ✅ هر دو کارت فیلتر چسبان */
-.reports-sticky {
-  position: sticky; top: var(--sticky-top); z-index: 490;
-  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 8px 10px; margin-bottom: 6px;
-  box-shadow: 0 4px 14px rgba(15,23,42,.06);
-}
+.reports-sticky { position: sticky; top: var(--sticky-top); z-index: 490; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 6px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
 .reports-sticky-title { font-size: 10.5px; font-weight: bold; color: #475569; margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
-.extra-filters-sticky {
-  position: sticky; top: var(--sticky-extra-top); z-index: 489;
-  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 8px 10px; margin-bottom: 8px;
-  box-shadow: 0 4px 14px rgba(15,23,42,.06);
-}
-@media (max-width: 480px) {
-  :root { --sticky-date-h: 112px; --sticky-extra-top: 190px; }
-}
-
-/* ===== Tree Cards ===== */
+.extra-filters-sticky { position: sticky; top: var(--sticky-extra-top); z-index: 489; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
 .tree-container { display: flex; flex-direction: column; gap: 7px; padding-bottom: 24px; }
 .tree-node { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: box-shadow .18s, border-color .18s; position: relative; padding-right: 4px; box-shadow: 0 1px 2px rgba(15,23,42,0.03); }
 .tree-node::before { content: ''; position: absolute; top: 10px; bottom: 10px; right: 0; width: 3px; border-radius: 3px; background: var(--primary); transition: all .2s; }
@@ -250,15 +230,12 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .tree-children > .tree-node .tree-title { font-size: 11.5px; }
 .tree-children > .tree-node .tree-quick-grid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); }
 .tree-empty { text-align: center; color: #94a3b8; padding: 30px 16px; font-size: 12.5px; line-height: 1.9; }
-
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(16,185,129,.97); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 12.5px; font-weight: bold; box-shadow: 0 8px 24px rgba(16,185,129,.35); z-index: 99999; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; max-width: 90%; text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
 .toast.error { background: rgba(239,68,68,.97); box-shadow: 0 8px 24px rgba(239,68,68,.35); }
-
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; align-items: end; }
 .form-row-3 > div { min-width: 0; }
 .form-row-3 label { margin-top: 8px; font-size: 11px; }
-
 #successModal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center; padding: 14px; overflow-y: auto; }
 #successModal .success-box { background: #fff; border-radius: 16px; padding: 22px 18px 18px; max-width: 460px; width: 100%; margin: auto; box-shadow: 0 20px 60px rgba(15,23,42,.3); animation: modalPop .3s cubic-bezier(.34,1.56,.64,1); }
 @keyframes modalPop { 0% { opacity: 0; transform: scale(.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
@@ -272,8 +249,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .success-lbl { font-size: 11px; color: #64748b; font-weight: bold; flex-shrink: 0; }
 .success-val { font-size: 12px; color: #1e293b; font-weight: bold; text-align: left; flex: 1; word-break: break-word; }
 .success-val.code { font-family: 'Courier New', monospace; color: #f59e0b; direction: ltr; text-align: right; }
-
-/* ===== Progress Slider ===== */
 .progress-slider-wrap { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; margin-top: 8px; }
 .progress-slider-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
 .progress-slider-lbl { font-size: 11.5px; font-weight: bold; color: #475569; }
@@ -282,32 +257,17 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .progress-slider-bg { position: absolute; inset: 11px 0 auto 0; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #e2e8f0, #cbd5e1); overflow: hidden; }
 .progress-slider-fill { position: absolute; top: 0; bottom: 0; right: 0; background: linear-gradient(90deg, #10b981, #059669); border-radius: 4px; transition: width .15s; }
 .progress-slider-locked { position: absolute; top: 0; bottom: 0; right: 0; background: rgba(100,116,139,0.22); border-radius: 4px; z-index: 2; }
-.progress-slider-thumb {
-  position: absolute; top: 3px;
-  width: 24px; height: 24px;
-  background: #fff;
-  border: 3px solid #10b981;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(16,185,129,.4), 0 1px 3px rgba(15,23,42,.15);
-  cursor: grab;
-  transform: translateX(50%);
-  transition: box-shadow .15s, transform .1s;
-  z-index: 3;
-  touch-action: none;
-}
+.progress-slider-thumb { position: absolute; top: 3px; width: 24px; height: 24px; background: #fff; border: 3px solid #10b981; border-radius: 50%; box-shadow: 0 2px 8px rgba(16,185,129,.4), 0 1px 3px rgba(15,23,42,.15); cursor: grab; transform: translateX(50%); transition: box-shadow .15s, transform .1s; z-index: 3; touch-action: none; }
 .progress-slider-thumb:active { cursor: grabbing; transform: translateX(50%) scale(1.12); box-shadow: 0 4px 12px rgba(16,185,129,.55); }
 .progress-slider-minmax { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; font-weight: bold; margin-top: -4px; }
 .progress-input-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .progress-input { flex: 1; padding: 7px 10px; font-size: 14px; font-family: 'Courier New', monospace; text-align: center; font-weight: bold; color: #065f46; background: #fff; border: 1.5px solid var(--success); border-radius: 8px; direction: ltr; }
 .progress-input:focus { outline: none; border-color: #059669; box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
 .progress-input-hint { font-size: 10.5px; color: #64748b; font-weight: bold; }
-
-/* ===== Comment Permission Banner ===== */
 .perm-banner { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #fcd34d; border-radius: 9px; padding: 9px 11px; font-size: 11px; color: #78350f; font-weight: bold; line-height: 1.7; text-align: center; margin-bottom: 10px; }
 .perm-banner.err { background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #fca5a5; color: #991b1b; }
-
 @media (max-width: 480px) {
-  :root { --ticker-h: 30px; --topbar-h: 42px; --sticky-top: 72px; --sticky-extra-top: 190px; }
+  :root { --ticker-h: 30px; --topbar-h: 42px; --sticky-top: 72px; --sticky-extra-top: 184px; }
   .container { padding: 8px 10px 26px; }
   .uh-row-small { font-size: 10px; gap: 8px; }
   .menu-grid { grid-template-columns: 1fr 1fr; }
@@ -547,6 +507,9 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       <label>📅 تاریخ پایان واقعی</label>
       <div id="actualEndPDP"></div>
 
+      <label>رونوشت به (فقط ادمین/ستاد - چندگانه)</label>
+      <div id="modalCCWrap"></div>
+
       <div class="btn-row">
         <button type="button" id="modalCancelAdd" class="btn-sec" style="padding:9px; font-size:12.5px;">انصراف</button>
         <button type="button" id="modalSubmitAdd" class="btn-ok" style="padding:9px; font-size:12.5px;">✅ ثبت</button>
@@ -579,7 +542,11 @@ var IRAN_EVENTS = { '1-1':'🎉 نوروز','1-2':'🎉 عید نوروز','1-3'
 var WEATHER_CODES = { 0:{t:'صاف',i:'☀️'},1:{t:'عمدتاً صاف',i:'🌤️'},2:{t:'نیمه ابری',i:'⛅'},3:{t:'ابری',i:'☁️'},45:{t:'مه',i:'🌫️'},51:{t:'نمناک',i:'🌦️'},61:{t:'باران سبک',i:'🌦️'},63:{t:'باران',i:'🌧️'},65:{t:'باران شدید',i:'🌧️'},71:{t:'برف',i:'🌨️'},80:{t:'رگبار',i:'🌦️'},95:{t:'رعد و برق',i:'⛈️'} };
 if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user; }
 
-/* ===== Ticker ===== */
+function toFaNum(str) {
+  var fa = '۰۱۲۳۴۵۶۷۸۹';
+  return String(str).replace(/\d/g, function(d) { return fa[parseInt(d, 10)]; });
+}
+
 var tickerIndex = 0, tickerItems = [], tickerIntervalId = null;
 function startTicker() {
   tickerItems = [];
@@ -591,14 +558,17 @@ function startTicker() {
   else tickerItems.push({ icon: '📅', text: '📅 امروز: ' + WEEKDAYS[now.getDay()] + ' ' + j[2] + ' ' + MONTHS[j[1]] + ' ' + j[0] });
   tickerIndex = 0; updateTickerDisplay();
   if (tickerIntervalId) clearInterval(tickerIntervalId);
-  tickerIntervalId = setInterval(function() { tickerIndex = (tickerIndex + 1) % tickerItems.length; updateTickerDisplay(); }, 4000);
+  tickerIntervalId = setInterval(function() { tickerIndex = (tickerIndex + 1) % tickerItems.length; updateTickerDisplay(); }, 5000);
 }
 function updateTickerDisplay() {
   var iconEl = document.getElementById('tickerIcon'), textEl = document.getElementById('tickerText');
   if (!iconEl || !textEl) return;
   var item = tickerItems[tickerIndex]; if (!item) return;
   iconEl.textContent = item.icon; textEl.classList.remove('active');
-  setTimeout(function() { textEl.textContent = item.text; textEl.classList.add('active'); }, 200);
+  setTimeout(function() {
+    textEl.textContent = toFaNum(item.text);
+    textEl.classList.add('active');
+  }, 200);
 }
 
 function showToast(text, isError) {
@@ -606,7 +576,7 @@ function showToast(text, isError) {
   el.textContent = text;
   el.className = 'toast' + (isError ? ' error' : '');
   setTimeout(function() { el.classList.add('show'); }, 10);
-  setTimeout(function() { el.classList.remove('show'); }, 3200);
+  setTimeout(function() { el.classList.remove('show'); }, 3500);
 }
 
 function showGlobalLoader(t) { document.getElementById('globalLoaderText').textContent = t || 'در حال بارگذاری...'; document.getElementById('globalLoader').classList.remove('hidden'); }
@@ -757,31 +727,82 @@ function updateHeaderUser() {
   document.getElementById('uhAccess').textContent = u.access || 'تعیین نشده';
 }
 
-/* ===== Weather ===== */
+/* ===== Weather: Open-Meteo با هشدار بارش/یخبندان + حداقل/حداکثر ===== */
 function fetchWeather() {
-  return fetch('https://wttr.in/' + WEATHER_LAT + ',' + WEATHER_LON + '?format=j1&lang=fa')
-    .then(function(r) { if (!r.ok) throw new Error('wttr failed'); return r.json(); })
+  var url = 'https://api.open-meteo.com/v1/forecast?' +
+    'latitude=' + WEATHER_LAT + '&longitude=' + WEATHER_LON +
+    '&current=temperature_2m,weather_code' +
+    '&hourly=temperature_2m,precipitation_probability,weather_code' +
+    '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code' +
+    '&timezone=Asia/Tehran&forecast_days=2';
+
+  return fetch(url)
+    .then(function(r) { return r.json(); })
     .then(function(d) {
-      if (d && d.current_condition && d.current_condition[0]) {
-        var cc = d.current_condition[0];
-        var temp = parseInt(cc.temp_C, 10) || 0;
-        var desc = '';
-        if (cc.lang_fa && cc.lang_fa[0] && cc.lang_fa[0].value) desc = cc.lang_fa[0].value;
-        else if (cc.weatherDesc && cc.weatherDesc[0] && cc.weatherDesc[0].value) desc = cc.weatherDesc[0].value;
-        if (!desc) desc = 'نامشخص';
-        var icon = getWWOIcon(cc.weatherCode);
-        weatherData = { temp: temp, text: desc, icon: icon };
-        if (tickerItems.length > 0) tickerItems[0] = { icon: icon, text: '🌤️ ' + WEATHER_CITY + ' — ' + temp + '°C ' + desc };
+      if (!d || !d.current) return;
+      var curTemp = Math.round(d.current.temperature_2m);
+      var curW = WEATHER_CODES[d.current.weather_code] || { t: 'نامشخص', i: '🌡️' };
+
+      var todayMax = (d.daily && d.daily.temperature_2m_max) ? Math.round(d.daily.temperature_2m_max[0]) : null;
+      var todayMin = (d.daily && d.daily.temperature_2m_min) ? Math.round(d.daily.temperature_2m_min[0]) : null;
+
+      var alerts = [];
+      if (d.hourly && d.hourly.time) {
+        var nowHour = new Date().getHours();
+        var nowDate = new Date().toISOString().slice(0, 10);
+        for (var i = 0; i < d.hourly.time.length; i++) {
+          var t = d.hourly.time[i];
+          var hourDate = t.slice(0, 10);
+          var hour = parseInt(t.slice(11, 13), 10);
+          if (hourDate === nowDate && hour < nowHour) continue;
+          var prob = d.hourly.precipitation_probability[i];
+          var tempH = d.hourly.temperature_2m[i];
+          if (prob >= 40) {
+            var tl = (hourDate === nowDate) ? 'امروز' : 'فردا';
+            alerts.push({ type: 'rain', time: tl + ' ساعت ' + hour + ':۰۰', prob: prob });
+          }
+          if (tempH <= 0 && prob > 20) {
+            var tl2 = (hourDate === nowDate) ? 'امروز' : 'فردا';
+            alerts.push({ type: 'freeze', time: tl2 + ' ساعت ' + hour + ':۰۰', temp: Math.round(tempH) });
+          }
+        }
       }
+
+      var alertText = '';
+      if (alerts.length > 0) {
+        var seen = {};
+        var uniq = [];
+        for (var a = 0; a < alerts.length; a++) {
+          var key = alerts[a].type + alerts[a].time;
+          if (!seen[key]) { seen[key] = true; uniq.push(alerts[a]); }
+        }
+        uniq = uniq.slice(0, 3);
+        var parts = [];
+        for (var b = 0; b < uniq.length; b++) {
+          var al = uniq[b];
+          if (al.type === 'rain') parts.push('🌧️ بارش در ' + al.time + ' (احتمال ' + al.prob + '%)');
+          else if (al.type === 'freeze') parts.push('❄️ یخبندان در ' + al.time + ' (' + al.temp + '°C)');
+        }
+        alertText = ' | ' + parts.join(' · ');
+      }
+
+      var mainText = '🌤️ ' + WEATHER_CITY + ' — ' + curTemp + '°C ' + curW.t;
+      if (todayMax !== null && todayMin !== null) mainText += ' (حداکثر ' + todayMax + '° / حداقل ' + todayMin + '°)';
+      mainText += alertText;
+
+      weatherData = { temp: curTemp, text: curW.t, icon: curW.i, max: todayMax, min: todayMin, alerts: alertText };
+      if (tickerItems.length > 0) tickerItems[0] = { icon: curW.i, text: mainText };
     })
     .catch(function() {
-      return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + WEATHER_LAT + '&longitude=' + WEATHER_LON + '&current=temperature_2m,weather_code&timezone=Asia/Tehran')
+      return fetch('https://wttr.in/' + WEATHER_LAT + ',' + WEATHER_LON + '?format=j1&lang=fa')
         .then(function(r) { return r.json(); })
         .then(function(d) {
-          if (d && d.current) {
-            var w = WEATHER_CODES[d.current.weather_code] || { t: 'نامشخص', i: '🌡️' };
-            weatherData = { temp: Math.round(d.current.temperature_2m), text: w.t, icon: w.i };
-            if (tickerItems.length > 0) tickerItems[0] = { icon: w.i, text: '🌤️ ' + WEATHER_CITY + ' — ' + weatherData.temp + '°C ' + w.t };
+          if (d && d.current_condition && d.current_condition[0]) {
+            var cc = d.current_condition[0];
+            var temp = parseInt(cc.temp_C, 10) || 0;
+            var desc = (cc.lang_fa && cc.lang_fa[0] && cc.lang_fa[0].value) ? cc.lang_fa[0].value : 'نامشخص';
+            weatherData = { temp: temp, text: desc, icon: getWWOIcon(cc.weatherCode) };
+            if (tickerItems.length > 0) tickerItems[0] = { icon: weatherData.icon, text: '🌤️ ' + WEATHER_CITY + ' — ' + temp + '°C ' + desc };
           }
         })
         .catch(function() {});
@@ -882,7 +903,7 @@ var reportsData = [], reportsLoaded = false, dateFilterApplied = false, currentD
 var currentContractors = [], expandedNodes = {}, currentActiveNode = null, contractorSS = null;
 var pdpFromDate = null, pdpToDate = null, pdpStartDate = null;
 var scheduleTasks = [], statusOptions = [], summaryTaskSet = {};
-var modalRelatedSS = null, modalStatusSS = null, modalActualStartPDP = null, modalActualEndPDP = null;
+var modalRelatedSS = null, modalStatusSS = null, modalActualStartPDP = null, modalActualEndPDP = null, modalCCSS = null;
 var modalSubmitting = false;
 var modalProgressCurrent = 0;
 var modalProgressValue = 0;
@@ -982,7 +1003,13 @@ function renderTree() {
   if (filtered.length === 0) { container.innerHTML = '<div class="tree-empty">📭 هیچ موردی یافت نشد</div>'; return; }
   var childrenMap = {}; filtered.forEach(function(o) { var p = o.parentDirect || ''; if (!childrenMap[p]) childrenMap[p] = []; childrenMap[p].push(o); });
   var codesInList = {}; filtered.forEach(function(o) { codesInList[o.code] = true; });
-  var roots = filtered.filter(function(o) { var t = getNodeType(o.code); if (t !== 'order') return false; if (!o.parentDirect) return true; if (!codesInList[o.parentDirect]) return true; return false; });
+
+  // ✅ اصلاح: هر نودی که والدش در لیست نیست، به ریشه ارتقا می‌یابد (نه فقط order)
+  var roots = filtered.filter(function(o) { 
+    if (!o.parentDirect) return true; 
+    if (!codesInList[o.parentDirect]) return true; 
+    return false; 
+  });
   if (roots.length === 0) { container.innerHTML = '<div class="tree-empty">📭 دستور کاری یافت نشد</div>'; return; }
 
   function buildNode(node, depth) {
@@ -1174,14 +1201,12 @@ function onCommentClick(node) {
   openAddOnly(node, 'C');
 }
 
-/* ===== Progress slider helpers ===== */
 function faDigitsToEn(s) {
   var fa = '۰۱۲۳۴۵۶۷۸۹', ar = '٠١٢٣٤٥٦٧٨٩';
   var out = '';
   for (var i = 0; i < s.length; i++) {
     var c = s.charAt(i);
-    var faIdx = fa.indexOf(c);
-    var arIdx = ar.indexOf(c);
+    var faIdx = fa.indexOf(c), arIdx = ar.indexOf(c);
     if (faIdx !== -1) out += String(faIdx);
     else if (arIdx !== -1) out += String(arIdx);
     else out += c;
@@ -1197,8 +1222,7 @@ function clampProgress(v, min, max) {
 }
 function setModalProgressValue(v) {
   var minV = modalProgressIsAdmin ? 0 : modalProgressCurrent;
-  var maxV = 100;
-  v = clampProgress(v, minV, maxV);
+  v = clampProgress(v, minV, 100);
   modalProgressValue = v;
   document.getElementById('progReadout').textContent = v + '%';
   document.getElementById('progFill').style.width = v + '%';
@@ -1232,10 +1256,7 @@ function bindProgressUI() {
   document.addEventListener('touchmove', onMove, { passive: false });
   document.addEventListener('touchend', onUp);
 
-  track.addEventListener('click', function(e) {
-    if (e.target === thumb) return;
-    updateFromX(e.clientX);
-  });
+  track.addEventListener('click', function(e) { if (e.target === thumb) return; updateFromX(e.clientX); });
 
   inp.addEventListener('input', function() {
     var raw = this.value;
@@ -1262,7 +1283,6 @@ function openAddOnly(node, type) {
   var isAdmin = isCurrentUserAdmin();
   modalProgressIsAdmin = isAdmin;
 
-  // تعیین درصد فعلی زنجیره (اگر ریشه‌ای، زنجیره؛ وگرنه خودش)
   var curProgress = parseFloat(node.progress) || 0;
   if (curProgress > 0 && curProgress < 1) curProgress *= 100;
   curProgress = Math.max(0, Math.min(100, Math.round(curProgress)));
@@ -1309,16 +1329,21 @@ function openAddOnly(node, type) {
   modalStatusSS = makeSS('modalStatusWrap', { multi: false, options: stOpts, placeholder: 'اختیاری - انتخاب وضعیت' });
   if (node.relatedTask && modalRelatedSS) modalRelatedSS.setValue(node.relatedTask);
 
+  // CC فقط برای ادمین
+  var ccOpts = isAdmin ? recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; }) : [];
+  modalCCSS = makeSS('modalCCWrap', { multi: true, options: ccOpts, placeholder: isAdmin ? 'چندگانه - اختیاری' : 'فقط ادمین/ستاد' });
+  var ccWrapEl = document.getElementById('modalCCWrap');
+  if (ccWrapEl && ccWrapEl.parentElement) {
+    if (!isAdmin) { ccWrapEl.parentElement.style.opacity = '0.5'; ccWrapEl.parentElement.style.pointerEvents = 'none'; }
+    else { ccWrapEl.parentElement.style.opacity = ''; ccWrapEl.parentElement.style.pointerEvents = ''; }
+  }
+
   try { modalActualStartPDP = makePDP('actualStartPDP', { placeholder: 'تاریخ شروع واقعی' }); } catch (e) {}
   try { modalActualEndPDP = makePDP('actualEndPDP', { placeholder: 'تاریخ پایان واقعی' }); } catch (e) {}
 
-  // مقدار اولیه اسلایدر
   document.getElementById('progMinLbl').textContent = (isAdmin ? 0 : curProgress) + '%';
   document.getElementById('progMaxLbl').textContent = '100%';
-  setTimeout(function() {
-    setModalProgressValue(curProgress);
-    bindProgressUI();
-  }, 30);
+  setTimeout(function() { setModalProgressValue(curProgress); bindProgressUI(); }, 30);
 
   addForm.style.display = 'block';
   document.getElementById('modalSubmitAdd').onclick = function() { submitAddNode(type); };
@@ -1354,6 +1379,17 @@ function submitAddNode(type) {
   var actualEndVal = modalActualEndPDP ? modalActualEndPDP.getValue() : '';
   var accessVal = currentUser ? String(currentUser.access || '').trim() : '';
 
+  var ccNames = (modalCCSS && isCurrentUserAdmin()) ? modalCCSS.getValue() : [];
+  var ccPayload = ccNames.map(function(name) {
+    var found = null;
+    for (var i = 0; i < recipients.length; i++) if (recipients[i].systemName === name) { found = recipients[i]; break; }
+    return {
+      systemName: name,
+      telegramChatId: found && found.telegramChatId ? found.telegramChatId : null,
+      baleChatId: found && found.baleChatId ? found.baleChatId : null
+    };
+  });
+
   api({
     action: 'addChildNode',
     parentCode: currentActiveNode.code,
@@ -1365,7 +1401,8 @@ function submitAddNode(type) {
     status: statusVal || '',
     progress: modalProgressValue,
     actualStart: actualStartVal || '',
-    actualEnd: actualEndVal || ''
+    actualEnd: actualEndVal || '',
+    ccList: ccPayload
   })
   .then(function(r) {
     if (r && r.ok) {
@@ -1657,7 +1694,11 @@ document.getElementById('submitBtn').onclick = function() {
   api(payload).then(function(r) {
     hideGlobalLoader();
     if (r && r.ok) {
-      b.innerText = '✅ ثبت شد'; b.disabled = true; b.style.pointerEvents = 'none';
+      // ✅ قفل دائمی — جلوگیری از ثبت دوباره
+      b.innerText = '✅ ثبت شد';
+      b.disabled = true;
+      b.style.pointerEvents = 'none';
+      // submitting به true می‌ماند
       reservedNumbers = []; panelLoaded = false; reportsLoaded = false;
       showSuccessModal(r);
     } else if (r && r.duplicate) {

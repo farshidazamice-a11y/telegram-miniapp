@@ -615,6 +615,7 @@ function renderScreen(id) {
     if (tc) tc.innerHTML = '<div class="tree-empty">📅 برای مشاهده گزارش‌ها، بازه تاریخ را انتخاب کرده و دکمه «اعمال فیلتر» را بزنید</div>';
     dateFilterApplied = false; reportsLoaded = false; reportsData = [];
     ensureSummaryTasks();
+    ensureRecipientsLoaded();
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -807,6 +808,19 @@ function reserveForUser() {
   api({ action: 'reserveNumbers', chatId: String(tgUser.id), count: 5 })
     .then(function(r) { if (r && r.ok && r.numbers && r.numbers.length > 0) reservedNumbers = r.numbers; })
     .catch(function() {});
+}
+
+// ✅ تابع جدید: بارگذاری recipients در پس‌زمینه اگر خالی باشد
+function ensureRecipientsLoaded() {
+  if (recipients.length > 0) return;
+  api({ action: 'getRecipients' }).then(function(r) {
+    recipients = (r && r.recipients) || [];
+    if (modalCCSS && recipients.length > 0) {
+      var ccOpts = recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; });
+      modalCCSS.setOpts(ccOpts);
+      modalCCSS.setPh('چندگانه - اختیاری (' + recipients.length + ')');
+    }
+  }).catch(function() {});
 }
 
 function updateMenuByAccess() {
@@ -1281,8 +1295,27 @@ function openAddOnly(node, type) {
   var stOpts = statusOptions.map(function(s) { return { value: s, label: s }; });
   modalStatusSS = makeSS('modalStatusWrap', { multi: false, options: stOpts, placeholder: 'اختیاری - انتخاب وضعیت' });
   if (node.relatedTask && modalRelatedSS) modalRelatedSS.setValue(node.relatedTask);
-  var ccOpts = isAdmin ? recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; }) : [];
-  modalCCSS = makeSS('modalCCWrap', { multi: true, options: ccOpts, placeholder: isAdmin ? 'چندگانه - اختیاری' : 'فقط ادمین/ستاد' });
+
+  // ✅ اصلاح: اگر recipients خالی است، خودش بارگذاری کند
+  if (isAdmin) {
+    if (recipients.length > 0) {
+      var ccOpts = recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; });
+      modalCCSS = makeSS('modalCCWrap', { multi: true, options: ccOpts, placeholder: 'چندگانه - اختیاری (' + recipients.length + ')' });
+    } else {
+      modalCCSS = makeSS('modalCCWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
+      api({ action: 'getRecipients' }).then(function(r) {
+        recipients = (r && r.recipients) || [];
+        if (modalCCSS && recipients.length > 0) {
+          var ccOpts2 = recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; });
+          modalCCSS.setOpts(ccOpts2);
+          modalCCSS.setPh('چندگانه - اختیاری (' + recipients.length + ')');
+        }
+      }).catch(function() {});
+    }
+  } else {
+    modalCCSS = makeSS('modalCCWrap', { multi: true, options: [], placeholder: 'فقط ادمین/ستاد' });
+  }
+
   var ccWrapEl = document.getElementById('modalCCWrap');
   if (ccWrapEl && ccWrapEl.parentElement) {
     if (!isAdmin) { ccWrapEl.parentElement.style.opacity = '0.5'; ccWrapEl.parentElement.style.pointerEvents = 'none'; }

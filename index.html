@@ -174,7 +174,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .reports-sticky { position: sticky; top: var(--sticky-top); z-index: 490; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 11px; margin-bottom: 10px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
 .reports-sticky-title { font-size: 11.5px; font-weight: bold; color: #475569; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
 
-/* ===== Tree Cards — طرح F ===== */
 .tree-container { display: flex; flex-direction: column; gap: 7px; padding-bottom: 24px; }
 .tree-node { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: box-shadow .18s, border-color .18s; position: relative; padding-right: 4px; box-shadow: 0 1px 2px rgba(15,23,42,0.03); }
 .tree-node::before { content: ''; position: absolute; top: 10px; bottom: 10px; right: 0; width: 3px; border-radius: 3px; background: var(--primary); transition: all .2s; }
@@ -234,23 +233,12 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
 .toast.error { background: rgba(239,68,68,.97); box-shadow: 0 8px 24px rgba(239,68,68,.35); }
 
-/* ===== Form Row 3 (EPC/رشته/پیمانکاری در یک ردیف) ===== */
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; align-items: end; }
 .form-row-3 > div { min-width: 0; }
 .form-row-3 label { margin-top: 8px; font-size: 11px; }
 
-/* ===== Success Modal ===== */
-#successModal {
-  display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-  z-index: 999999; align-items: center; justify-content: center; padding: 14px; overflow-y: auto;
-}
-#successModal .success-box {
-  background: #fff; border-radius: 16px; padding: 22px 18px 18px;
-  max-width: 460px; width: 100%; margin: auto;
-  box-shadow: 0 20px 60px rgba(15,23,42,.3);
-  animation: modalPop .3s cubic-bezier(.34,1.56,.64,1);
-}
+#successModal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center; padding: 14px; overflow-y: auto; }
+#successModal .success-box { background: #fff; border-radius: 16px; padding: 22px 18px 18px; max-width: 460px; width: 100%; margin: auto; box-shadow: 0 20px 60px rgba(15,23,42,.3); animation: modalPop .3s cubic-bezier(.34,1.56,.64,1); }
 @keyframes modalPop { 0% { opacity: 0; transform: scale(.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 .success-icon { width: 62px; height: 62px; margin: 0 auto 10px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; animation: successPop .5s .15s cubic-bezier(.34,1.56,.64,1) both; }
 @keyframes successPop { 0% { transform: scale(0); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
@@ -691,7 +679,7 @@ setInterval(function() { if (currentUser) updateHeaderDateTime(); }, 60000);
 
 function reserveForUser() {
   if (!currentUser || !tgUser) return;
-  if (reservedNumbers.length > 0) return;
+  // همیشه رزرو تازه بگیر — از کهنه شدن جلوگیری می‌کند
   api({ action: 'reserveNumbers', chatId: String(tgUser.id), count: 5 })
     .then(function(r) { if (r && r.ok && r.numbers && r.numbers.length > 0) reservedNumbers = r.numbers; })
     .catch(function() {});
@@ -1426,6 +1414,10 @@ document.getElementById('submitBtn').onclick = function() {
       submitting = false; b.disabled = false; b.style.pointerEvents = 'auto';
       b.innerText = '✅ تلاش دوباره';
       showMsg('finalMsg', '❌ ' + ((r && r.message) || 'خطا'), 'err');
+      if (r && r.message && String(r.message).indexOf('رزرو') !== -1) {
+        reservedNumbers = [];
+        reserveForUser();
+      }
     }
     document.getElementById('editBtn').disabled = false;
   }).catch(function(err) {

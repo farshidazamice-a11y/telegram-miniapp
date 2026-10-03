@@ -15,8 +15,7 @@
   --shadow: 0 2px 8px rgba(15,23,42,0.05);
   --radius: 11px; --radius-sm: 8px;
   --ticker-h: 32px; --topbar-h: 46px;
-  --sticky-top: 78px;
-  --sticky-extra-top: 200px;
+  --sticky-top: 78px; --sticky-extra-top: 200px;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 .hidden { display: none !important; }
@@ -565,10 +564,7 @@ function updateTickerDisplay() {
   if (!iconEl || !textEl) return;
   var item = tickerItems[tickerIndex]; if (!item) return;
   iconEl.textContent = item.icon; textEl.classList.remove('active');
-  setTimeout(function() {
-    textEl.textContent = toFaNum(item.text);
-    textEl.classList.add('active');
-  }, 200);
+  setTimeout(function() { textEl.textContent = toFaNum(item.text); textEl.classList.add('active'); }, 200);
 }
 
 function showToast(text, isError) {
@@ -727,7 +723,6 @@ function updateHeaderUser() {
   document.getElementById('uhAccess').textContent = u.access || 'تعیین نشده';
 }
 
-/* ===== Weather: Open-Meteo با هشدار بارش/یخبندان + حداقل/حداکثر ===== */
 function fetchWeather() {
   var url = 'https://api.open-meteo.com/v1/forecast?' +
     'latitude=' + WEATHER_LAT + '&longitude=' + WEATHER_LON +
@@ -735,17 +730,14 @@ function fetchWeather() {
     '&hourly=temperature_2m,precipitation_probability,weather_code' +
     '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code' +
     '&timezone=Asia/Tehran&forecast_days=2';
-
   return fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (!d || !d.current) return;
       var curTemp = Math.round(d.current.temperature_2m);
       var curW = WEATHER_CODES[d.current.weather_code] || { t: 'نامشخص', i: '🌡️' };
-
       var todayMax = (d.daily && d.daily.temperature_2m_max) ? Math.round(d.daily.temperature_2m_max[0]) : null;
       var todayMin = (d.daily && d.daily.temperature_2m_min) ? Math.round(d.daily.temperature_2m_min[0]) : null;
-
       var alerts = [];
       if (d.hourly && d.hourly.time) {
         var nowHour = new Date().getHours();
@@ -757,39 +749,22 @@ function fetchWeather() {
           if (hourDate === nowDate && hour < nowHour) continue;
           var prob = d.hourly.precipitation_probability[i];
           var tempH = d.hourly.temperature_2m[i];
-          if (prob >= 40) {
-            var tl = (hourDate === nowDate) ? 'امروز' : 'فردا';
-            alerts.push({ type: 'rain', time: tl + ' ساعت ' + hour + ':۰۰', prob: prob });
-          }
-          if (tempH <= 0 && prob > 20) {
-            var tl2 = (hourDate === nowDate) ? 'امروز' : 'فردا';
-            alerts.push({ type: 'freeze', time: tl2 + ' ساعت ' + hour + ':۰۰', temp: Math.round(tempH) });
-          }
+          if (prob >= 40) { var tl = (hourDate === nowDate) ? 'امروز' : 'فردا'; alerts.push({ type: 'rain', time: tl + ' ساعت ' + hour + ':۰۰', prob: prob }); }
+          if (tempH <= 0 && prob > 20) { var tl2 = (hourDate === nowDate) ? 'امروز' : 'فردا'; alerts.push({ type: 'freeze', time: tl2 + ' ساعت ' + hour + ':۰۰', temp: Math.round(tempH) }); }
         }
       }
-
       var alertText = '';
       if (alerts.length > 0) {
-        var seen = {};
-        var uniq = [];
-        for (var a = 0; a < alerts.length; a++) {
-          var key = alerts[a].type + alerts[a].time;
-          if (!seen[key]) { seen[key] = true; uniq.push(alerts[a]); }
-        }
+        var seen = {}, uniq = [];
+        for (var a = 0; a < alerts.length; a++) { var key = alerts[a].type + alerts[a].time; if (!seen[key]) { seen[key] = true; uniq.push(alerts[a]); } }
         uniq = uniq.slice(0, 3);
         var parts = [];
-        for (var b = 0; b < uniq.length; b++) {
-          var al = uniq[b];
-          if (al.type === 'rain') parts.push('🌧️ بارش در ' + al.time + ' (احتمال ' + al.prob + '%)');
-          else if (al.type === 'freeze') parts.push('❄️ یخبندان در ' + al.time + ' (' + al.temp + '°C)');
-        }
+        for (var b = 0; b < uniq.length; b++) { var al = uniq[b]; if (al.type === 'rain') parts.push('🌧️ بارش در ' + al.time + ' (احتمال ' + al.prob + '%)'); else if (al.type === 'freeze') parts.push('❄️ یخبندان در ' + al.time + ' (' + al.temp + '°C)'); }
         alertText = ' | ' + parts.join(' · ');
       }
-
       var mainText = '🌤️ ' + WEATHER_CITY + ' — ' + curTemp + '°C ' + curW.t;
       if (todayMax !== null && todayMin !== null) mainText += ' (حداکثر ' + todayMax + '° / حداقل ' + todayMin + '°)';
       mainText += alertText;
-
       weatherData = { temp: curTemp, text: curW.t, icon: curW.i, max: todayMax, min: todayMin, alerts: alertText };
       if (tickerItems.length > 0) tickerItems[0] = { icon: curW.i, text: mainText };
     })
@@ -905,9 +880,7 @@ var pdpFromDate = null, pdpToDate = null, pdpStartDate = null;
 var scheduleTasks = [], statusOptions = [], summaryTaskSet = {};
 var modalRelatedSS = null, modalStatusSS = null, modalActualStartPDP = null, modalActualEndPDP = null, modalCCSS = null;
 var modalSubmitting = false;
-var modalProgressCurrent = 0;
-var modalProgressValue = 0;
-var modalProgressIsAdmin = false;
+var modalProgressCurrent = 0, modalProgressValue = 0, modalProgressIsAdmin = false;
 
 function isCurrentUserAdmin() {
   var access = currentUser ? String(currentUser.access || '').trim() : '';
@@ -1004,11 +977,11 @@ function renderTree() {
   var childrenMap = {}; filtered.forEach(function(o) { var p = o.parentDirect || ''; if (!childrenMap[p]) childrenMap[p] = []; childrenMap[p].push(o); });
   var codesInList = {}; filtered.forEach(function(o) { codesInList[o.code] = true; });
 
-  // ✅ اصلاح: هر نودی که والدش در لیست نیست، به ریشه ارتقا می‌یابد (نه فقط order)
-  var roots = filtered.filter(function(o) { 
-    if (!o.parentDirect) return true; 
-    if (!codesInList[o.parentDirect]) return true; 
-    return false; 
+  // ✅ هر نودی که والدش در لیست فیلترشده نیست، به ریشه ارتقا می‌یابد
+  var roots = filtered.filter(function(o) {
+    if (!o.parentDirect) return true;
+    if (!codesInList[o.parentDirect]) return true;
+    return false;
   });
   if (roots.length === 0) { container.innerHTML = '<div class="tree-empty">📭 دستور کاری یافت نشد</div>'; return; }
 
@@ -1018,31 +991,24 @@ function renderTree() {
     var hasChildren = children.length > 0;
     var nodeId = node.code;
     var isExpanded = expandedNodes[nodeId] === true;
-
     var div = document.createElement('div');
     div.className = 'tree-node type-' + type + (isExpanded ? ' open' : '');
-
     var header = document.createElement('div');
     header.className = 'tree-header';
     header.onclick = function(e) { if (e) e.stopPropagation(); expandedNodes[nodeId] = !isExpanded; renderTree(); };
-
     var rowTop = document.createElement('div');
     rowTop.className = 'tree-row-top';
-
     var typeBadge = document.createElement('span');
     typeBadge.className = 'tree-type-badge' + (type === 'order' ? '' : ' ' + type);
     typeBadge.textContent = type === 'order' ? '📋 دستور کار' : (type === 'report' ? '📊 گزارش' : '💬 کامنت');
     rowTop.appendChild(typeBadge);
-
     var codeEl = document.createElement('span');
     codeEl.className = 'tree-code-inline';
     codeEl.textContent = node.code || '';
     codeEl.title = node.code || '';
     rowTop.appendChild(codeEl);
-
     var badgesWrap = document.createElement('span');
     badgesWrap.className = 'tree-badges';
-
     if (node.relatedTask && summaryTaskSet[node.relatedTask]) {
       var sumBadge = document.createElement('span');
       sumBadge.className = 'badge-summary';
@@ -1064,13 +1030,11 @@ function renderTree() {
     badgesWrap.appendChild(chev);
     rowTop.appendChild(badgesWrap);
     header.appendChild(rowTop);
-
     var title = document.createElement('div');
     title.className = 'tree-title';
     title.textContent = node.subject || '—';
     title.title = node.subject || '';
     header.appendChild(title);
-
     var qg = document.createElement('div');
     qg.className = 'tree-quick-grid';
     function addQuick(lbl, val) {
@@ -1087,17 +1051,14 @@ function renderTree() {
     addQuick('📅 پایان', node.endShamsi);
     addQuick('🔗 مرتبط', node.relatedTask);
     if (qg.children.length > 0) header.appendChild(qg);
-
     if (node.description) {
       var snip = document.createElement('div');
       snip.className = 'tree-snippet';
       snip.textContent = '📝 ' + node.description;
       header.appendChild(snip);
     }
-
     var rowBot = document.createElement('div');
     rowBot.className = 'tree-row-bottom';
-
     var cnt = document.createElement('span');
     cnt.className = 'tree-children-count';
     if (hasChildren) {
@@ -1115,7 +1076,6 @@ function renderTree() {
       cnt.textContent = '📎 ' + children.length + ' زیرمجموعه (' + parts.join('، ') + ')';
     }
     rowBot.appendChild(cnt);
-
     var progNum = parseFloat(node.progress) || 0;
     if (progNum > 0 && progNum < 1) progNum *= 100;
     var progWrap = document.createElement('span');
@@ -1130,10 +1090,8 @@ function renderTree() {
     rowBot.appendChild(progWrap);
     header.appendChild(rowBot);
     div.appendChild(header);
-
     var details = document.createElement('div');
     details.className = 'tree-details';
-
     var dgrid = document.createElement('div');
     dgrid.className = 'tree-details-grid';
     function addDetail(lbl, val) {
@@ -1155,14 +1113,12 @@ function renderTree() {
     if (node.actualStartShamsi) addDetail('شروع واقعی:', node.actualStartShamsi);
     if (node.actualEndShamsi) addDetail('پایان واقعی:', node.actualEndShamsi);
     if (dgrid.children.length > 0) details.appendChild(dgrid);
-
     if (node.description) {
       var dt = document.createElement('div');
       dt.className = 'detail-full-text';
       dt.textContent = node.description;
       details.appendChild(dt);
     }
-
     var dActions = document.createElement('div');
     dActions.className = 'detail-actions';
     var btnR = document.createElement('button');
@@ -1178,7 +1134,6 @@ function renderTree() {
     dActions.appendChild(btnR); dActions.appendChild(btnC);
     details.appendChild(dActions);
     div.appendChild(details);
-
     if (hasChildren) {
       var chDiv = document.createElement('div');
       chDiv.className = 'tree-children';
@@ -1188,7 +1143,6 @@ function renderTree() {
     }
     return div;
   }
-
   roots.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
   roots.forEach(function(root) { container.appendChild(buildNode(root, 0)); });
 }
@@ -1236,7 +1190,6 @@ function bindProgressUI() {
   var track = document.getElementById('progTrack');
   var inp = document.getElementById('progInput');
   if (!thumb || !track || !inp) return;
-
   var dragging = false;
   function updateFromX(clientX) {
     var rect = track.getBoundingClientRect();
@@ -1248,16 +1201,13 @@ function bindProgressUI() {
   function onDown(e) { dragging = true; e.preventDefault(); var x = (e.touches ? e.touches[0].clientX : e.clientX); updateFromX(x); }
   function onMove(e) { if (!dragging) return; e.preventDefault(); var x = (e.touches ? e.touches[0].clientX : e.clientX); updateFromX(x); }
   function onUp() { dragging = false; }
-
   thumb.addEventListener('mousedown', onDown);
   document.addEventListener('mousemove', onMove);
   document.addEventListener('mouseup', onUp);
   thumb.addEventListener('touchstart', onDown, { passive: false });
   document.addEventListener('touchmove', onMove, { passive: false });
   document.addEventListener('touchend', onUp);
-
   track.addEventListener('click', function(e) { if (e.target === thumb) return; updateFromX(e.clientX); });
-
   inp.addEventListener('input', function() {
     var raw = this.value;
     var en = faDigitsToEn(raw).replace(/[^\d]/g, '');
@@ -1279,20 +1229,16 @@ function openAddOnly(node, type) {
   var content = document.getElementById('nodeModalContent');
   var addForm = document.getElementById('modalAddForm');
   var permBanner = document.getElementById('modalPermBanner');
-
   var isAdmin = isCurrentUserAdmin();
   modalProgressIsAdmin = isAdmin;
-
   var curProgress = parseFloat(node.progress) || 0;
   if (curProgress > 0 && curProgress < 1) curProgress *= 100;
   curProgress = Math.max(0, Math.min(100, Math.round(curProgress)));
   modalProgressCurrent = curProgress;
   modalProgressValue = curProgress;
-
   var titleEl = document.getElementById('modalTitle');
   titleEl.textContent = type === 'R' ? '📊 ثبت گزارش' : '💬 ثبت کامنت';
   document.getElementById('modalAddLabel').textContent = type === 'R' ? 'متن گزارش:' : 'متن کامنت:';
-
   if (!isAdmin && type === 'C') {
     permBanner.className = 'perm-banner err';
     permBanner.textContent = '⛔ ثبت کامنت/پاسخ فقط برای ادمین و ستاد مجاز است. لطفاً از دکمه «ثبت گزارش» استفاده کنید.';
@@ -1309,7 +1255,6 @@ function openAddOnly(node, type) {
   } else {
     permBanner.classList.add('hidden');
   }
-
   content.innerHTML =
     '<div style="display:flex;flex-direction:column;gap:6px;padding:4px 0;">' +
       '<div><span style="font-family:monospace;color:#92400e;font-weight:bold;direction:ltr;background:#fef3c7;padding:3px 8px;border-radius:5px;font-size:11px;display:inline-block;">' + escHtml(node.code || '') + '</span></div>' +
@@ -1317,19 +1262,15 @@ function openAddOnly(node, type) {
       (node.recipient ? '<div style="font-size:11px;color:#64748b;">👤 ' + escHtml(node.recipient) + '</div>' : '') +
       (node.startShamsi ? '<div style="font-size:11px;color:#64748b;">📅 ' + escHtml(node.startShamsi) + (node.endShamsi ? ' تا ' + escHtml(node.endShamsi) : '') + '</div>' : '') +
     '</div>';
-
   document.getElementById('modalAddText').value = '';
   document.getElementById('modalAddMsg').innerText = '';
   document.getElementById('modalSubmitAdd').disabled = false;
   document.getElementById('modalSubmitAdd').innerText = '✅ ثبت';
-
   var schedOpts = scheduleTasks.map(function(t) { return { value: t.value, label: t.label, isSummary: t.isSummary }; });
   modalRelatedSS = makeSS('modalRelatedWrap', { multi: false, options: schedOpts, placeholder: 'اختیاری - تایپ کنید' });
   var stOpts = statusOptions.map(function(s) { return { value: s, label: s }; });
   modalStatusSS = makeSS('modalStatusWrap', { multi: false, options: stOpts, placeholder: 'اختیاری - انتخاب وضعیت' });
   if (node.relatedTask && modalRelatedSS) modalRelatedSS.setValue(node.relatedTask);
-
-  // CC فقط برای ادمین
   var ccOpts = isAdmin ? recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; }) : [];
   modalCCSS = makeSS('modalCCWrap', { multi: true, options: ccOpts, placeholder: isAdmin ? 'چندگانه - اختیاری' : 'فقط ادمین/ستاد' });
   var ccWrapEl = document.getElementById('modalCCWrap');
@@ -1337,17 +1278,13 @@ function openAddOnly(node, type) {
     if (!isAdmin) { ccWrapEl.parentElement.style.opacity = '0.5'; ccWrapEl.parentElement.style.pointerEvents = 'none'; }
     else { ccWrapEl.parentElement.style.opacity = ''; ccWrapEl.parentElement.style.pointerEvents = ''; }
   }
-
   try { modalActualStartPDP = makePDP('actualStartPDP', { placeholder: 'تاریخ شروع واقعی' }); } catch (e) {}
   try { modalActualEndPDP = makePDP('actualEndPDP', { placeholder: 'تاریخ پایان واقعی' }); } catch (e) {}
-
   document.getElementById('progMinLbl').textContent = (isAdmin ? 0 : curProgress) + '%';
   document.getElementById('progMaxLbl').textContent = '100%';
   setTimeout(function() { setModalProgressValue(curProgress); bindProgressUI(); }, 30);
-
   addForm.style.display = 'block';
   document.getElementById('modalSubmitAdd').onclick = function() { submitAddNode(type); };
-
   modal.style.display = 'flex';
   setTimeout(function() { document.getElementById('modalAddText').focus(); }, 150);
 }
@@ -1372,24 +1309,17 @@ function submitAddNode(type) {
   var btn = document.getElementById('modalSubmitAdd');
   btn.disabled = true; btn.innerText = 'در حال ارسال...';
   document.getElementById('modalAddMsg').innerText = '';
-
   var relatedVal = modalRelatedSS ? modalRelatedSS.getValue() : '';
   var statusVal = modalStatusSS ? modalStatusSS.getValue() : '';
   var actualStartVal = modalActualStartPDP ? modalActualStartPDP.getValue() : '';
   var actualEndVal = modalActualEndPDP ? modalActualEndPDP.getValue() : '';
   var accessVal = currentUser ? String(currentUser.access || '').trim() : '';
-
   var ccNames = (modalCCSS && isCurrentUserAdmin()) ? modalCCSS.getValue() : [];
   var ccPayload = ccNames.map(function(name) {
     var found = null;
     for (var i = 0; i < recipients.length; i++) if (recipients[i].systemName === name) { found = recipients[i]; break; }
-    return {
-      systemName: name,
-      telegramChatId: found && found.telegramChatId ? found.telegramChatId : null,
-      baleChatId: found && found.baleChatId ? found.baleChatId : null
-    };
+    return { systemName: name, telegramChatId: found && found.telegramChatId ? found.telegramChatId : null, baleChatId: found && found.baleChatId ? found.baleChatId : null };
   });
-
   api({
     action: 'addChildNode',
     parentCode: currentActiveNode.code,
@@ -1509,7 +1439,6 @@ function loadPanel() {
   ssRelated = makeSS('relatedWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssAddr = makeSS('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
   try { pdpStartDate = makePDP('startDatePDP', { placeholder: 'تاریخ شروع را انتخاب کنید' }); } catch (e) {}
-
   var rDone = false, oDone = false, rCount = 0;
   function checkAll() { if (rDone && oDone) { panelLoaded = true; updateLoaderCount('لیست مخاطبین: ' + rCount + ' نفر'); setTimeout(function() { setLoaderState('ready', 'فرم آماده است'); setTimeout(function() { setLoaderState('hide'); }, 2500); }, 300); } }
   api({ action: 'getRecipients' }).then(function(r) {
@@ -1521,7 +1450,6 @@ function loadPanel() {
     } else { ssRecipient.setPh('هیچ مخاطبی یافت نشد'); if (ssCC) ssCC.setPh('هیچ مخاطبی یافت نشد'); }
     rDone = true; updateLoaderCount('دریافت مخاطبین: ' + rCount + ' نفر ✓'); checkAll();
   }).catch(function() { ssRecipient.setPh('خطا'); if (ssCC) ssCC.setPh('خطا'); rDone = true; checkAll(); });
-
   api({ action: 'getFormOptions' }).then(function(r) {
     r = r || {};
     var s = (r.subjects && r.subjects.options) || [];
@@ -1636,7 +1564,6 @@ document.getElementById('previewBtn').onclick = function() {
   if (!dur || parseInt(dur, 10) < 1) return showMsg('woMsg', '❌ مدت معتبر نیست', 'err');
   if (!sTg && !sBale) return showMsg('woMsg', '❌ حداقل یک پلتفورم انتخاب کنید', 'err');
   if (reservedNumbers.length === 0) return showMsg('woMsg', '⏳ چند لحظه صبر کنید', 'err');
-
   var n = parseInt(dur, 10);
   var sg = j2g(y, m, d); var sdt = new Date(sg[0], sg[1]-1, sg[2]);
   var edt = new Date(sdt.getTime() + (n-1) * 86400000);
@@ -1694,11 +1621,7 @@ document.getElementById('submitBtn').onclick = function() {
   api(payload).then(function(r) {
     hideGlobalLoader();
     if (r && r.ok) {
-      // ✅ قفل دائمی — جلوگیری از ثبت دوباره
-      b.innerText = '✅ ثبت شد';
-      b.disabled = true;
-      b.style.pointerEvents = 'none';
-      // submitting به true می‌ماند
+      b.innerText = '✅ ثبت شد'; b.disabled = true; b.style.pointerEvents = 'none';
       reservedNumbers = []; panelLoaded = false; reportsLoaded = false;
       showSuccessModal(r);
     } else if (r && r.duplicate) {

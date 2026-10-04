@@ -255,6 +255,52 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .tree-modal-node::before { content: ''; position: absolute; top: 8px; bottom: 8px; right: 0; width: 3px; border-radius: 3px; background: var(--primary); }
 .tree-modal-node.type-report::before { background: #10b981; }
 .tree-modal-node.type-comment::before { background: #94a3b8; }
+
+/* ===== Highlight selected node ===== */
+.tree-modal-node.is-selected {
+  border: 2px solid var(--primary);
+  box-shadow: 0 4px 16px rgba(34,158,217,.25);
+  background: linear-gradient(180deg, #f0f9ff, #fff);
+}
+.tree-modal-node.is-selected .tree-modal-header {
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+}
+.tree-modal-node.is-selected .tm-subject {
+  color: #0c4a6e;
+  font-weight: 900;
+}
+.tree-modal-node.is-selected .tm-code {
+  color: #0369a1;
+}
+.tree-modal-node.is-selected::after {
+  content: '👈 انتخاب شما';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: linear-gradient(135deg, #229ED9, #1e40af);
+  color: #fff;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 8px;
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(34,158,217,.35);
+}
+
+/* ===== Slight pulse for selected node ===== */
+@keyframes selectedPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(34,158,217,.25); }
+  50%      { box-shadow: 0 4px 22px rgba(34,158,217,.45); }
+}
+.tree-modal-node.is-selected {
+  animation: selectedPulse 2.5s ease-in-out infinite;
+}
+
+/* ===== Ancestor path highlight (subtle) ===== */
+.tree-modal-node.is-ancestor-of-selected > .tree-modal-header {
+  background: linear-gradient(90deg, #fef3c7, #fff);
+}
+
 .tree-modal-header { padding: 8px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; user-select: none; }
 .tree-modal-header:hover { background: #f8fafc; }
 .tree-modal-header .tm-row-top { display: flex; align-items: center; gap: 6px; }
@@ -1333,16 +1379,55 @@ function buildListCard(node, childrenMap) {
 }
 
 /* ===== Tree Modal ===== */
-function openTreeModal(rootCode) {
+function openTreeModal(clickedCode) {
   treeModalOpen = true;
   expandedTreeModalNodes = {};
-  expandedTreeModalNodes[rootCode] = true;
-  renderTreeModal(rootCode);
+  window._treeModalRootCode = clickedCode;
+  window._treeModalSelectedCode = clickedCode;
+
+  var codeToNode = {};
+  reportsData.forEach(function(o) { codeToNode[o.code] = o; });
+
+  var clickedNode = codeToNode[clickedCode];
+  if (!clickedNode) { return; }
+
+  // پیدا کردن بالاترین ریشه اصلی
+  var topNode = clickedNode;
+  var guard = 0;
+  while (topNode && topNode.parentDirect && codeToNode[topNode.parentDirect] && guard < 100) {
+    topNode = codeToNode[topNode.parentDirect];
+    guard++;
+  }
+  var topRootCode = topNode ? topNode.code : clickedCode;
+
+  // باز کردن مسیر از ریشه تا نود کلیک‌شده
+  var pathNode = clickedNode;
+  guard = 0;
+  while (pathNode && guard < 100) {
+    expandedTreeModalNodes[pathNode.code] = true;
+    if (!pathNode.parentDirect || !codeToNode[pathNode.parentDirect]) { break; }
+    pathNode = codeToNode[pathNode.parentDirect];
+    guard++;
+  }
+
+  window._treeModalRootCode = topRootCode;
+  renderTreeModal(topRootCode);
   document.getElementById('treeViewModal').classList.remove('hidden');
+
+  // اسکرول خودکار به نود انتخاب‌شده
+  setTimeout(function() {
+    var sel = document.querySelector('.tree-modal-node.is-selected');
+    if (sel && sel.scrollIntoView) {
+      try { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (e) { sel.scrollIntoView(); }
+    }
+  }, 250);
 }
 
 function closeTreeModal() {
   treeModalOpen = false;
+  window._treeModalRootCode = null;
+  window._treeModalSelectedCode = null;
   document.getElementById('treeViewModal').classList.add('hidden');
   document.getElementById('treeModalContent').innerHTML = '';
 }
@@ -1351,51 +1436,85 @@ function renderTreeModal(rootCode) {
   var content = document.getElementById('treeModalContent');
   content.innerHTML = '';
 
+  var codeToNode = {};
+  reportsData.forEach(function(o) { codeToNode[o.code] = o; });
+
+  // ابتدا از فیلتر فعلی شروع می‌کنیم
   var filtered = filterReports(reportsData);
-  var childrenMap = {};
-  filtered.forEach(function(o) {
-    var p = o.parentDirect || '';
-    if (!childrenMap[p]) childrenMap[p] = [];
-    childrenMap[p].push(o);
-  });
+  var allData = filtered.slice();
+  var codeSet = {};
+  allData.forEach(function(o) { codeSet[o.code] = true; });
 
-  var root = null;
-  for (var i = 0; i < reportsData.length; i++) if (reportsData[i].code === rootCode) { root = reportsData[i]; break; }
-  if (!root) { content.innerHTML = '<div class="tree-empty">ردیف پیدا نشد</div>'; return; }
-
-  // Also include ancestors even if filtered out
-  var expandedFiltered = filtered.slice();
-  var codeSet = {}; expandedFiltered.forEach(function(o) { codeSet[o.code] = true; });
-  var cur = root;
-  while (cur && cur.parentDirect && !codeSet[cur.parentDirect]) {
-    for (var j = 0; j < reportsData.length; j++) {
-      if (reportsData[j].code === cur.parentDirect) {
-        expandedFiltered.push(reportsData[j]);
-        codeSet[reportsData[j].code] = true;
-        cur = reportsData[j];
-        break;
-      }
-    }
+  // اگر ریشه در داده‌های فیلترشده نبود، اضافه‌اش کن
+  if (!codeSet[rootCode] && codeToNode[rootCode]) {
+    allData.push(codeToNode[rootCode]);
+    codeSet[rootCode] = true;
   }
 
-  var cm2 = {};
-  expandedFiltered.forEach(function(o) {
+  // اجداد گم‌شده ریشه را اضافه کن
+  var rNode = codeToNode[rootCode];
+  var guard = 0;
+  while (rNode && rNode.parentDirect && !codeSet[rNode.parentDirect] && guard < 100) {
+    var pNode = codeToNode[rNode.parentDirect];
+    if (!pNode) { break; }
+    allData.push(pNode);
+    codeSet[pNode.code] = true;
+    rNode = pNode;
+    guard++;
+  }
+
+  // ساخت childrenMap
+  var cm = {};
+  allData.forEach(function(o) {
     var p = o.parentDirect || '';
-    if (!cm2[p]) cm2[p] = [];
-    cm2[p].push(o);
+    if (!cm[p]) { cm[p] = []; }
+    cm[p].push(o);
   });
 
-  content.appendChild(buildTreeModalNode(root, 0, cm2));
+  var root = codeToNode[rootCode];
+  if (!root) {
+    content.innerHTML = '<div class="tree-empty">ردیف پیدا نشد</div>';
+    return;
+  }
+
+  var selectedCode = window._treeModalSelectedCode || rootCode;
+
+  // مجموعه اجداد انتخاب‌شده
+  var ancestorSet = {};
+  var cur = codeToNode[selectedCode];
+  guard = 0;
+  while (cur && cur.parentDirect && guard < 100) {
+    ancestorSet[cur.parentDirect] = true;
+    cur = codeToNode[cur.parentDirect];
+    guard++;
+  }
+
+  // بالاترین ریشه واقعی
+  var topNode = root;
+  guard = 0;
+  while (topNode && topNode.parentDirect && codeToNode[topNode.parentDirect] && guard < 100) {
+    topNode = codeToNode[topNode.parentDirect];
+    guard++;
+  }
+
+  content.appendChild(
+    buildTreeModalNode(topNode, 0, cm, rootCode, selectedCode, ancestorSet)
+  );
 }
 
-function buildTreeModalNode(node, depth, childrenMap) {
+function buildTreeModalNode(node, depth, childrenMap, rootCode, selectedCode, ancestorSet) {
   var type = getNodeType(node.code);
   var children = childrenMap[node.code] || [];
   var hasChildren = children.length > 0;
   var isOpen = expandedTreeModalNodes[node.code] === true;
 
+  var isSelected = (node.code === selectedCode);
+  var isAncestor = !isSelected && ancestorSet && ancestorSet[node.code] === true;
+
   var wrap = document.createElement('div');
-  wrap.className = 'tree-modal-node type-' + type;
+  wrap.className = 'tree-modal-node type-' + type +
+    (isSelected ? ' is-selected' : '') +
+    (isAncestor ? ' is-ancestor-of-selected' : '');
 
   var header = document.createElement('div');
   header.className = 'tree-modal-header';
@@ -1409,9 +1528,9 @@ function buildTreeModalNode(node, depth, childrenMap) {
   toggle.textContent = hasChildren ? '▼' : '•';
   toggle.onclick = function(ev) {
     ev.stopPropagation();
-    if (!hasChildren) return;
+    if (!hasChildren) { return; }
     expandedTreeModalNodes[node.code] = !expandedTreeModalNodes[node.code];
-    renderTreeModal(currentTreeRootCode());
+    renderTreeModal(rootCode);
   };
   rowTop.appendChild(toggle);
 
@@ -1455,35 +1574,23 @@ function buildTreeModalNode(node, depth, childrenMap) {
 
   header.onclick = function(ev) {
     ev.stopPropagation();
+    window._treeModalSelectedCode = node.code;
+    renderTreeModal(rootCode);
     openRowDetail(node);
   };
   wrap.appendChild(header);
 
-  if (hasChildren) {
+  if (hasChildren && isOpen) {
     var chDiv = document.createElement('div');
-    chDiv.className = 'tree-modal-children' + (isOpen ? ' open' : ' hidden');
+    chDiv.className = 'tree-modal-children open';
     children.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
     children.forEach(function(child) {
-      chDiv.appendChild(buildTreeModalNode(child, depth + 1, childrenMap));
+      chDiv.appendChild(buildTreeModalNode(child, depth + 1, childrenMap, rootCode, selectedCode, ancestorSet));
     });
     wrap.appendChild(chDiv);
   }
 
   return wrap;
-}
-
-function currentTreeRootCode() {
-  var content = document.getElementById('treeModalContent');
-  var first = content.querySelector('.tree-modal-node');
-  if (!first) return null;
-  // find code from first node
-  var node = findNodeInTreeModalData(first);
-  return node;
-}
-
-function findNodeInTreeModalData(el) {
-  // simpler: store root code globally
-  return window._treeModalRootCode || null;
 }
 
 /* ===== Row Details Modal ===== */

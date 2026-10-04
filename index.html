@@ -15,7 +15,7 @@
   --shadow: 0 2px 8px rgba(15,23,42,0.05);
   --radius: 11px; --radius-sm: 8px;
   --ticker-h: 32px; --topbar-h: 46px;
-  --sticky-top: 78px; --sticky-extra-top: 200px;
+  --sticky-top: 78px;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 .hidden { display: none !important; }
@@ -57,15 +57,9 @@ body { font-family: Tahoma, 'Segoe UI', sans-serif; direction: rtl; background: 
 .form-loader { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 11px 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden; }
 .form-loader::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); animation: shimmer 1.8s infinite; }
 @keyframes shimmer { 0%{left:-100%;} 100%{left:100%;} }
-.form-loader.ready { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #6ee7b7; }
-.form-loader.ready::before { display: none; }
 .form-loader.hide { opacity: 0; max-height: 0; padding: 0; margin: 0; border: 0; pointer-events: none; }
 .fl-spinner { width: 20px; height: 20px; border: 2.5px solid #93c5fd; border-top-color: #2563eb; border-radius: 50%; animation: spin .8s linear infinite; flex-shrink: 0; }
-.form-loader.ready .fl-spinner { border: none; background: #10b981; display: flex; align-items: center; justify-content: center; animation: none; color: #fff; font-size: 12px; font-weight: bold; }
-.form-loader.ready .fl-spinner::after { content: '✓'; }
 .fl-text { flex: 1; font-size: 12px; font-weight: bold; color: #1e40af; }
-.form-loader.ready .fl-text { color: #065f46; }
-.fl-count { font-size: 10.5px; display: block; margin-top: 2px; font-weight: normal; color: #64748b; }
 .fl-dot { animation: dotPulse 1.4s infinite; }
 .fl-dot:nth-child(2) { animation-delay: .2s; }
 .fl-dot:nth-child(3) { animation-delay: .4s; }
@@ -111,9 +105,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .msg-err { background: #fee2e2; color: #991b1b; }
 .msg-info { background: #dbeafe; color: #1e40af; }
 .msg-warn { background: #fef3c7; color: #92400e; }
-.date-row { display: flex; gap: 6px; }
-.date-row .col { flex: 1; }
-.date-lbl { font-size: 10px; text-align: center; color: var(--hint); margin-top: 3px; }
 .pdp-wrap { position: relative; width: 100%; }
 .pdp-display { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fff; color: var(--text); font-size: 11.5px; font-family: inherit; text-align: center; cursor: pointer; margin: 0; display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 32px; font-weight: normal; }
 .pdp-display::before { content: '📅'; font-size: 10px; }
@@ -168,35 +159,76 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .preview-msg { background: #fff; border-radius: 9px; padding: 11px; font-size: 11.5px; white-space: pre-line; line-height: 1.8; border: 1px solid var(--border); max-height: 300px; overflow-y: auto; }
 .btn-row { display: flex; gap: 6px; margin-top: 12px; }
 .btn-row button { flex: 1; margin-top: 0; }
-.filter-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
-.filter-btn { flex: 1; min-width: 46px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: #334155; font-size: 10.5px; font-weight: bold; cursor: pointer; margin: 0; width: auto; font-family: inherit; transition: all .15s; }
-.filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-.filter-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
-.reports-sticky { position: sticky; top: var(--sticky-top); z-index: 490; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 6px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
-.reports-sticky-title { font-size: 10.5px; font-weight: bold; color: #475569; margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
-.extra-filters-sticky { position: sticky; top: var(--sticky-extra-top); z-index: 489; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
+
+/* ===== Filters Panel ===== */
+.filters-panel { position: sticky; top: var(--sticky-top); z-index: 490; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
+.filters-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 5px; border-bottom: 1px solid var(--border-soft); }
+.filters-head-title { font-size: 11px; font-weight: bold; color: #475569; display: flex; align-items: center; gap: 4px; }
+.filters-reset-all { width: auto; padding: 3px 8px; margin: 0; background: #fee2e2; color: #991b1b; font-size: 10px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; font-family: inherit; }
+.filters-reset-all:hover { background: #fecaca; }
+.filters-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+.filters-date-group { background: #f8fafc; border: 1px solid var(--border-soft); border-radius: 8px; padding: 5px 6px; }
+.filters-date-lbl { font-size: 9.5px; font-weight: bold; color: #475569; margin-bottom: 3px; display: flex; align-items: center; gap: 3px; }
+.filters-date-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.filters-date-inputs .pdp-display { padding: 4px 5px; font-size: 9.5px; min-height: 24px; border-radius: 6px; }
+.filters-date-inputs .pdp-display::before { font-size: 8px; }
+.filters-date-inputs .pdp-popup { max-width: 220px; padding: 7px; }
+.filters-date-inputs .pdp-day { height: 20px; font-size: 9.5px; }
+.filters-date-inputs .pdp-nav { width: 20px; height: 20px; font-size: 10px; }
+.filters-date-inputs .pdp-title { font-size: 10px; }
+.filters-date-inputs .pdp-wd { font-size: 8.5px; }
+.filters-date-inputs .pdp-btn { font-size: 9.5px; padding: 4px 5px; }
+.fdp-lbl { font-size: 8.5px; color: #94a3b8; text-align: center; margin-top: 1px; }
+.filters-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.fchip { padding: 4px 8px; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: #334155; font-size: 10px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin: 0; width: auto; font-family: inherit; transition: all .15s; }
+.fchip:hover { border-color: var(--primary); color: var(--primary); }
+.fchip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.fchip-badge { background: rgba(255,255,255,.32); border-radius: 8px; padding: 0 5px; font-size: 9px; font-weight: bold; line-height: 1.5; min-width: 14px; text-align: center; }
+.fchip-badge.hidden { display: none; }
+.fchip-arrow { font-size: 8px; opacity: .6; }
+.filters-apply { width: 100%; padding: 7px; font-size: 11.5px; font-weight: bold; background: var(--primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; margin: 0; font-family: inherit; }
+.filter-popup { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 55vh; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 32px rgba(15,23,42,.2); z-index: 600; display: flex; flex-direction: column; overflow: hidden; }
+.filter-popup.hidden { display: none; }
+.filter-popup-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 11px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border-bottom: 1px solid #bfdbfe; }
+.filter-popup-head span { font-size: 11.5px; font-weight: bold; color: #1e40af; }
+.filter-popup-close { width: 22px; height: 22px; padding: 0; margin: 0; border: none; border-radius: 6px; background: rgba(30,64,175,.12); color: #1e40af; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+.filter-popup-search { padding: 6px 10px; border-bottom: 1px solid var(--border-soft); }
+.filter-popup-search input { padding: 6px 9px; font-size: 11.5px; border-radius: 7px; }
+.filter-popup-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.filter-opt { padding: 7px 10px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 7px; border-bottom: 1px solid var(--border-soft); color: #334155; user-select: none; min-height: 32px; }
+.filter-opt:last-child { border-bottom: none; }
+.filter-opt:hover { background: #f8fafc; }
+.filter-opt.selected { background: linear-gradient(90deg, #ecfdf5, #d1fae5); color: #065f46; font-weight: bold; }
+.filter-opt-chk { width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; background: #fff; color: transparent; }
+.filter-opt.selected .filter-opt-chk { background: var(--success); border-color: var(--success); color: #fff; }
+.filter-opt-lbl { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-opt-sum { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 4px; background: #dc2626; color: #fff; font-size: 8.5px; font-weight: bold; flex-shrink: 0; }
+.filter-opt-empty { text-align: center; padding: 20px; font-size: 11px; color: #94a3b8; }
+.filter-popup-foot { padding: 6px 10px; border-top: 1px solid var(--border-soft); background: #f8fafc; }
+.filter-popup-clear { width: 100%; padding: 6px; font-size: 10.5px; font-weight: bold; background: #fee2e2; color: #991b1b; border: none; border-radius: 7px; cursor: pointer; margin: 0; font-family: inherit; }
+.filter-popup-clear:hover { background: #fecaca; }
+.basic-only-note { display: none; margin-top: 6px; padding: 7px 9px; background: #dbeafe; color: #1e40af; border-radius: 7px; font-size: 10px; text-align: center; line-height: 1.6; }
+
+/* ===== Tree Cards (list) ===== */
 .tree-container { display: flex; flex-direction: column; gap: 7px; padding-bottom: 24px; }
-.tree-node { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: box-shadow .18s, border-color .18s; position: relative; padding-right: 4px; box-shadow: 0 1px 2px rgba(15,23,42,0.03); }
+.tree-node { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: box-shadow .18s, border-color .18s; position: relative; padding-right: 4px; box-shadow: 0 1px 2px rgba(15,23,42,0.03); cursor: pointer; }
 .tree-node::before { content: ''; position: absolute; top: 10px; bottom: 10px; right: 0; width: 3px; border-radius: 3px; background: var(--primary); transition: all .2s; }
 .tree-node.type-report::before { background: #10b981; }
 .tree-node.type-comment::before { background: #94a3b8; }
 .tree-node:hover { box-shadow: 0 3px 12px rgba(15,23,42,0.06); border-color: #cbd5e1; }
-.tree-node.open { box-shadow: 0 4px 16px rgba(15,23,42,0.08); border-color: #bfdbfe; }
-.tree-header { padding: 10px 12px; cursor: pointer; user-select: none; display: flex; flex-direction: column; gap: 7px; transition: background .15s; }
+.tree-header { padding: 10px 12px; user-select: none; display: flex; flex-direction: column; gap: 7px; }
 .tree-header:hover { background: #f8fafc; }
-.tree-node.open .tree-header { background: linear-gradient(180deg, #f8fbff, #fff); border-bottom: 1px solid var(--border-soft); }
 .tree-row-top { display: flex; align-items: center; gap: 7px; flex-wrap: nowrap; }
-.tree-type-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #1e40af; flex-shrink: 0; letter-spacing: -.2px; box-shadow: 0 1px 2px rgba(30,64,175,0.08); }
-.tree-type-badge.report { background: linear-gradient(135deg, #d1fae5, #ecfdf5); color: #065f46; box-shadow: 0 1px 2px rgba(16,185,129,0.12); }
-.tree-type-badge.comment { background: linear-gradient(135deg, #f1f5f9, #f8fafc); color: #475569; box-shadow: 0 1px 2px rgba(100,116,139,0.1); }
-.tree-code-inline { font-family: 'Courier New', 'Consolas', monospace; font-size: 10.5px; color: #94a3b8; font-weight: bold; direction: ltr; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; letter-spacing: -.3px; }
+.tree-type-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #1e40af; flex-shrink: 0; letter-spacing: -.2px; }
+.tree-type-badge.report { background: linear-gradient(135deg, #d1fae5, #ecfdf5); color: #065f46; }
+.tree-type-badge.comment { background: linear-gradient(135deg, #f1f5f9, #f8fafc); color: #475569; }
+.tree-code-inline { font-family: 'Courier New', monospace; font-size: 10.5px; color: #94a3b8; font-weight: bold; direction: ltr; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; letter-spacing: -.3px; }
 .tree-badges { display: inline-flex; gap: 5px; align-items: center; flex-shrink: 0; }
-.badge-summary { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; font-size: 10px; font-weight: 900; box-shadow: 0 1px 3px rgba(220,38,38,.35); flex-shrink: 0; }
+.badge-summary { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; font-size: 10px; font-weight: 900; flex-shrink: 0; }
 .badge-status { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 10px; font-size: 9.5px; font-weight: bold; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; flex-shrink: 0; white-space: nowrap; }
 .badge-status.running { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
 .badge-status.draft { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
-.tree-chevron { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #f1f5f9; color: #64748b; font-size: 9px; transition: transform .25s cubic-bezier(.4,0,.2,1), background .2s, color .2s; flex-shrink: 0; }
-.tree-node.open .tree-chevron { transform: rotate(180deg); background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #1e40af; }
+.tree-chevron { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #f1f5f9; color: #64748b; font-size: 9px; flex-shrink: 0; }
 .tree-title { font-size: 12.5px; font-weight: bold; color: #1e293b; line-height: 1.55; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 2px; }
 .tree-quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 5px; }
 .quick-item { background: linear-gradient(135deg, #f8fafc, #fff); border: 1px solid var(--border-soft); border-radius: 7px; padding: 4px 7px; display: flex; flex-direction: column; min-width: 0; }
@@ -207,47 +239,57 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .tree-children-count { display: inline-flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tree-progress-mini { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; font-weight: bold; color: #059669; font-size: 9.5px; }
 .progress-bar-mini { width: 48px; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; }
-.progress-fill-mini { height: 100%; background: linear-gradient(90deg, #34d399, #059669); border-radius: 2px; transition: width .3s; }
-.tree-details { display: none; padding: 12px 12px 11px; background: linear-gradient(180deg, #fbfdff, #f8fafc); border-top: 1px solid var(--border-soft); }
-.tree-node.open .tree-details { display: block; animation: fadeSlideDown .22s ease-out; }
-@keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-.tree-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-bottom: 10px; }
-.detail-item { display: flex; gap: 5px; font-size: 10.5px; align-items: baseline; min-width: 0; }
-.detail-lbl { color: #94a3b8; font-weight: bold; flex-shrink: 0; font-size: 9.5px; }
-.detail-val { color: #334155; flex: 1; word-break: break-word; font-weight: 500; }
-.detail-full-text { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; font-size: 11px; color: #334155; line-height: 1.85; white-space: pre-line; margin-bottom: 10px; }
-.detail-actions { display: flex; gap: 6px; }
-.detail-action-btn { flex: 1; padding: 8px 10px; border: none; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer; font-family: inherit; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: transform .1s, box-shadow .15s; }
-.detail-action-btn:active { transform: scale(.97); }
-.detail-action-btn.report { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 2px 6px rgba(16,185,129,.2); }
-.detail-action-btn.comment { background: #fff; color: #334155; border: 1.5px solid var(--border); box-shadow: 0 1px 3px rgba(15,23,42,.04); }
-.detail-action-btn.comment:hover { border-color: var(--primary); color: var(--primary); }
-.tree-children { display: none; padding: 8px 22px 8px 8px; border-top: 1px dashed var(--border); background: #f8fafc; position: relative; }
-.tree-node.open .tree-children { display: flex; flex-direction: column; gap: 6px; animation: fadeSlideDown .25s ease-out; }
-.tree-children::before { content: ''; position: absolute; top: 0; bottom: 12px; right: 10px; width: 2px; background: linear-gradient(180deg, #cbd5e1, transparent); border-radius: 1px; }
-.tree-children > .tree-node .tree-header { padding: 8px 10px; }
-.tree-children > .tree-node .tree-title { font-size: 11.5px; }
-.tree-children > .tree-node .tree-quick-grid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); }
+.progress-fill-mini { height: 100%; background: linear-gradient(90deg, #34d399, #059669); border-radius: 2px; }
 .tree-empty { text-align: center; color: #94a3b8; padding: 30px 16px; font-size: 12.5px; line-height: 1.9; }
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(16,185,129,.97); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 12.5px; font-weight: bold; box-shadow: 0 8px 24px rgba(16,185,129,.35); z-index: 99999; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; max-width: 90%; text-align: center; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
-.toast.error { background: rgba(239,68,68,.97); box-shadow: 0 8px 24px rgba(239,68,68,.35); }
-.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; align-items: end; }
-.form-row-3 > div { min-width: 0; }
-.form-row-3 label { margin-top: 8px; font-size: 11px; }
-#successModal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center; padding: 14px; overflow-y: auto; }
-#successModal .success-box { background: #fff; border-radius: 16px; padding: 22px 18px 18px; max-width: 460px; width: 100%; margin: auto; box-shadow: 0 20px 60px rgba(15,23,42,.3); animation: modalPop .3s cubic-bezier(.34,1.56,.64,1); }
+
+/* ===== Modal Tree View ===== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 99990; display: flex; align-items: center; justify-content: center; padding: 12px; overflow-y: auto; }
+.modal-overlay.hidden { display: none; }
+.modal-card { background: #fff; border-radius: 14px; padding: 14px 12px; max-width: 640px; width: 100%; max-height: 92vh; overflow-y: auto; margin: auto; box-shadow: 0 20px 60px rgba(15,23,42,.3); animation: modalPop .28s cubic-bezier(.34,1.56,.64,1); }
 @keyframes modalPop { 0% { opacity: 0; transform: scale(.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-.success-icon { width: 62px; height: 62px; margin: 0 auto 10px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; animation: successPop .5s .15s cubic-bezier(.34,1.56,.64,1) both; }
-@keyframes successPop { 0% { transform: scale(0); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
-.success-title { text-align: center; font-size: 15px; font-weight: bold; color: #065f46; margin: 0 0 4px; }
-.success-sub { text-align: center; font-size: 11.5px; color: #64748b; margin: 0 0 14px; }
-.success-grid { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; display: grid; grid-template-columns: 1fr; gap: 7px; }
-.success-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-soft); }
-.success-row:last-child { border-bottom: none; padding-bottom: 0; }
-.success-lbl { font-size: 11px; color: #64748b; font-weight: bold; flex-shrink: 0; }
-.success-val { font-size: 12px; color: #1e293b; font-weight: bold; text-align: left; flex: 1; word-break: break-word; }
-.success-val.code { font-family: 'Courier New', monospace; color: #f59e0b; direction: ltr; text-align: right; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; padding-bottom: 9px; border-bottom: 1px solid var(--border-soft); position: sticky; top: 0; background: #fff; z-index: 5; }
+.modal-head h3 { margin: 0; color: var(--primary); font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.modal-close { width: auto; padding: 5px 12px; margin: 0; background: #e2e8f0; color: #334155; font-size: 12.5px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; }
+
+.tree-modal-node { background: #fff; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 5px; overflow: hidden; position: relative; padding-right: 4px; }
+.tree-modal-node::before { content: ''; position: absolute; top: 8px; bottom: 8px; right: 0; width: 3px; border-radius: 3px; background: var(--primary); }
+.tree-modal-node.type-report::before { background: #10b981; }
+.tree-modal-node.type-comment::before { background: #94a3b8; }
+.tree-modal-header { padding: 8px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; user-select: none; }
+.tree-modal-header:hover { background: #f8fafc; }
+.tree-modal-header .tm-row-top { display: flex; align-items: center; gap: 6px; }
+.tree-modal-header .tm-type { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 5px; font-size: 9.5px; font-weight: bold; background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #1e40af; flex-shrink: 0; }
+.tree-modal-header .tm-type.report { background: linear-gradient(135deg, #d1fae5, #ecfdf5); color: #065f46; }
+.tree-modal-header .tm-type.comment { background: linear-gradient(135deg, #f1f5f9, #f8fafc); color: #475569; }
+.tree-modal-header .tm-code { font-family: 'Courier New', monospace; font-size: 10px; color: #94a3b8; font-weight: bold; direction: ltr; flex: 1; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-modal-header .tm-subject { font-size: 11.5px; font-weight: bold; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-modal-header .tm-meta { font-size: 9.5px; color: #64748b; display: flex; gap: 6px; flex-wrap: wrap; margin-top: 1px; }
+.tree-modal-header .tm-badges { display: inline-flex; gap: 4px; align-items: center; flex-shrink: 0; }
+.tree-modal-toggle { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 5px; background: #f1f5f9; color: #64748b; font-size: 9px; flex-shrink: 0; transition: transform .2s; }
+.tree-modal-toggle.open { transform: rotate(180deg); background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #1e40af; }
+.tree-modal-toggle.leaf { background: transparent; opacity: .3; cursor: default; }
+.tree-modal-children { display: none; padding: 4px 16px 4px 4px; border-top: 1px dashed var(--border); background: #fafbfc; }
+.tree-modal-children.open { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; padding-bottom: 6px; }
+.tree-modal-children.hidden { display: none; }
+
+.detail-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; margin-bottom: 10px; }
+.detail-box .dk-row { display: flex; padding: 5px 0; border-bottom: 1px dashed var(--border-soft); font-size: 11.5px; gap: 6px; align-items: baseline; }
+.detail-box .dk-row:last-child { border-bottom: none; }
+.detail-box .dk-lbl { font-weight: bold; color: #64748b; min-width: 80px; flex-shrink: 0; font-size: 10.5px; }
+.detail-box .dk-val { flex: 1; color: #1e293b; word-break: break-word; }
+.detail-box .dk-full-text { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; font-size: 11px; color: #334155; line-height: 1.85; white-space: pre-line; margin-top: 8px; }
+
+.action-buttons { display: flex; gap: 6px; margin-top: 12px; }
+.action-btn { flex: 1; padding: 9px; border: none; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 5px; margin: 0; }
+.action-btn.report { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 2px 6px rgba(16,185,129,.2); }
+.action-btn.comment { background: #fff; color: #334155; border: 1.5px solid var(--border); }
+.action-btn.comment:hover { border-color: var(--primary); color: var(--primary); }
+
+.modal-back-btn { background: #e2e8f0; color: #334155; margin-bottom: 10px; width: 100%; padding: 8px; font-size: 12px; }
+
+/* ===== Details modal (openAddOnly) ===== */
+#nodeModal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 99999; align-items: center; justify-content: center; padding: 14px; overflow-y: auto; }
+#nodeModal.open { display: flex; }
 .progress-slider-wrap { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; margin-top: 8px; }
 .progress-slider-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
 .progress-slider-lbl { font-size: 11.5px; font-weight: bold; color: #475569; }
@@ -256,27 +298,44 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .progress-slider-bg { position: absolute; inset: 11px 0 auto 0; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #e2e8f0, #cbd5e1); overflow: hidden; }
 .progress-slider-fill { position: absolute; top: 0; bottom: 0; right: 0; background: linear-gradient(90deg, #10b981, #059669); border-radius: 4px; transition: width .15s; }
 .progress-slider-locked { position: absolute; top: 0; bottom: 0; right: 0; background: rgba(100,116,139,0.22); border-radius: 4px; z-index: 2; }
-.progress-slider-thumb { position: absolute; top: 3px; width: 24px; height: 24px; background: #fff; border: 3px solid #10b981; border-radius: 50%; box-shadow: 0 2px 8px rgba(16,185,129,.4), 0 1px 3px rgba(15,23,42,.15); cursor: grab; transform: translateX(50%); transition: box-shadow .15s, transform .1s; z-index: 3; touch-action: none; }
-.progress-slider-thumb:active { cursor: grabbing; transform: translateX(50%) scale(1.12); box-shadow: 0 4px 12px rgba(16,185,129,.55); }
+.progress-slider-thumb { position: absolute; top: 3px; width: 24px; height: 24px; background: #fff; border: 3px solid #10b981; border-radius: 50%; box-shadow: 0 2px 8px rgba(16,185,129,.4); cursor: grab; transform: translateX(50%); z-index: 3; touch-action: none; }
+.progress-slider-thumb:active { cursor: grabbing; transform: translateX(50%) scale(1.12); }
 .progress-slider-minmax { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; font-weight: bold; margin-top: -4px; }
 .progress-input-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .progress-input { flex: 1; padding: 7px 10px; font-size: 14px; font-family: 'Courier New', monospace; text-align: center; font-weight: bold; color: #065f46; background: #fff; border: 1.5px solid var(--success); border-radius: 8px; direction: ltr; }
-.progress-input:focus { outline: none; border-color: #059669; box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
 .progress-input-hint { font-size: 10.5px; color: #64748b; font-weight: bold; }
 .perm-banner { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #fcd34d; border-radius: 9px; padding: 9px 11px; font-size: 11px; color: #78350f; font-weight: bold; line-height: 1.7; text-align: center; margin-bottom: 10px; }
 .perm-banner.err { background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #fca5a5; color: #991b1b; }
+
+/* ===== Success Modal ===== */
+#successModal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center; padding: 14px; overflow-y: auto; }
+#successModal.open { display: flex; }
+.success-box { background: #fff; border-radius: 16px; padding: 22px 18px 18px; max-width: 460px; width: 100%; margin: auto; box-shadow: 0 20px 60px rgba(15,23,42,.3); animation: modalPop .3s cubic-bezier(.34,1.56,.64,1); }
+.success-icon { width: 62px; height: 62px; margin: 0 auto 10px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; }
+.success-title { text-align: center; font-size: 15px; font-weight: bold; color: #065f46; margin: 0 0 4px; }
+.success-sub { text-align: center; font-size: 11.5px; color: #64748b; margin: 0 0 14px; }
+.success-grid { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; }
+.success-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-soft); }
+.success-row:last-child { border-bottom: none; padding-bottom: 0; }
+.success-lbl { font-size: 11px; color: #64748b; font-weight: bold; flex-shrink: 0; }
+.success-val { font-size: 12px; color: #1e293b; font-weight: bold; text-align: left; flex: 1; word-break: break-word; }
+.success-val.code { font-family: 'Courier New', monospace; color: #f59e0b; direction: ltr; text-align: right; }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(16,185,129,.97); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 12.5px; font-weight: bold; box-shadow: 0 8px 24px rgba(16,185,129,.35); z-index: 999999; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; max-width: 90%; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
+.toast.error { background: rgba(239,68,68,.97); }
+
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; align-items: end; }
+.form-row-3 > div { min-width: 0; }
+.form-row-3 label { margin-top: 8px; font-size: 11px; }
+
 @media (max-width: 480px) {
-  :root { --ticker-h: 30px; --topbar-h: 42px; --sticky-top: 72px; --sticky-extra-top: 184px; }
+  :root { --ticker-h: 30px; --topbar-h: 42px; --sticky-top: 72px; }
   .container { padding: 8px 10px 26px; }
-  .uh-row-small { font-size: 10px; gap: 8px; }
   .menu-grid { grid-template-columns: 1fr 1fr; }
   .nav-btn { width: 30px; height: 30px; font-size: 13px; }
-  .pdp-popup { max-width: 100%; }
   .pdp-day { height: 22px; font-size: 10px; }
-  .filter-btn { font-size: 10px; min-width: 42px; padding: 4px 5px; }
-  .preview-label { min-width: 72px; }
   .tree-quick-grid { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
-  .tree-details-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 400px) {
   .form-row-3 { grid-template-columns: 1fr 1fr; }
@@ -358,53 +417,74 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 
   <div id="reportsSection" class="screen">
     <h2 class="section-title">📊 گزارش‌ها و گردش کار</h2>
-    <div class="reports-sticky" id="dateFilterCard">
-      <div class="reports-sticky-title">📅 فیلتر تاریخ</div>
-      <div class="filter-row">
-        <button class="filter-btn" data-date="all" onclick="setDateFilter('all')">همه</button>
-        <button class="filter-btn active" data-date="today" onclick="setDateFilter('today')">امروز</button>
-        <button class="filter-btn" data-date="tomorrow" onclick="setDateFilter('tomorrow')">فردا</button>
-        <button class="filter-btn" data-date="week" onclick="setDateFilter('week')">هفته جاری</button>
-      </div>
-      <div class="date-row" style="margin-top:7px;">
-        <div class="col"><div id="fromDatePDP"></div><div class="date-lbl">از تاریخ</div></div>
-        <div class="col"><div id="toDatePDP"></div><div class="date-lbl">تا تاریخ</div></div>
-      </div>
-      <button id="applyDateFilterBtn" style="margin-top:7px; padding:7px; font-size:11.5px;">✅ اعمال فیلتر</button>
-    </div>
 
-    <div class="extra-filters-sticky hidden" id="extraFiltersCard">
-      <div class="reports-sticky-title" style="margin-bottom:5px;">🔎 فیلترهای بیشتر</div>
-      <div class="filter-row" id="typeFilterRow">
-        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">همه</button>
-        <button class="filter-btn" data-filter="order" onclick="setFilter('order')">📋 کار</button>
-        <button class="filter-btn" data-filter="report" onclick="setFilter('report')">📊 گزارش</button>
-        <button class="filter-btn" data-filter="comment" onclick="setFilter('comment')">💬 کامنت</button>
+    <div class="filters-panel" id="filtersPanel">
+      <div class="filters-head">
+        <span class="filters-head-title">🔎 فیلترها</span>
+        <button class="filters-reset-all" onclick="resetAllFilters()">✕ پاک کردن</button>
       </div>
-      <div id="basicOnlyMsg" style="display:none;margin-top:8px;padding:8px;background:#dbeafe;color:#1e40af;border-radius:7px;font-size:10.5px;text-align:center;line-height:1.7;">ℹ️ شما فقط دستور کارها، گزارشات و پیام‌های خود را می‌توانید مشاهده کنید</div>
-      <div id="recipientFilterBlock" style="display:none;">
-        <label style="margin-top:8px;font-size:11px;">پیمانکار / شخص مسئول</label>
-        <div id="contractorFilterWrap"></div>
-        <button id="applyExtraFiltersBtn" style="margin-top:6px; padding:6px; font-size:11px;">🔄 اعمال فیلتر مخاطب</button>
+
+      <div class="filters-dates">
+        <div class="filters-date-group">
+          <div class="filters-date-lbl">📅 تاریخ ثبت در سیستم</div>
+          <div class="filters-date-inputs">
+            <div><div id="regFromPDP"></div><div class="fdp-lbl">از</div></div>
+            <div><div id="regToPDP"></div><div class="fdp-lbl">تا</div></div>
+          </div>
+        </div>
+        <div class="filters-date-group">
+          <div class="filters-date-lbl">📅 تاریخ زمانبندی برنامه</div>
+          <div class="filters-date-inputs">
+            <div><div id="schedFromPDP"></div><div class="fdp-lbl">از</div></div>
+            <div><div id="schedToPDP"></div><div class="fdp-lbl">تا</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filters-chips" id="filtersChips">
+        <button class="fchip" data-f="subject" onclick="openFilterPopup('subject')"><span>موضوع</span><span class="fchip-badge hidden">0</span><span class="fchip-arrow">▼</span></button>
+        <button class="fchip" data-f="epc" onclick="openFilterPopup('epc')"><span>EPC</span><span class="fchip-badge hidden">0</span><span class="fchip-arrow">▼</span></button>
+        <button class="fchip" data-f="field" onclick="openFilterPopup('field')"><span>رشته</span><span class="fchip-badge hidden">0</span><span class="fchip-arrow">▼</span></button>
+        <button class="fchip" data-f="related" onclick="openFilterPopup('related')"><span>مرتبط با برنامه</span><span class="fchip-badge hidden">0</span><span class="fchip-arrow">▼</span></button>
+        <button class="fchip" data-f="status" onclick="openFilterPopup('status')"><span>وضعیت</span><span class="fchip-badge hidden">0</span><span class="fchip-arrow">▼</span></button>
+        <button class="fchip" data-f="contractor" onclick="openFilterPopup('contractor')"><span>پیمانکار/مسئول</span><span class="fchip-badge hidden">0</span><span class="fchip-arrow">▼</span></button>
+        <button class="fchip" data-f="cc" onclick="openFilterPopup('cc')"><span>رونوشت به</span><span class="fchip-badge hidden">0</span><span class="fchip-arrow">▼</span></button>
+      </div>
+
+      <button class="filters-apply" onclick="loadReports()">🔄 بارگذاری گزارش‌ها</button>
+      <div class="basic-only-note" id="basicOnlyNote">ℹ️ شما فقط دستورکارها، گزارشات و پیام‌های خود را می‌بینید</div>
+
+      <div class="filter-popup hidden" id="filterPopup">
+        <div class="filter-popup-head">
+          <span id="filterPopupTitle">انتخاب</span>
+          <button class="filter-popup-close" onclick="closeFilterPopup()">✕</button>
+        </div>
+        <div class="filter-popup-search">
+          <input type="text" id="filterSearchInput" placeholder="🔍 جستجو..." oninput="renderFilterPopupList()" autocomplete="off">
+        </div>
+        <div class="filter-popup-list" id="filterPopupList"></div>
+        <div class="filter-popup-foot">
+          <button class="filter-popup-clear" onclick="clearFilterPopup()">✕ پاک کردن این فیلتر</button>
+        </div>
       </div>
     </div>
 
     <div class="form-loader hidden" id="reportsLoader"><div class="fl-spinner"></div><div class="fl-text">در حال بارگذاری گزارش‌ها<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span></div></div>
-    <div id="treeContainer" class="tree-container"><div class="tree-empty">📅 برای مشاهده گزارش‌ها، بازه تاریخ را انتخاب کرده و دکمه «اعمال فیلتر» را بزنید</div></div>
+    <div id="treeContainer" class="tree-container">
+      <div class="tree-empty">📅 بازه تاریخ را انتخاب کرده و دکمه «بارگذاری گزارش‌ها» را بزنید</div>
+    </div>
   </div>
 
   <div id="workOrderSection" class="screen">
     <h2 class="section-title">📋 ثبت دستور کار</h2>
     <div class="form-loader" id="formLoader">
       <div class="fl-spinner"></div>
-      <div class="fl-text">در حال آماده‌سازی فرم<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-count" id="flCount">در حال بارگذاری داده‌ها</span></div>
+      <div class="fl-text">در حال آماده‌سازی فرم<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span></div>
     </div>
     <div class="card">
       <h3 class="section-h">👥 مخاطب</h3>
-      <label>انتخاب مخاطب *</label>
-      <div id="recipientWrap"></div>
-      <label>رونوشت پیام به (اختیاری - چندگانه)</label>
-      <div id="ccWrap"></div>
+      <label>انتخاب مخاطب *</label><div id="recipientWrap"></div>
+      <label>رونوشت پیام به (اختیاری - چندگانه)</label><div id="ccWrap"></div>
       <div class="plat-box" style="margin-top:12px;">
         <div style="font-size:12px; font-weight:bold; margin-bottom:5px;">📡 پلتفورم ارسال پیام:</div>
         <div class="plat-row all"><input type="checkbox" id="chkAll"><label for="chkAll">🌐 همه پلتفورم‌ها</label></div>
@@ -450,7 +530,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       <div class="preview-row"><div class="preview-label">مدت:</div><div class="preview-value" id="pvDur">—</div></div>
       <div class="preview-row"><div class="preview-label">تاریخ پایان:</div><div class="preview-value" id="pvEnd">—</div></div>
     </div>
-    <div class="preview-title" style="text-align:right; margin-top:12px;">📩 متن پیام نهایی (توسط شیت تولید می‌شود):</div>
+    <div class="preview-title" style="text-align:right; margin-top:12px;">📩 متن پیام نهایی:</div>
     <div class="preview-msg" id="pvMsg"></div>
     <div class="btn-row">
       <button id="editBtn" class="btn-sec">← ویرایش</button>
@@ -460,7 +540,30 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   </div>
 </div>
 
-<div id="nodeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,.55);z-index:99999;align-items:center;justify-content:center;padding:14px;overflow-y:auto;">
+<!-- ===== Modal 1: Tree View ===== -->
+<div class="modal-overlay hidden" id="treeViewModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🌳 درخت وراثت</h3>
+      <button class="modal-close" onclick="closeTreeModal()">✕ بستن</button>
+    </div>
+    <div id="treeModalContent"></div>
+  </div>
+</div>
+
+<!-- ===== Modal 2: Row Details + Actions ===== -->
+<div class="modal-overlay hidden" id="rowDetailModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📋 جزئیات ردیف</h3>
+      <button class="modal-close" onclick="closeRowDetail()">✕ بستن</button>
+    </div>
+    <div id="rowDetailContent"></div>
+  </div>
+</div>
+
+<!-- ===== Modal: nodeModal (openAddOnly - report/comment form) ===== -->
+<div id="nodeModal">
   <div class="card" style="max-width:620px;width:100%;max-height:90vh;overflow-y:auto;margin:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
       <h3 id="modalTitle" style="margin:0;color:var(--primary);font-size:14px;">ثبت جدید</h3>
@@ -471,12 +574,8 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       <div id="modalPermBanner" class="perm-banner hidden"></div>
       <label id="modalAddLabel" style="margin-top:0;">متن:</label>
       <textarea id="modalAddText" placeholder="توضیحات..."></textarea>
-
-      <label>در ارتباط با ردیف برنامه (اختیاری)</label>
-      <div id="modalRelatedWrap"></div>
-
-      <label>وضعیت کار (اختیاری)</label>
-      <div id="modalStatusWrap"></div>
+      <label>در ارتباط با ردیف برنامه (اختیاری)</label><div id="modalRelatedWrap"></div>
+      <label>وضعیت کار (اختیاری)</label><div id="modalStatusWrap"></div>
 
       <label>📊 درصد پیشرفت تجمعی</label>
       <div class="progress-slider-wrap">
@@ -500,14 +599,9 @@ button:disabled { opacity: .5; cursor: not-allowed; }
         </div>
       </div>
 
-      <label>📅 تاریخ شروع واقعی</label>
-      <div id="actualStartPDP"></div>
-
-      <label>📅 تاریخ پایان واقعی</label>
-      <div id="actualEndPDP"></div>
-
-      <label>رونوشت به (فقط ادمین/ستاد - چندگانه)</label>
-      <div id="modalCCWrap"></div>
+      <label>📅 تاریخ شروع واقعی</label><div id="actualStartPDP"></div>
+      <label>📅 تاریخ پایان واقعی</label><div id="actualEndPDP"></div>
+      <label>رونوشت به (فقط ادمین/ستاد - چندگانه)</label><div id="modalCCWrap"></div>
 
       <div class="btn-row">
         <button type="button" id="modalCancelAdd" class="btn-sec" style="padding:9px; font-size:12.5px;">انصراف</button>
@@ -518,6 +612,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   </div>
 </div>
 
+<!-- ===== Success Modal ===== -->
 <div id="successModal">
   <div class="success-box">
     <div class="success-icon">✅</div>
@@ -546,6 +641,7 @@ function toFaNum(str) {
   return String(str).replace(/\d/g, function(d) { return fa[parseInt(d, 10)]; });
 }
 
+/* ===== Ticker ===== */
 var tickerIndex = 0, tickerItems = [], tickerIntervalId = null;
 function startTicker() {
   tickerItems = [];
@@ -577,14 +673,8 @@ function showToast(text, isError) {
 
 function showGlobalLoader(t) { document.getElementById('globalLoaderText').textContent = t || 'در حال بارگذاری...'; document.getElementById('globalLoader').classList.remove('hidden'); }
 function hideGlobalLoader() { document.getElementById('globalLoader').classList.add('hidden'); }
-function setLoaderState(state, msg) {
-  var l = document.getElementById('formLoader'); if (!l) return;
-  if (state === 'loading') { l.classList.remove('ready', 'hide'); var t = l.querySelector('.fl-text'); if (t) t.innerHTML = msg + '<span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-dot">.</span><span class="fl-count" id="flCount">در حال بارگذاری داده‌ها</span>'; }
-  else if (state === 'ready') { l.classList.add('ready'); l.classList.remove('hide'); var c = document.getElementById('flCount'); var t2 = l.querySelector('.fl-text'); if (t2) t2.innerHTML = '✅ ' + msg + '<span class="fl-count">' + (c ? c.textContent : '') + '</span>'; }
-  else if (state === 'hide') { l.classList.add('hide'); }
-}
-function updateLoaderCount(t) { var c = document.getElementById('flCount'); if (c) c.textContent = t; }
 
+/* ===== Navigation ===== */
 function navigateTo(id) {
   if (navIndex < navStack.length - 1) navStack = navStack.slice(0, navIndex + 1);
   if (navStack.length > 0 && navStack[navStack.length - 1] === id) return;
@@ -592,7 +682,9 @@ function navigateTo(id) {
   renderScreen(id); updateNavBtns();
 }
 function renderScreen(id) {
-  ['loading','welcomeSection','formSection','panelMenuSection','reportsSection','workOrderSection','previewSection'].forEach(function(x) { var el = document.getElementById(x); if (el) el.classList.remove('active'); });
+  ['loading','welcomeSection','formSection','panelMenuSection','reportsSection','workOrderSection','previewSection'].forEach(function(x) {
+    var el = document.getElementById(x); if (el) el.classList.remove('active');
+  });
   var t = document.getElementById(id); if (t) t.classList.add('active');
   var topbar = document.getElementById('topbar'), ticker = document.getElementById('ticker');
   if (id === 'loading') { topbar.classList.add('hidden'); ticker.classList.add('hidden'); }
@@ -606,16 +698,24 @@ function renderScreen(id) {
   if (id === 'panelMenuSection') updateMenuByAccess();
   if (id === 'workOrderSection') {
     if (!panelLoaded) loadPanel();
-    else { setLoaderState('loading', 'در حال آماده‌سازی فرم'); updateLoaderCount('استفاده از داده‌های ذخیره‌شده'); setTimeout(function() { setLoaderState('ready', 'فرم آماده است'); setTimeout(function() { setLoaderState('hide'); }, 2000); }, 500); }
     reserveForUser();
   }
   if (id === 'reportsSection') {
-    document.getElementById('extraFiltersCard').classList.add('hidden');
-    var tc = document.getElementById('treeContainer');
-    if (tc) tc.innerHTML = '<div class="tree-empty">📅 برای مشاهده گزارش‌ها، بازه تاریخ را انتخاب کرده و دکمه «اعمال فیلتر» را بزنید</div>';
-    dateFilterApplied = false; reportsLoaded = false; reportsData = [];
+    var access = currentUser ? String(currentUser.access || '').trim() : '';
+    if (access === 'پایه') {
+      document.getElementById('basicOnlyNote').style.display = 'block';
+      var ccChip = document.querySelector('.fchip[data-f="cc"]');
+      var conChip = document.querySelector('.fchip[data-f="contractor"]');
+      if (ccChip) ccChip.style.display = 'none';
+      if (conChip) conChip.style.display = 'none';
+    } else {
+      document.getElementById('basicOnlyNote').style.display = 'none';
+      var ccChip2 = document.querySelector('.fchip[data-f="cc"]');
+      var conChip2 = document.querySelector('.fchip[data-f="contractor"]');
+      if (ccChip2) ccChip2.style.display = '';
+      if (conChip2) conChip2.style.display = '';
+    }
     ensureSummaryTasks();
-    ensureRecipientsLoaded();
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -630,7 +730,6 @@ if (tg && tg.BackButton) tg.BackButton.onClick(function() { goBack(); });
 
 function escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ✅ اصلاح شد — addChildNode بدون retry
 function api(data, retries) {
   if (data.action === 'createWorkOrder') retries = 0;
   else if (data.action === 'addChildNode') retries = 0;
@@ -784,18 +883,6 @@ function reserveForUser() {
     .catch(function() {});
 }
 
-function ensureRecipientsLoaded() {
-  if (recipients.length > 0) return;
-  api({ action: 'getRecipients' }).then(function(r) {
-    recipients = (r && r.recipients) || [];
-    if (modalCCSS && recipients.length > 0) {
-      var ccOpts = recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; });
-      modalCCSS.setOpts(ccOpts);
-      modalCCSS.setPh('چندگانه - اختیاری (' + recipients.length + ')');
-    }
-  }).catch(function() {});
-}
-
 function updateMenuByAccess() {
   var access = currentUser ? String(currentUser.access || '').trim() : '';
   var createEl = document.getElementById('menuCreateOrder'), reportsEl = document.getElementById('menuReports');
@@ -843,8 +930,10 @@ function showWelcome(userData) {
 function init() {
   if (!tgUser) { document.getElementById('loading').innerHTML = '<div style="padding:30px;text-align:center;color:#c00;">لطفاً از داخل تلگرام باز کنید</div>'; return; }
   try {
-    pdpFromDate = makePDP('fromDatePDP', { placeholder: 'از تاریخ', onChange: function() { setDateFilter('custom'); } });
-    pdpToDate = makePDP('toDatePDP', { placeholder: 'تا تاریخ', onChange: function() { setDateFilter('custom'); } });
+    regFromPDP = makePDP('regFromPDP', { placeholder: 'از' });
+    regToPDP = makePDP('regToPDP', { placeholder: 'تا' });
+    schedFromPDP = makePDP('schedFromPDP', { placeholder: 'از' });
+    schedToPDP = makePDP('schedToPDP', { placeholder: 'تا' });
   } catch (e) {}
   var safety = setTimeout(function() { if (document.getElementById('loading').classList.contains('active')) navigateTo('welcomeSection'); }, 10000);
   api({ action: 'getUserStatus', chatId: tgUser.id }).then(function(r) { clearTimeout(safety); handleStatus(r); }).catch(function() { clearTimeout(safety); navigateTo('welcomeSection'); });
@@ -857,21 +946,27 @@ function handleStatus(r) {
 }
 function reload(showLoading) {
   if (showLoading) { document.getElementById('loading').classList.add('active'); document.getElementById('welcomeSection').classList.remove('active'); document.getElementById('topbar').classList.add('hidden'); document.getElementById('ticker').classList.add('hidden'); }
-  panelLoaded = false; reportsLoaded = false; dateFilterApplied = false; reservedNumbers = []; reportsData = []; currentContractors = []; expandedNodes = {}; contractorSS = null;
+  panelLoaded = false; reportsLoaded = false; reservedNumbers = []; reportsData = []; expandedNodes = {};
   api({ action: 'getUserStatus', chatId: tgUser.id }).then(function(r) { handleStatus(r); fetchWeather(); }).catch(function() { navigateTo('welcomeSection'); });
 }
 
 document.getElementById('menuCreateOrder').onclick = function() { navigateTo('workOrderSection'); };
 document.getElementById('menuReports').onclick = function() { navigateTo('reportsSection'); };
 
-var reportsData = [], reportsLoaded = false, dateFilterApplied = false, currentDateFilter = 'today', currentFilter = 'all';
-var currentContractors = [], expandedNodes = {}, currentActiveNode = null, contractorSS = null;
-var pdpFromDate = null, pdpToDate = null, pdpStartDate = null;
+/* ===== Global State ===== */
+var reportsData = [], reportsLoaded = false;
+var regFromPDP = null, regToPDP = null, schedFromPDP = null, schedToPDP = null;
+var filterValues = { subject: [], epc: [], field: [], related: [], status: [], contractor: [], cc: [] };
+var filterAvailableOptions = { subject: [], epc: [], field: [], related: [], status: [], contractor: [], cc: [] };
+var filterPopupOpen = null;
 var scheduleTasks = [], statusOptions = [], summaryTaskSet = {};
 var modalRelatedSS = null, modalStatusSS = null, modalActualStartPDP = null, modalActualEndPDP = null, modalCCSS = null;
 var modalSubmitting = false;
 var modalProgressCurrent = 0, modalProgressValue = 0, modalProgressIsAdmin = false;
+var treeModalOpen = false;
+var expandedTreeModalNodes = {};
 
+/* ===== Filters ===== */
 function isCurrentUserAdmin() {
   var access = currentUser ? String(currentUser.access || '').trim() : '';
   return (access === 'ادمین' || access === 'ستادی');
@@ -887,266 +982,569 @@ function ensureSummaryTasks() {
     var so = (r.statusOptions && r.statusOptions.options) || [];
     statusOptions = so.slice();
     rr.forEach(function(t) { if (t.isSummary) summaryTaskSet[t.value] = true; });
-    if (reportsData.length > 0) renderTree();
+    if (reportsData.length > 0) { buildFilterAvailableOptions(); pruneFilterValues(); }
   }).catch(function() {});
 }
 
-function pad2(n) { return String(n).length < 2 ? '0' + n : String(n); }
-function setDateFilter(type) {
-  currentDateFilter = type;
-  var btns = document.querySelectorAll('#reportsSection [data-date]');
-  for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-date') === type);
-  if (type !== 'custom') { if (pdpFromDate) pdpFromDate.setValue(''); if (pdpToDate) pdpToDate.setValue(''); }
+function buildFilterAvailableOptions() {
+  var opts = { subject: [], epc: [], field: [], related: [], status: [], contractor: [], cc: [] };
+  var uniq = { subject: {}, epc: {}, field: {}, related: {}, status: {}, contractor: {}, cc: {} };
+  function addOpt(list, seen, val, isSummary) {
+    val = String(val || '').trim();
+    if (!val || seen[val]) return;
+    seen[val] = true;
+    list.push({ value: val, label: val, isSummary: !!isSummary });
+  }
+  (reportsData || []).forEach(function(o) {
+    addOpt(opts.subject, uniq.subject, o.subject);
+    addOpt(opts.epc, uniq.epc, o.epc);
+    addOpt(opts.field, uniq.field, o.field);
+    addOpt(opts.related, uniq.related, o.relatedTask, summaryTaskSet[o.relatedTask]);
+    addOpt(opts.status, uniq.status, o.status);
+    addOpt(opts.contractor, uniq.contractor, o.recipient);
+    var ccVal = String(o.cc || '').trim();
+    if (ccVal) ccVal.split(',').forEach(function(c) { c = c.trim(); if (c) addOpt(opts.cc, uniq.cc, c); });
+  });
+  ['subject','epc','field','status','contractor','cc'].forEach(function(k) {
+    opts[k].sort(function(a, b) { return a.label.localeCompare(b.label, 'fa'); });
+  });
+  opts.related.sort(function(a, b) { return a.label.localeCompare(b.label, 'fa', { numeric: true }); });
+  filterAvailableOptions = opts;
 }
-function getDateRangeForFilter(type) {
-  if (type === 'all') return { from: '', to: '' };
-  if (type === 'custom') { var cf = pdpFromDate ? pdpFromDate.getValue() : ''; var ct = pdpToDate ? pdpToDate.getValue() : ''; return { from: cf || '', to: ct || '' }; }
-  var now = new Date(); var todayJ = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
-  var todayStr = todayJ[0] + '-' + pad2(todayJ[1]) + '-' + pad2(todayJ[2]);
-  if (type === 'today') return { from: todayStr, to: todayStr };
-  if (type === 'tomorrow') { var tm = new Date(now.getTime() + 86400000); var tj = g2j(tm.getFullYear(), tm.getMonth()+1, tm.getDate()); var tmStr = tj[0] + '-' + pad2(tj[1]) + '-' + pad2(tj[2]); return { from: tmStr, to: tmStr }; }
-  if (type === 'week') { var dow = now.getDay(); var daysToSat = (dow - 6 + 7) % 7; var sat = new Date(now.getTime() - daysToSat * 86400000); var fri = new Date(sat.getTime() + 6 * 86400000); var sj = g2j(sat.getFullYear(), sat.getMonth()+1, sat.getDate()); var fj = g2j(fri.getFullYear(), fri.getMonth()+1, fri.getDate()); return { from: sj[0] + '-' + pad2(sj[1]) + '-' + pad2(sj[2]), to: fj[0] + '-' + pad2(fj[1]) + '-' + pad2(fj[2]) }; }
-  return { from: '', to: '' };
-}
-function applyDateFilter() {
-  var fromVal = pdpFromDate ? pdpFromDate.getValue() : '';
-  var toVal = pdpToDate ? pdpToDate.getValue() : '';
-  var range = null;
-  if (fromVal || toVal) { range = { from: fromVal || '', to: toVal || '' }; }
-  else if (currentDateFilter === 'custom') { alert('لطفاً حداقل یک تاریخ انتخاب کنید'); return; }
-  else { range = getDateRangeForFilter(currentDateFilter); }
-  if (!range) { alert('فیلتر تاریخ نامعتبر'); return; }
-  dateFilterApplied = true;
-  loadReports(range);
-}
-document.getElementById('applyDateFilterBtn').onclick = applyDateFilter;
 
-function setFilter(f) {
-  currentFilter = f;
-  var btns = document.querySelectorAll('#reportsSection [data-filter]');
-  for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-filter') === f);
+function pruneFilterValues() {
+  for (var key in filterValues) {
+    var avail = filterAvailableOptions[key] || [];
+    var availSet = {};
+    avail.forEach(function(o) { availSet[o.value] = true; });
+    filterValues[key] = (filterValues[key] || []).filter(function(v) { return availSet[v]; });
+    updateChipBadge(key);
+  }
+}
+
+function updateChipBadge(key) {
+  var chip = document.querySelector('.fchip[data-f="' + key + '"]');
+  if (!chip) return;
+  var badge = chip.querySelector('.fchip-badge');
+  var count = (filterValues[key] || []).length;
+  if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); chip.classList.add('active'); }
+  else { badge.classList.add('hidden'); chip.classList.remove('active'); }
+}
+
+function getFilterTitle(key) {
+  var titles = { subject: 'موضوع ردیف', epc: 'EPC', field: 'رشته', related: 'مرتبط با برنامه کلی', status: 'وضعیت کار', contractor: 'پیمانکار / شخص مسئول', cc: 'رونوشت پیام به' };
+  return titles[key] || 'انتخاب';
+}
+
+function openFilterPopup(key) {
+  event.stopPropagation();
+  filterPopupOpen = key;
+  var popup = document.getElementById('filterPopup');
+  document.getElementById('filterPopupTitle').textContent = getFilterTitle(key);
+  document.getElementById('filterSearchInput').value = '';
+  popup.classList.remove('hidden');
+  renderFilterPopupList();
+}
+
+function closeFilterPopup() {
+  filterPopupOpen = null;
+  var popup = document.getElementById('filterPopup');
+  if (popup) popup.classList.add('hidden');
+}
+
+function clearFilterPopup() {
+  if (!filterPopupOpen) return;
+  filterValues[filterPopupOpen] = [];
+  updateChipBadge(filterPopupOpen);
+  closeFilterPopup();
   renderTree();
 }
 
-function loadReports(range) {
-  var loader = document.getElementById('reportsLoader'), container = document.getElementById('treeContainer');
-  if (loader) loader.classList.remove('hidden'); if (container) container.innerHTML = '';
-  if (!range) range = getDateRangeForFilter(currentDateFilter) || { from: '', to: '' };
+function toggleFilterOption(key, val) {
+  var arr = filterValues[key] || [];
+  var idx = arr.indexOf(val);
+  if (idx === -1) arr.push(val); else arr.splice(idx, 1);
+  filterValues[key] = arr;
+  updateChipBadge(key);
+  closeFilterPopup();
+  renderTree();
+}
+
+function getFilterIndent(val) {
+  var s = String(val || '');
+  var dots = (s.match(/\./g) || []).length;
+  return Math.min(dots, 4);
+}
+
+function renderFilterPopupList() {
+  if (!filterPopupOpen) return;
+  var popup = document.getElementById('filterPopupList');
+  var search = String(document.getElementById('filterSearchInput').value || '').toLowerCase().trim();
+  var options = filterAvailableOptions[filterPopupOpen] || [];
+  var selected = filterValues[filterPopupOpen] || [];
+  popup.innerHTML = '';
+  var filtered = options.filter(function(opt) {
+    if (!search) return true;
+    return String(opt.label || opt.value).toLowerCase().indexOf(search) !== -1;
+  });
+  if (filtered.length === 0) {
+    var empty = document.createElement('div'); empty.className = 'filter-opt-empty';
+    empty.textContent = options.length === 0 ? 'گزینه‌ای موجود نیست' : 'نتیجه‌ای یافت نشد';
+    popup.appendChild(empty); return;
+  }
+  filtered.forEach(function(opt) {
+    var val = opt.value;
+    var isSel = selected.indexOf(val) !== -1;
+    var ind = (filterPopupOpen === 'related') ? getFilterIndent(opt.label || opt.value) : 0;
+    var item = document.createElement('div');
+    item.className = 'filter-opt' + (isSel ? ' selected' : '');
+    item.style.paddingRight = (10 + ind * 14) + 'px';
+    var chk = document.createElement('span'); chk.className = 'filter-opt-chk'; chk.textContent = isSel ? '✓' : ''; item.appendChild(chk);
+    var lbl = document.createElement('span'); lbl.className = 'filter-opt-lbl'; lbl.textContent = opt.label || opt.value; item.appendChild(lbl);
+    if (opt.isSummary) { var sb = document.createElement('span'); sb.className = 'filter-opt-sum'; sb.textContent = 'S'; item.appendChild(sb); }
+    item.onclick = function(ev) { ev.stopPropagation(); toggleFilterOption(filterPopupOpen, val); };
+    popup.appendChild(item);
+  });
+}
+
+function resetAllFilters() {
+  filterValues = { subject: [], epc: [], field: [], related: [], status: [], contractor: [], cc: [] };
+  ['subject','epc','field','related','status','contractor','cc'].forEach(function(k) { updateChipBadge(k); });
+  if (regFromPDP) regFromPDP.setValue('');
+  if (regToPDP) regToPDP.setValue('');
+  if (schedFromPDP) schedFromPDP.setValue('');
+  if (schedToPDP) schedToPDP.setValue('');
+  closeFilterPopup();
+  renderTree();
+}
+
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('filterPopup');
+  if (!popup || popup.classList.contains('hidden')) return;
+  var panel = document.getElementById('filtersPanel');
+  if (!popup.contains(e.target) && !panel.contains(e.target)) closeFilterPopup();
+});
+
+/* ===== Reports Loading ===== */
+function loadReports() {
+  var loader = document.getElementById('reportsLoader');
+  var container = document.getElementById('treeContainer');
+  if (loader) loader.classList.remove('hidden');
+  if (container) container.innerHTML = '';
+
   var access = currentUser ? String(currentUser.access || '').trim() : '';
   var sysName = currentUser ? String(currentUser.systemName || '').trim() : '';
   var fullName = currentUser ? String(currentUser.fullName || '').trim() : '';
+  var regFromVal = regFromPDP ? regFromPDP.getValue() : '';
+  var regToVal = regToPDP ? regToPDP.getValue() : '';
+  var schedFromVal = schedFromPDP ? schedFromPDP.getValue() : '';
+  var schedToVal = schedToPDP ? schedToPDP.getValue() : '';
+
   ensureSummaryTasks();
-  api({ action: 'getWorkOrdersList', userAccess: access, userSystemName: sysName, userFullName: fullName, dateFrom: range.from, dateTo: range.to })
+  api({
+    action: 'getWorkOrdersList',
+    userAccess: access, userSystemName: sysName, userFullName: fullName,
+    regFrom: regFromVal || '', regTo: regToVal || '',
+    schedFrom: schedFromVal || '', schedTo: schedToVal || ''
+  })
     .then(function(r) {
       if (loader) loader.classList.add('hidden');
       if (r && r.ok) {
-        reportsData = r.orders || []; reportsLoaded = true;
-        document.getElementById('extraFiltersCard').classList.remove('hidden');
-        var rBlock = document.getElementById('recipientFilterBlock'), bMsg = document.getElementById('basicOnlyMsg');
-        if (access === 'ادمین' || access === 'ستادی') { rBlock.style.display = ''; bMsg.style.display = 'none'; if (!contractorSS) initContractorFilter(); }
-        else { rBlock.style.display = 'none'; bMsg.style.display = ''; }
+        reportsData = r.orders || [];
+        reportsLoaded = true;
+        buildFilterAvailableOptions();
+        pruneFilterValues();
         renderTree();
-      } else container.innerHTML = '<div class="tree-empty">❌ خطا در بارگذاری گزارش‌ها</div>';
+      } else {
+        container.innerHTML = '<div class="tree-empty">❌ خطا در بارگذاری گزارش‌ها</div>';
+      }
     })
-    .catch(function(err) { if (loader) loader.classList.add('hidden'); container.innerHTML = '<div class="tree-empty">❌ ' + escHtml(err.message || 'خطا در ارتباط') + '</div>'; });
+    .catch(function(err) {
+      if (loader) loader.classList.add('hidden');
+      container.innerHTML = '<div class="tree-empty">❌ ' + escHtml(err.message || 'خطا در ارتباط') + '</div>';
+    });
 }
-function initContractorFilter() {
-  var uniq = {}, list = [];
-  reportsData.forEach(function(o) { var r = String(o.recipient || '').trim(); if (!r || uniq[r]) return; uniq[r] = true; list.push(r); });
-  contractorSS = makeSS('contractorFilterWrap', { multi: true, options: list.map(function(n) { return { value: n, label: n }; }), placeholder: 'تایپ کنید (' + list.length + ')' });
-}
-document.getElementById('applyExtraFiltersBtn').onclick = function() { currentContractors = contractorSS ? contractorSS.getValue() : []; renderTree(); };
 
 function getNodeType(code) { if (!code) return 'order'; var f = code.charAt(0).toUpperCase(); if (f === 'R') return 'report'; if (f === 'C') return 'comment'; return 'order'; }
+function getTypeIcon(type) { if (type === 'report') return '📊'; if (type === 'comment') return '💬'; return '📋'; }
+function getTypeLabel(type) { if (type === 'report') return 'گزارش'; if (type === 'comment') return 'کامنت'; return 'دستور کار'; }
 
+function filterReports(data) {
+  return (data || []).filter(function(o) {
+    if (filterValues.subject.length > 0 && filterValues.subject.indexOf(String(o.subject || '').trim()) === -1) return false;
+    if (filterValues.epc.length > 0 && filterValues.epc.indexOf(String(o.epc || '').trim()) === -1) return false;
+    if (filterValues.field.length > 0 && filterValues.field.indexOf(String(o.field || '').trim()) === -1) return false;
+    if (filterValues.related.length > 0 && filterValues.related.indexOf(String(o.relatedTask || '').trim()) === -1) return false;
+    if (filterValues.status.length > 0 && filterValues.status.indexOf(String(o.status || '').trim()) === -1) return false;
+    if (filterValues.contractor.length > 0 && filterValues.contractor.indexOf(String(o.recipient || '').trim()) === -1) return false;
+    if (filterValues.cc.length > 0) {
+      var ccParts = String(o.cc || '').split(',').map(function(c){return c.trim();}).filter(Boolean);
+      if (!filterValues.cc.some(function(sel) { return ccParts.indexOf(sel) !== -1; })) return false;
+    }
+    return true;
+  });
+}
+
+/* ===== Render List of Cards ===== */
 function renderTree() {
   var container = document.getElementById('treeContainer'); if (!container) return;
   container.innerHTML = '';
-  var filtered = reportsData.filter(function(o) {
-    if (currentFilter !== 'all') { var t = getNodeType(o.code); if (t !== currentFilter) return false; }
-    if (currentContractors.length > 0) { if (currentContractors.indexOf(String(o.recipient || '').trim()) === -1) return false; }
-    return true;
-  });
+  var filtered = filterReports(reportsData);
+
   if (filtered.length === 0) { container.innerHTML = '<div class="tree-empty">📭 هیچ موردی یافت نشد</div>'; return; }
-  var childrenMap = {}; filtered.forEach(function(o) { var p = o.parentDirect || ''; if (!childrenMap[p]) childrenMap[p] = []; childrenMap[p].push(o); });
+
   var codesInList = {}; filtered.forEach(function(o) { codesInList[o.code] = true; });
   var roots = filtered.filter(function(o) {
     if (!o.parentDirect) return true;
     if (!codesInList[o.parentDirect]) return true;
     return false;
   });
+
   if (roots.length === 0) { container.innerHTML = '<div class="tree-empty">📭 دستور کاری یافت نشد</div>'; return; }
 
-  function buildNode(node, depth) {
-    var type = getNodeType(node.code);
-    var children = childrenMap[node.code] || [];
-    var hasChildren = children.length > 0;
-    var nodeId = node.code;
-    var isExpanded = expandedNodes[nodeId] === true;
-    var div = document.createElement('div');
-    div.className = 'tree-node type-' + type + (isExpanded ? ' open' : '');
-    var header = document.createElement('div');
-    header.className = 'tree-header';
-    header.onclick = function(e) { if (e) e.stopPropagation(); expandedNodes[nodeId] = !isExpanded; renderTree(); };
-    var rowTop = document.createElement('div');
-    rowTop.className = 'tree-row-top';
-    var typeBadge = document.createElement('span');
-    typeBadge.className = 'tree-type-badge' + (type === 'order' ? '' : ' ' + type);
-    typeBadge.textContent = type === 'order' ? '📋 دستور کار' : (type === 'report' ? '📊 گزارش' : '💬 کامنت');
-    rowTop.appendChild(typeBadge);
-    var codeEl = document.createElement('span');
-    codeEl.className = 'tree-code-inline';
-    codeEl.textContent = node.code || '';
-    codeEl.title = node.code || '';
-    rowTop.appendChild(codeEl);
-    var badgesWrap = document.createElement('span');
-    badgesWrap.className = 'tree-badges';
-    if (node.relatedTask && summaryTaskSet[node.relatedTask]) {
-      var sumBadge = document.createElement('span');
-      sumBadge.className = 'badge-summary';
-      sumBadge.textContent = 'S';
-      sumBadge.title = 'Summary';
-      badgesWrap.appendChild(sumBadge);
-    }
-    if (node.status) {
-      var stBadge = document.createElement('span');
-      stBadge.className = 'badge-status';
-      if (node.status.indexOf('در حال') !== -1) stBadge.classList.add('running');
-      else if (node.status.indexOf('پیش') !== -1 || node.status.indexOf('نویس') !== -1) stBadge.classList.add('draft');
-      stBadge.textContent = node.status;
-      badgesWrap.appendChild(stBadge);
-    }
-    var chev = document.createElement('span');
-    chev.className = 'tree-chevron';
-    chev.textContent = '▼';
-    badgesWrap.appendChild(chev);
-    rowTop.appendChild(badgesWrap);
-    header.appendChild(rowTop);
-    var title = document.createElement('div');
-    title.className = 'tree-title';
-    title.textContent = node.subject || '—';
-    title.title = node.subject || '';
-    header.appendChild(title);
-    var qg = document.createElement('div');
-    qg.className = 'tree-quick-grid';
-    function addQuick(lbl, val) {
-      if (!val) return;
-      var it = document.createElement('div');
-      it.className = 'quick-item';
-      var l = document.createElement('div'); l.className = 'quick-lbl'; l.textContent = lbl;
-      var v = document.createElement('div'); v.className = 'quick-val'; v.textContent = val; v.title = val;
-      it.appendChild(l); it.appendChild(v);
-      qg.appendChild(it);
-    }
-    addQuick('👤 مخاطب', node.recipient);
-    addQuick('📅 شروع', node.startShamsi);
-    addQuick('📅 پایان', node.endShamsi);
-    addQuick('🔗 مرتبط', node.relatedTask);
-    if (qg.children.length > 0) header.appendChild(qg);
-    if (node.description) {
-      var snip = document.createElement('div');
-      snip.className = 'tree-snippet';
-      snip.textContent = '📝 ' + node.description;
-      header.appendChild(snip);
-    }
-    var rowBot = document.createElement('div');
-    rowBot.className = 'tree-row-bottom';
-    var cnt = document.createElement('span');
-    cnt.className = 'tree-children-count';
-    if (hasChildren) {
-      var rCount = 0, repCount = 0, cmtCount = 0;
-      children.forEach(function(c) {
-        var t = getNodeType(c.code);
-        if (t === 'order') rCount++;
-        else if (t === 'report') repCount++;
-        else if (t === 'comment') cmtCount++;
-      });
-      var parts = [];
-      if (rCount) parts.push(rCount + ' کار');
-      if (repCount) parts.push(repCount + ' گزارش');
-      if (cmtCount) parts.push(cmtCount + ' کامنت');
-      cnt.textContent = '📎 ' + children.length + ' زیرمجموعه (' + parts.join('، ') + ')';
-    }
-    rowBot.appendChild(cnt);
-    var progNum = parseFloat(node.progress) || 0;
-    if (progNum > 0 && progNum < 1) progNum *= 100;
-    var progWrap = document.createElement('span');
-    progWrap.className = 'tree-progress-mini';
-    var bar = document.createElement('span'); bar.className = 'progress-bar-mini';
-    var fill = document.createElement('span'); fill.className = 'progress-fill-mini';
-    fill.style.width = Math.min(100, Math.max(0, progNum)) + '%';
-    bar.appendChild(fill);
-    var progTxt = document.createElement('span');
-    progTxt.textContent = Math.round(progNum) + '%';
-    progWrap.appendChild(bar); progWrap.appendChild(progTxt);
-    rowBot.appendChild(progWrap);
-    header.appendChild(rowBot);
-    div.appendChild(header);
-    var details = document.createElement('div');
-    details.className = 'tree-details';
-    var dgrid = document.createElement('div');
-    dgrid.className = 'tree-details-grid';
-    function addDetail(lbl, val) {
-      if (!val) return;
-      var it = document.createElement('div');
-      it.className = 'detail-item';
-      var l = document.createElement('span'); l.className = 'detail-lbl'; l.textContent = lbl;
-      var v = document.createElement('span'); v.className = 'detail-val'; v.textContent = val;
-      it.appendChild(l); it.appendChild(v);
-      dgrid.appendChild(it);
-    }
-    addDetail('EPC:', node.epc);
-    addDetail('رشته:', node.field);
-    addDetail('نوع کار:', node.engagement);
-    addDetail('آدرس:', node.address);
-    addDetail('مرتبط:', node.relatedTask);
-    if (node.cc) addDetail('رونوشت:', node.cc);
-    addDetail('ثبت:', node.dateShamsi);
-    if (node.actualStartShamsi) addDetail('شروع واقعی:', node.actualStartShamsi);
-    if (node.actualEndShamsi) addDetail('پایان واقعی:', node.actualEndShamsi);
-    if (dgrid.children.length > 0) details.appendChild(dgrid);
-    if (node.description) {
-      var dt = document.createElement('div');
-      dt.className = 'detail-full-text';
-      dt.textContent = node.description;
-      details.appendChild(dt);
-    }
-    var dActions = document.createElement('div');
-    dActions.className = 'detail-actions';
-    var btnR = document.createElement('button');
-    btnR.className = 'detail-action-btn report';
-    btnR.type = 'button';
-    btnR.textContent = '📊 ثبت گزارش';
-    btnR.onclick = function(e) { e.stopPropagation(); openAddOnly(node, 'R'); };
-    var btnC = document.createElement('button');
-    btnC.className = 'detail-action-btn comment';
-    btnC.type = 'button';
-    btnC.textContent = '💬 ثبت کامنت';
-    btnC.onclick = function(e) { e.stopPropagation(); onCommentClick(node); };
-    dActions.appendChild(btnR); dActions.appendChild(btnC);
-    details.appendChild(dActions);
-    div.appendChild(details);
-    if (hasChildren) {
-      var chDiv = document.createElement('div');
-      chDiv.className = 'tree-children';
-      children.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
-      children.forEach(function(child) { chDiv.appendChild(buildNode(child, depth + 1)); });
-      div.appendChild(chDiv);
-    }
-    return div;
-  }
+  var childrenMap = {}; filtered.forEach(function(o) {
+    var p = o.parentDirect || '';
+    if (!childrenMap[p]) childrenMap[p] = [];
+    childrenMap[p].push(o);
+  });
+
   roots.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
-  roots.forEach(function(root) { container.appendChild(buildNode(root, 0)); });
+
+  roots.forEach(function(root) {
+    var card = buildListCard(root, childrenMap);
+    container.appendChild(card);
+  });
 }
 
-function onCommentClick(node) {
-  if (!isCurrentUserAdmin()) {
-    showToast('⛔ ثبت کامنت/پاسخ فقط برای ادمین و ستاد مجاز است. لطفاً از دکمه «ثبت گزارش» استفاده کنید.', true);
+function buildListCard(node, childrenMap) {
+  var type = getNodeType(node.code);
+  var children = childrenMap[node.code] || [];
+  var hasChildren = children.length > 0;
+  var div = document.createElement('div');
+  div.className = 'tree-node type-' + type;
+  div.onclick = function() { openTreeModal(node.code); };
+
+  var header = document.createElement('div');
+  header.className = 'tree-header';
+
+  var rowTop = document.createElement('div');
+  rowTop.className = 'tree-row-top';
+
+  var typeBadge = document.createElement('span');
+  typeBadge.className = 'tree-type-badge' + (type === 'order' ? '' : ' ' + type);
+  typeBadge.textContent = getTypeIcon(type) + ' ' + getTypeLabel(type);
+  rowTop.appendChild(typeBadge);
+
+  var codeEl = document.createElement('span');
+  codeEl.className = 'tree-code-inline';
+  codeEl.textContent = node.code || '';
+  rowTop.appendChild(codeEl);
+
+  var badgesWrap = document.createElement('span');
+  badgesWrap.className = 'tree-badges';
+  if (node.relatedTask && summaryTaskSet[node.relatedTask]) {
+    var sumBadge = document.createElement('span');
+    sumBadge.className = 'badge-summary';
+    sumBadge.textContent = 'S';
+    badgesWrap.appendChild(sumBadge);
+  }
+  if (node.status) {
+    var stBadge = document.createElement('span');
+    stBadge.className = 'badge-status';
+    if (node.status.indexOf('در حال') !== -1) stBadge.classList.add('running');
+    else if (node.status.indexOf('پیش') !== -1 || node.status.indexOf('نویس') !== -1) stBadge.classList.add('draft');
+    stBadge.textContent = node.status;
+    badgesWrap.appendChild(stBadge);
+  }
+  var chev = document.createElement('span');
+  chev.className = 'tree-chevron';
+  chev.textContent = '🌳';
+  badgesWrap.appendChild(chev);
+  rowTop.appendChild(badgesWrap);
+  header.appendChild(rowTop);
+
+  var title = document.createElement('div');
+  title.className = 'tree-title';
+  title.textContent = node.subject || '—';
+  header.appendChild(title);
+
+  var qg = document.createElement('div');
+  qg.className = 'tree-quick-grid';
+  function addQuick(lbl, val) {
+    if (!val) return;
+    var it = document.createElement('div');
+    it.className = 'quick-item';
+    var l = document.createElement('div'); l.className = 'quick-lbl'; l.textContent = lbl;
+    var v = document.createElement('div'); v.className = 'quick-val'; v.textContent = val;
+    it.appendChild(l); it.appendChild(v);
+    qg.appendChild(it);
+  }
+  addQuick('👤 مخاطب', node.recipient);
+  addQuick('📅 شروع', node.startShamsi);
+  addQuick('📅 پایان', node.endShamsi);
+  addQuick('🔗 مرتبط', node.relatedTask);
+  if (qg.children.length > 0) header.appendChild(qg);
+
+  if (node.description) {
+    var snip = document.createElement('div');
+    snip.className = 'tree-snippet';
+    snip.textContent = '📝 ' + node.description;
+    header.appendChild(snip);
+  }
+
+  var rowBot = document.createElement('div');
+  rowBot.className = 'tree-row-bottom';
+  var cnt = document.createElement('span');
+  cnt.className = 'tree-children-count';
+  if (hasChildren) {
+    var rCount = 0, repCount = 0, cmtCount = 0;
+    children.forEach(function(c) {
+      var t = getNodeType(c.code);
+      if (t === 'order') rCount++;
+      else if (t === 'report') repCount++;
+      else if (t === 'comment') cmtCount++;
+    });
+    var parts = [];
+    if (rCount) parts.push(rCount + ' کار');
+    if (repCount) parts.push(repCount + ' گزارش');
+    if (cmtCount) parts.push(cmtCount + ' کامنت');
+    cnt.textContent = '📎 ' + children.length + ' زیرمجموعه (' + parts.join('، ') + ')';
+  } else {
+    cnt.textContent = '👉 برای مشاهده درخت کامل کلیک کنید';
+  }
+  rowBot.appendChild(cnt);
+
+  var progNum = parseFloat(node.progress) || 0;
+  if (progNum > 0 && progNum < 1) progNum *= 100;
+  var progWrap = document.createElement('span');
+  progWrap.className = 'tree-progress-mini';
+  var bar = document.createElement('span'); bar.className = 'progress-bar-mini';
+  var fill = document.createElement('span'); fill.className = 'progress-fill-mini';
+  fill.style.width = Math.min(100, Math.max(0, progNum)) + '%';
+  bar.appendChild(fill);
+  var progTxt = document.createElement('span');
+  progTxt.textContent = Math.round(progNum) + '%';
+  progWrap.appendChild(bar); progWrap.appendChild(progTxt);
+  rowBot.appendChild(progWrap);
+
+  header.appendChild(rowBot);
+  div.appendChild(header);
+  return div;
+}
+
+/* ===== Tree Modal ===== */
+function openTreeModal(rootCode) {
+  treeModalOpen = true;
+  expandedTreeModalNodes = {};
+  expandedTreeModalNodes[rootCode] = true;
+  renderTreeModal(rootCode);
+  document.getElementById('treeViewModal').classList.remove('hidden');
+}
+
+function closeTreeModal() {
+  treeModalOpen = false;
+  document.getElementById('treeViewModal').classList.add('hidden');
+  document.getElementById('treeModalContent').innerHTML = '';
+}
+
+function renderTreeModal(rootCode) {
+  var content = document.getElementById('treeModalContent');
+  content.innerHTML = '';
+
+  var filtered = filterReports(reportsData);
+  var childrenMap = {};
+  filtered.forEach(function(o) {
+    var p = o.parentDirect || '';
+    if (!childrenMap[p]) childrenMap[p] = [];
+    childrenMap[p].push(o);
+  });
+
+  var root = null;
+  for (var i = 0; i < reportsData.length; i++) if (reportsData[i].code === rootCode) { root = reportsData[i]; break; }
+  if (!root) { content.innerHTML = '<div class="tree-empty">ردیف پیدا نشد</div>'; return; }
+
+  // Also include ancestors even if filtered out
+  var expandedFiltered = filtered.slice();
+  var codeSet = {}; expandedFiltered.forEach(function(o) { codeSet[o.code] = true; });
+  var cur = root;
+  while (cur && cur.parentDirect && !codeSet[cur.parentDirect]) {
+    for (var j = 0; j < reportsData.length; j++) {
+      if (reportsData[j].code === cur.parentDirect) {
+        expandedFiltered.push(reportsData[j]);
+        codeSet[reportsData[j].code] = true;
+        cur = reportsData[j];
+        break;
+      }
+    }
+  }
+
+  var cm2 = {};
+  expandedFiltered.forEach(function(o) {
+    var p = o.parentDirect || '';
+    if (!cm2[p]) cm2[p] = [];
+    cm2[p].push(o);
+  });
+
+  content.appendChild(buildTreeModalNode(root, 0, cm2));
+}
+
+function buildTreeModalNode(node, depth, childrenMap) {
+  var type = getNodeType(node.code);
+  var children = childrenMap[node.code] || [];
+  var hasChildren = children.length > 0;
+  var isOpen = expandedTreeModalNodes[node.code] === true;
+
+  var wrap = document.createElement('div');
+  wrap.className = 'tree-modal-node type-' + type;
+
+  var header = document.createElement('div');
+  header.className = 'tree-modal-header';
+  header.style.paddingRight = (8 + depth * 14) + 'px';
+
+  var rowTop = document.createElement('div');
+  rowTop.className = 'tm-row-top';
+
+  var toggle = document.createElement('span');
+  toggle.className = 'tree-modal-toggle ' + (hasChildren ? (isOpen ? 'open' : '') : 'leaf');
+  toggle.textContent = hasChildren ? '▼' : '•';
+  toggle.onclick = function(ev) {
+    ev.stopPropagation();
+    if (!hasChildren) return;
+    expandedTreeModalNodes[node.code] = !expandedTreeModalNodes[node.code];
+    renderTreeModal(currentTreeRootCode());
+  };
+  rowTop.appendChild(toggle);
+
+  var typeBadge = document.createElement('span');
+  typeBadge.className = 'tm-type' + (type === 'order' ? '' : ' ' + type);
+  typeBadge.textContent = getTypeIcon(type) + ' ' + getTypeLabel(type);
+  rowTop.appendChild(typeBadge);
+
+  var codeEl = document.createElement('span');
+  codeEl.className = 'tm-code';
+  codeEl.textContent = node.code || '';
+  rowTop.appendChild(codeEl);
+
+  var badgesWrap = document.createElement('span');
+  badgesWrap.className = 'tm-badges';
+  if (node.relatedTask && summaryTaskSet[node.relatedTask]) {
+    var sb = document.createElement('span'); sb.className = 'badge-summary'; sb.textContent = 'S'; badgesWrap.appendChild(sb);
+  }
+  if (node.status) {
+    var stB = document.createElement('span');
+    stB.className = 'badge-status';
+    if (node.status.indexOf('در حال') !== -1) stB.classList.add('running');
+    else if (node.status.indexOf('پیش') !== -1 || node.status.indexOf('نویس') !== -1) stB.classList.add('draft');
+    stB.textContent = node.status;
+    badgesWrap.appendChild(stB);
+  }
+  rowTop.appendChild(badgesWrap);
+  header.appendChild(rowTop);
+
+  var subjEl = document.createElement('div');
+  subjEl.className = 'tm-subject';
+  subjEl.textContent = node.subject || '—';
+  header.appendChild(subjEl);
+
+  var metaEl = document.createElement('div');
+  metaEl.className = 'tm-meta';
+  if (node.recipient) metaEl.innerHTML += '<span>👤 ' + escHtml(node.recipient) + '</span>';
+  if (node.startShamsi) metaEl.innerHTML += '<span>📅 ' + escHtml(node.startShamsi) + (node.endShamsi ? ' تا ' + escHtml(node.endShamsi) : '') + '</span>';
+  if (children.length > 0) metaEl.innerHTML += '<span>📎 ' + children.length + '</span>';
+  header.appendChild(metaEl);
+
+  header.onclick = function(ev) {
+    ev.stopPropagation();
+    openRowDetail(node);
+  };
+  wrap.appendChild(header);
+
+  if (hasChildren) {
+    var chDiv = document.createElement('div');
+    chDiv.className = 'tree-modal-children' + (isOpen ? ' open' : ' hidden');
+    children.sort(function(a, b) { return (a.wbs || '').localeCompare(b.wbs || '', undefined, { numeric: true }); });
+    children.forEach(function(child) {
+      chDiv.appendChild(buildTreeModalNode(child, depth + 1, childrenMap));
+    });
+    wrap.appendChild(chDiv);
+  }
+
+  return wrap;
+}
+
+function currentTreeRootCode() {
+  var content = document.getElementById('treeModalContent');
+  var first = content.querySelector('.tree-modal-node');
+  if (!first) return null;
+  // find code from first node
+  var node = findNodeInTreeModalData(first);
+  return node;
+}
+
+function findNodeInTreeModalData(el) {
+  // simpler: store root code globally
+  return window._treeModalRootCode || null;
+}
+
+/* ===== Row Details Modal ===== */
+function openRowDetail(node) {
+  var content = document.getElementById('rowDetailContent');
+  var type = getNodeType(node.code);
+  var icon = getTypeIcon(type);
+  var typeLabel = getTypeLabel(type);
+
+  var html = '';
+  html += '<div class="detail-box">';
+  html += '<div class="dk-row"><div class="dk-lbl">نوع:</div><div class="dk-val">' + icon + ' ' + typeLabel + '</div></div>';
+  html += '<div class="dk-row"><div class="dk-lbl">کد:</div><div class="dk-val" style="font-family:monospace;color:#f59e0b;font-weight:bold;direction:ltr;text-align:right;">' + escHtml(node.code || '') + '</div></div>';
+  html += '<div class="dk-row"><div class="dk-lbl">موضوع:</div><div class="dk-val">' + escHtml(node.subject || '—') + '</div></div>';
+  if (node.recipient) html += '<div class="dk-row"><div class="dk-lbl">مخاطب:</div><div class="dk-val">' + escHtml(node.recipient) + '</div></div>';
+  if (node.cc) html += '<div class="dk-row"><div class="dk-lbl">رونوشت:</div><div class="dk-val">' + escHtml(node.cc) + '</div></div>';
+  if (node.epc) html += '<div class="dk-row"><div class="dk-lbl">EPC:</div><div class="dk-val">' + escHtml(node.epc) + '</div></div>';
+  if (node.field) html += '<div class="dk-row"><div class="dk-lbl">رشته:</div><div class="dk-val">' + escHtml(node.field) + '</div></div>';
+  if (node.engagement) html += '<div class="dk-row"><div class="dk-lbl">پیمانکاری:</div><div class="dk-val">' + escHtml(node.engagement) + '</div></div>';
+  if (node.address) html += '<div class="dk-row"><div class="dk-lbl">آدرس:</div><div class="dk-val">' + escHtml(node.address) + '</div></div>';
+  if (node.relatedTask) html += '<div class="dk-row"><div class="dk-lbl">مرتبط با:</div><div class="dk-val">' + escHtml(node.relatedTask) + '</div></div>';
+  if (node.dateShamsi) html += '<div class="dk-row"><div class="dk-lbl">تاریخ ثبت:</div><div class="dk-val">' + escHtml(node.dateShamsi) + '</div></div>';
+  if (node.startShamsi) html += '<div class="dk-row"><div class="dk-lbl">شروع:</div><div class="dk-val">' + escHtml(node.startShamsi) + '</div></div>';
+  if (node.endShamsi) html += '<div class="dk-row"><div class="dk-lbl">پایان:</div><div class="dk-val">' + escHtml(node.endShamsi) + '</div></div>';
+  if (node.actualStartShamsi) html += '<div class="dk-row"><div class="dk-lbl">شروع واقعی:</div><div class="dk-val">' + escHtml(node.actualStartShamsi) + '</div></div>';
+  if (node.actualEndShamsi) html += '<div class="dk-row"><div class="dk-lbl">پایان واقعی:</div><div class="dk-val">' + escHtml(node.actualEndShamsi) + '</div></div>';
+  if (node.status) html += '<div class="dk-row"><div class="dk-lbl">وضعیت:</div><div class="dk-val">' + escHtml(node.status) + '</div></div>';
+  var progNum = parseFloat(node.progress) || 0;
+  if (progNum > 0 && progNum < 1) progNum *= 100;
+  html += '<div class="dk-row"><div class="dk-lbl">پیشرفت:</div><div class="dk-val">' + Math.round(progNum) + '%</div></div>';
+  if (node.description) {
+    html += '<div class="dk-full-text">' + escHtml(node.description) + '</div>';
+  }
+  html += '</div>';
+
+  html += '<div class="action-buttons">';
+  html += '<button class="action-btn report" onclick="openAddOnlyFromDetail(\'R\')">📊 ثبت گزارش</button>';
+  html += '<button class="action-btn comment" onclick="openAddOnlyFromDetail(\'C\')">💬 ثبت کامنت</button>';
+  html += '</div>';
+
+  content.innerHTML = html;
+  window._currentDetailNode = node;
+  document.getElementById('rowDetailModal').classList.remove('hidden');
+}
+
+function closeRowDetail() {
+  document.getElementById('rowDetailModal').classList.add('hidden');
+  document.getElementById('rowDetailContent').innerHTML = '';
+}
+
+function openAddOnlyFromDetail(type) {
+  var node = window._currentDetailNode;
+  if (!node) return;
+  if (type === 'C' && !isCurrentUserAdmin()) {
+    showToast('⛔ ثبت کامنت فقط برای ادمین و ستاد مجاز است', true);
     return;
   }
-  openAddOnly(node, 'C');
+  openAddOnly(node, type);
 }
 
+/* ===== Existing: openAddOnly (report/comment form) ===== */
 function faDigitsToEn(s) {
   var fa = '۰۱۲۳۴۵۶۷۸۹', ar = '٠١٢٣٤٥٦٧٨٩';
   var out = '';
@@ -1159,13 +1557,7 @@ function faDigitsToEn(s) {
   }
   return out;
 }
-function clampProgress(v, min, max) {
-  v = parseInt(v, 10);
-  if (isNaN(v)) v = min;
-  if (v < min) v = min;
-  if (v > max) v = max;
-  return v;
-}
+function clampProgress(v, min, max) { v = parseInt(v, 10); if (isNaN(v)) v = min; if (v < min) v = min; if (v > max) v = max; return v; }
 function setModalProgressValue(v) {
   var minV = modalProgressIsAdmin ? 0 : modalProgressCurrent;
   v = clampProgress(v, minV, 100);
@@ -1178,18 +1570,10 @@ function setModalProgressValue(v) {
   if (inp && document.activeElement !== inp) inp.value = v;
 }
 function bindProgressUI() {
-  var thumb = document.getElementById('progThumb');
-  var track = document.getElementById('progTrack');
-  var inp = document.getElementById('progInput');
+  var thumb = document.getElementById('progThumb'), track = document.getElementById('progTrack'), inp = document.getElementById('progInput');
   if (!thumb || !track || !inp) return;
   var dragging = false;
-  function updateFromX(clientX) {
-    var rect = track.getBoundingClientRect();
-    var ratio = (rect.right - clientX) / rect.width;
-    ratio = Math.max(0, Math.min(1, ratio));
-    var v = Math.round(ratio * 100);
-    setModalProgressValue(v);
-  }
+  function updateFromX(clientX) { var rect = track.getBoundingClientRect(); var ratio = (rect.right - clientX) / rect.width; ratio = Math.max(0, Math.min(1, ratio)); setModalProgressValue(Math.round(ratio * 100)); }
   function onDown(e) { dragging = true; e.preventDefault(); var x = (e.touches ? e.touches[0].clientX : e.clientX); updateFromX(x); }
   function onMove(e) { if (!dragging) return; e.preventDefault(); var x = (e.touches ? e.touches[0].clientX : e.clientX); updateFromX(x); }
   function onUp() { dragging = false; }
@@ -1200,19 +1584,8 @@ function bindProgressUI() {
   document.addEventListener('touchmove', onMove, { passive: false });
   document.addEventListener('touchend', onUp);
   track.addEventListener('click', function(e) { if (e.target === thumb) return; updateFromX(e.clientX); });
-  inp.addEventListener('input', function() {
-    var raw = this.value;
-    var en = faDigitsToEn(raw).replace(/[^\d]/g, '');
-    if (en === '') { this.value = ''; return; }
-    var v = clampProgress(en, 0, 100);
-    setModalProgressValue(v);
-  });
-  inp.addEventListener('blur', function() {
-    var minV = modalProgressIsAdmin ? 0 : modalProgressCurrent;
-    var v = clampProgress(faDigitsToEn(this.value) || modalProgressValue, minV, 100);
-    setModalProgressValue(v);
-    this.value = v;
-  });
+  inp.addEventListener('input', function() { var en = faDigitsToEn(this.value).replace(/[^\d]/g, ''); if (en === '') { this.value = ''; return; } setModalProgressValue(clampProgress(en, 0, 100)); });
+  inp.addEventListener('blur', function() { var minV = modalProgressIsAdmin ? 0 : modalProgressCurrent; var v = clampProgress(faDigitsToEn(this.value) || modalProgressValue, minV, 100); setModalProgressValue(v); this.value = v; });
 }
 
 function openAddOnly(node, type) {
@@ -1226,33 +1599,28 @@ function openAddOnly(node, type) {
   var curProgress = parseFloat(node.progress) || 0;
   if (curProgress > 0 && curProgress < 1) curProgress *= 100;
   curProgress = Math.max(0, Math.min(100, Math.round(curProgress)));
-  modalProgressCurrent = curProgress;
-  modalProgressValue = curProgress;
+  modalProgressCurrent = curProgress; modalProgressValue = curProgress;
   var titleEl = document.getElementById('modalTitle');
   titleEl.textContent = type === 'R' ? '📊 ثبت گزارش' : '💬 ثبت کامنت';
   document.getElementById('modalAddLabel').textContent = type === 'R' ? 'متن گزارش:' : 'متن کامنت:';
   if (!isAdmin && type === 'C') {
     permBanner.className = 'perm-banner err';
-    permBanner.textContent = '⛔ ثبت کامنت/پاسخ فقط برای ادمین و ستاد مجاز است. لطفاً از دکمه «ثبت گزارش» استفاده کنید.';
+    permBanner.textContent = '⛔ ثبت کامنت فقط برای ادمین و ستاد مجاز است.';
     permBanner.classList.remove('hidden');
     addForm.style.display = 'block';
     document.getElementById('modalSubmitAdd').disabled = true;
     document.getElementById('modalSubmitAdd').innerText = 'غیرمجاز';
-    modal.style.display = 'flex';
-    return;
+    modal.classList.add('open'); return;
   } else if (type === 'C') {
     permBanner.className = 'perm-banner';
-    permBanner.textContent = '⚠️ این بخش فقط برای ادمین و ستاد است. کاربران پایه فقط از دکمه «ثبت گزارش» استفاده کنند.';
+    permBanner.textContent = '⚠️ این بخش فقط برای ادمین و ستاد است.';
     permBanner.classList.remove('hidden');
-  } else {
-    permBanner.classList.add('hidden');
-  }
+  } else { permBanner.classList.add('hidden'); }
+
   content.innerHTML =
-    '<div style="display:flex;flex-direction:column;gap:6px;padding:4px 0;">' +
+    '<div style="display:flex;flex-direction:column;gap:6px;">' +
       '<div><span style="font-family:monospace;color:#92400e;font-weight:bold;direction:ltr;background:#fef3c7;padding:3px 8px;border-radius:5px;font-size:11px;display:inline-block;">' + escHtml(node.code || '') + '</span></div>' +
       '<div style="font-size:12.5px;font-weight:bold;color:#1e293b;line-height:1.6;">' + escHtml(node.subject || '—') + '</div>' +
-      (node.recipient ? '<div style="font-size:11px;color:#64748b;">👤 ' + escHtml(node.recipient) + '</div>' : '') +
-      (node.startShamsi ? '<div style="font-size:11px;color:#64748b;">📅 ' + escHtml(node.startShamsi) + (node.endShamsi ? ' تا ' + escHtml(node.endShamsi) : '') + '</div>' : '') +
     '</div>';
   document.getElementById('modalAddText').value = '';
   document.getElementById('modalAddMsg').innerText = '';
@@ -1266,7 +1634,7 @@ function openAddOnly(node, type) {
   if (isAdmin) {
     if (recipients.length > 0) {
       var ccOpts = recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; });
-      modalCCSS = makeSS('modalCCWrap', { multi: true, options: ccOpts, placeholder: 'چندگانه - اختیاری (' + recipients.length + ')' });
+      modalCCSS = makeSS('modalCCWrap', { multi: true, options: ccOpts, placeholder: 'چندگانه (' + recipients.length + ')' });
     } else {
       modalCCSS = makeSS('modalCCWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
       api({ action: 'getRecipients' }).then(function(r) {
@@ -1274,7 +1642,7 @@ function openAddOnly(node, type) {
         if (modalCCSS && recipients.length > 0) {
           var ccOpts2 = recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; });
           modalCCSS.setOpts(ccOpts2);
-          modalCCSS.setPh('چندگانه - اختیاری (' + recipients.length + ')');
+          modalCCSS.setPh('چندگانه (' + recipients.length + ')');
         }
       }).catch(function() {});
     }
@@ -1293,26 +1661,22 @@ function openAddOnly(node, type) {
   setTimeout(function() { setModalProgressValue(curProgress); bindProgressUI(); }, 30);
   addForm.style.display = 'block';
   document.getElementById('modalSubmitAdd').onclick = function() { submitAddNode(type); };
-  modal.style.display = 'flex';
+  modal.classList.add('open');
   setTimeout(function() { document.getElementById('modalAddText').focus(); }, 150);
 }
 
 function closeNodeModal() {
-  document.getElementById('nodeModal').style.display = 'none';
+  document.getElementById('nodeModal').classList.remove('open');
   currentActiveNode = null;
   modalSubmitting = false;
 }
-document.getElementById('nodeModal').addEventListener('click', function(e) { if (e.target.id === 'nodeModal') closeNodeModal(); });
 document.getElementById('modalCancelAdd').onclick = function() { closeNodeModal(); };
+document.getElementById('nodeModal').addEventListener('click', function(e) { if (e.target.id === 'nodeModal') closeNodeModal(); });
 
 function submitAddNode(type) {
   if (modalSubmitting) return;
   var text = document.getElementById('modalAddText').value.trim();
-  if (!text) {
-    document.getElementById('modalAddMsg').innerText = '❌ متن الزامی است';
-    document.getElementById('modalAddMsg').className = 'msg msg-err';
-    return;
-  }
+  if (!text) { document.getElementById('modalAddMsg').innerText = '❌ متن الزامی است'; document.getElementById('modalAddMsg').className = 'msg msg-err'; return; }
   modalSubmitting = true;
   var btn = document.getElementById('modalSubmitAdd');
   btn.disabled = true; btn.innerText = 'در حال ارسال...';
@@ -1331,24 +1695,19 @@ function submitAddNode(type) {
   api({
     action: 'addChildNode',
     parentCode: currentActiveNode.code,
-    nodeType: type,
-    text: text,
-    actorChatId: String(tgUser.id),
-    actorAccess: accessVal,
-    relatedTask: relatedVal || '',
-    status: statusVal || '',
+    nodeType: type, text: text,
+    actorChatId: String(tgUser.id), actorAccess: accessVal,
+    relatedTask: relatedVal || '', status: statusVal || '',
     progress: modalProgressValue,
-    actualStart: actualStartVal || '',
-    actualEnd: actualEndVal || '',
+    actualStart: actualStartVal || '', actualEnd: actualEndVal || '',
     ccList: ccPayload
   })
   .then(function(r) {
     if (r && r.ok) {
       closeNodeModal();
+      closeRowDetail();
       showToast('✅ ' + r.message + ' — با تشکر', false);
-      var range = getDateRangeForFilter(currentDateFilter);
-      if (currentDateFilter === 'custom') range = { from: pdpFromDate ? pdpFromDate.getValue() : '', to: pdpToDate ? pdpToDate.getValue() : '' };
-      setTimeout(function() { loadReports(range); }, 400);
+      setTimeout(function() { loadReports(); }, 400);
     } else {
       modalSubmitting = false;
       btn.disabled = false; btn.innerText = '✅ ثبت';
@@ -1364,6 +1723,7 @@ function submitAddNode(type) {
   });
 }
 
+/* ===== Register Form ===== */
 document.getElementById('regForm').onsubmit = function(e) {
   e.preventDefault();
   var b = document.getElementById('regBtn'); b.disabled = true; b.innerText = 'در حال ارسال...';
@@ -1373,6 +1733,7 @@ document.getElementById('regForm').onsubmit = function(e) {
     .catch(function(err) { hideGlobalLoader(); b.disabled = false; b.innerText = '📨 ارسال ثبت‌نام'; showMsg('formMsg', '❌ ' + err.message, 'err'); });
 };
 
+/* ===== Searchable Select ===== */
 function makeSS(boxId, opt) {
   var box = document.getElementById(boxId); if (!box) return null;
   box.innerHTML = ''; box.className = 'ss-box';
@@ -1398,25 +1759,12 @@ function makeSS(boxId, opt) {
       var it = document.createElement('div'); it.className = 'ss-item';
       if (o.isSummary) { var b = document.createElement('span'); b.className = 'ss-summary-badge'; b.textContent = 'S'; it.appendChild(b); }
       var t = document.createElement('span'); t.textContent = o.label; it.appendChild(t);
-      function pick(ev) {
-        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
-        if (multi) { if (val.indexOf(o.value) === -1) val.push(o.value); inp.value = ''; renderChips(); renderList(''); updateClear(); if (onChange) onChange(val.slice()); }
-        else { val = o.value; inp.value = o.label; inp.readOnly = true; list.classList.add('hidden'); updateClear(); if (onChange) onChange(val); }
-      }
+      function pick(ev) { if (ev) { ev.preventDefault(); ev.stopPropagation(); } if (multi) { if (val.indexOf(o.value) === -1) val.push(o.value); inp.value = ''; renderChips(); renderList(''); updateClear(); if (onChange) onChange(val.slice()); } else { val = o.value; inp.value = o.label; inp.readOnly = true; list.classList.add('hidden'); updateClear(); if (onChange) onChange(val); } }
       it.addEventListener('mousedown', pick); it.addEventListener('touchstart', pick, { passive: false });
       list.appendChild(it);
     });
   }
-  function renderChips() {
-    chips.innerHTML = ''; if (!multi) return;
-    val.forEach(function(v) {
-      var o = objFor(v); var c = document.createElement('span'); c.className = 'ss-chip';
-      var t = document.createElement('span'); t.textContent = o.label;
-      var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×';
-      x.onclick = function(ev) { ev.stopPropagation(); val = val.filter(function(s) { return s !== v; }); renderChips(); renderList(inp.value); updateClear(); if (onChange) onChange(val.slice()); };
-      c.appendChild(t); c.appendChild(x); chips.appendChild(c);
-    });
-  }
+  function renderChips() { chips.innerHTML = ''; if (!multi) return; val.forEach(function(v) { var o = objFor(v); var c = document.createElement('span'); c.className = 'ss-chip'; var t = document.createElement('span'); t.textContent = o.label; var x = document.createElement('span'); x.className = 'ss-chip-x'; x.textContent = '×'; x.onclick = function(ev) { ev.stopPropagation(); val = val.filter(function(s) { return s !== v; }); renderChips(); renderList(inp.value); updateClear(); if (onChange) onChange(val.slice()); }; c.appendChild(t); c.appendChild(x); chips.appendChild(c); }); }
   clr.onclick = function(ev) { ev.stopPropagation(); val = multi ? [] : ''; inp.value = ''; inp.readOnly = false; renderChips(); renderList(''); updateClear(); if (onChange) onChange(multi ? [] : ''); };
   inp.onfocus = function() { if (!inp.readOnly) { list.classList.remove('hidden'); renderList(inp.value); } };
   inp.oninput = function() { if (inp.readOnly) return; if (!multi && inp.value !== objFor(val).label) { val = ''; updateClear(); if (onChange) onChange(''); } list.classList.remove('hidden'); renderList(inp.value); };
@@ -1436,8 +1784,6 @@ function makeSS(boxId, opt) {
 var ssRecipient, ssSubject, ssEpc, ssField, ssEng, ssRelated, ssAddr, ssCC;
 
 function loadPanel() {
-  setLoaderState('loading', 'در حال آماده‌سازی فرم');
-  updateLoaderCount('در حال دریافت لیست مخاطبین و گزینه‌ها');
   ssRecipient = makeSS('recipientWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...', onChange: onRecipient });
   ssCC = makeSS('ccWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
   ssSubject = makeSS('subjectWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
@@ -1446,18 +1792,16 @@ function loadPanel() {
   ssEng = makeSS('engWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssRelated = makeSS('relatedWrap', { multi: false, options: [], placeholder: 'در حال بارگذاری...' });
   ssAddr = makeSS('addrWrap', { multi: true, options: [], placeholder: 'در حال بارگذاری...' });
-  try { pdpStartDate = makePDP('startDatePDP', { placeholder: 'تاریخ شروع را انتخاب کنید' }); } catch (e) {}
-  var rDone = false, oDone = false, rCount = 0;
-  function checkAll() { if (rDone && oDone) { panelLoaded = true; updateLoaderCount('لیست مخاطبین: ' + rCount + ' نفر'); setTimeout(function() { setLoaderState('ready', 'فرم آماده است'); setTimeout(function() { setLoaderState('hide'); }, 2500); }, 300); } }
+  try { pdpStartDate = makePDP('startDatePDP', { placeholder: 'تاریخ شروع' }); } catch (e) {}
   api({ action: 'getRecipients' }).then(function(r) {
-    recipients = (r && r.recipients) || []; rCount = recipients.length;
+    recipients = (r && r.recipients) || [];
     if (recipients.length) {
       var opts = recipients.map(function(c) { return { value: c.systemName, label: c.displayName }; });
       ssRecipient.setOpts(opts); ssRecipient.setPh('تایپ کنید (' + recipients.length + ')');
-      if (ssCC) { ssCC.setOpts(opts); ssCC.setPh('چندگانه - ' + recipients.length + ' مخاطب'); }
-    } else { ssRecipient.setPh('هیچ مخاطبی یافت نشد'); if (ssCC) ssCC.setPh('هیچ مخاطبی یافت نشد'); }
-    rDone = true; updateLoaderCount('دریافت مخاطبین: ' + rCount + ' نفر ✓'); checkAll();
-  }).catch(function() { ssRecipient.setPh('خطا'); if (ssCC) ssCC.setPh('خطا'); rDone = true; checkAll(); });
+      if (ssCC) { ssCC.setOpts(opts); ssCC.setPh('چندگانه (' + recipients.length + ')'); }
+    }
+    panelLoaded = true;
+  }).catch(function() {});
   api({ action: 'getFormOptions' }).then(function(r) {
     r = r || {};
     var s = (r.subjects && r.subjects.options) || [];
@@ -1476,8 +1820,7 @@ function loadPanel() {
     if (ssEng) { ssEng.setOpts(g); ssEng.setPh(g.length ? 'انتخاب (' + g.length + ')' : 'تایپ'); }
     if (ssAddr) { ssAddr.setOpts(a); ssAddr.setPh(a.length ? 'چندتایی (' + a.length + ')' : 'تایپ'); }
     if (ssRelated) { ssRelated.setOpts(rr); ssRelated.setPh(rr.length ? 'جستجو (' + rr.length + ')' : 'خالی'); }
-    oDone = true; checkAll();
-  }).catch(function() { oDone = true; checkAll(); });
+  }).catch(function() {});
 }
 
 function onRecipient(val) {
@@ -1502,47 +1845,7 @@ document.getElementById('chkAll').onchange = function() { var v = this.checked; 
 document.getElementById('chkTg').onchange = updateAll;
 document.getElementById('chkBale').onchange = updateAll;
 
-function resetWorkOrderForm() {
-  try {
-    if (ssRecipient) ssRecipient.setValue('');
-    if (ssSubject) ssSubject.setValue('');
-    if (ssEpc) ssEpc.setValue('');
-    if (ssField) ssField.setValue('');
-    if (ssEng) ssEng.setValue('');
-    if (ssRelated) ssRelated.setValue('');
-    if (ssAddr) ssAddr.setValue([]);
-    if (ssCC) ssCC.setValue([]);
-    document.getElementById('woDesc').value = '';
-    document.getElementById('woDur').value = '';
-    if (pdpStartDate) pdpStartDate.setValue('');
-    document.getElementById('chkTg').checked = false;
-    document.getElementById('chkBale').checked = false;
-    document.getElementById('chkAll').checked = false;
-    var wm = document.getElementById('woMsg'); if (wm) { wm.innerText = ''; wm.className = ''; }
-    var fm = document.getElementById('finalMsg'); if (fm) { fm.innerText = ''; fm.className = ''; }
-  } catch (e) {}
-}
-
-function showSuccessModal(data) {
-  var html = '';
-  if (data.code) html += '<div class="success-row"><span class="success-lbl">کد:</span><span class="success-val code">' + escHtml(data.code) + '</span></div>';
-  if (data.recipient) html += '<div class="success-row"><span class="success-lbl">مخاطب:</span><span class="success-val">' + escHtml(data.recipient) + '</span></div>';
-  if (data.ccList && data.ccList.length > 0) html += '<div class="success-row"><span class="success-lbl">رونوشت به:</span><span class="success-val">' + escHtml(data.ccList.join('، ')) + '</span></div>';
-  if (data.epc) html += '<div class="success-row"><span class="success-lbl">EPC:</span><span class="success-val">' + escHtml(data.epc) + '</span></div>';
-  if (data.field) html += '<div class="success-row"><span class="success-lbl">رشته:</span><span class="success-val">' + escHtml(data.field) + '</span></div>';
-  if (data.engagement) html += '<div class="success-row"><span class="success-lbl">پیمانکاری:</span><span class="success-val">' + escHtml(data.engagement) + '</span></div>';
-  if (data.startShamsi) html += '<div class="success-row"><span class="success-lbl">شروع:</span><span class="success-val">' + escHtml(data.startShamsi) + (data.duration ? ' — ' + data.duration + ' روز' : '') + '</span></div>';
-  if (data.status) html += '<div class="success-row"><span class="success-lbl">وضعیت:</span><span class="success-val">' + escHtml(data.status) + '</span></div>';
-  if (data.sends) html += '<div class="success-row"><span class="success-lbl">ارسال:</span><span class="success-val">' + escHtml(data.sends) + '</span></div>';
-  document.getElementById('successContent').innerHTML = html;
-  document.getElementById('successModal').style.display = 'flex';
-}
-document.getElementById('successCloseBtn').onclick = function() {
-  document.getElementById('successModal').style.display = 'none';
-  resetWorkOrderForm();
-  navigateTo('workOrderSection');
-};
-
+/* ===== Work Order Preview + Submit ===== */
 document.getElementById('previewBtn').onclick = function() {
   var rec = ssRecipient ? ssRecipient.getStr() : '';
   var sub = (ssSubject ? ssSubject.getStr() : '').replace(/[\r\n]+/g, ' ').trim();
@@ -1579,7 +1882,7 @@ document.getElementById('previewBtn').onclick = function() {
   var endSh = ej[0] + '-' + ej[1] + '-' + ej[2]; var startSh = y + '-' + m + '-' + d;
   var now = new Date(); var tj = g2j(now.getFullYear(), now.getMonth()+1, now.getDate());
   var todaySh = tj[0] + '-' + tj[1] + '-' + tj[2]; var dn = WEEKDAYS[now.getDay()];
-  var msg = 'از: دفتر کارگاه پروژه ایگل\nبه: آقای ' + rec + '\n\n#' + epc + ' #' + fld + ' #' + eng + '\nموضوع: ' + sub + '\n\nابلاغ شده در تاریخ : #' + todaySh + '  روز ' + dn + '\nبه آدرس: ' + addrD + '\n\n # ' + desc + '\n#برنامه_زمانبندی:\nاز تاریخ:  ' + startSh + 'تا تاریخ:' + endSh + ' به مدت ' + n + 'روز\n***در صورت نیاز به هرگونه مقدمات، تدارکات و مصالح، کنترل موجودی و درخواست به موقع آنها، وظیفه پیمانکار/مسئول محترم می باشد';
+  var msg = 'از: دفتر کارگاه پروژه ایگل\nبه: آقای ' + rec + '\n\n#' + epc + ' #' + fld + ' #' + eng + '\nموضوع: ' + sub + '\n\nابلاغ شده در تاریخ : #' + todaySh + '  روز ' + dn + '\nبه آدرس: ' + addrD + '\n\n # ' + desc + '\n#برنامه_زمانبندی:\nاز تاریخ:  ' + startSh + 'تا تاریخ:' + endSh + ' به مدت ' + n + 'روز';
   document.getElementById('pvRecipient').innerText = rec;
   document.getElementById('pvCC').innerText = ccNames.length > 0 ? ccNames.join('، ') : '—';
   var pl = []; if (sTg) pl.push('📱 Telegram'); if (sBale) pl.push('📨 Bale');
@@ -1596,7 +1899,6 @@ document.getElementById('previewBtn').onclick = function() {
   document.getElementById('pvEnd').innerText = endSh;
   document.getElementById('pvMsg').innerText = msg;
   var ci = ssRecipient.getChatIds();
-  submitToken = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   var ccList = ccNames.map(function(name) {
     var found = null;
     for (var i = 0; i < recipients.length; i++) if (recipients[i].systemName === name) { found = recipients[i]; break; }
@@ -1609,16 +1911,14 @@ document.getElementById('previewBtn').onclick = function() {
     subject: sub, description: desc, epc: epc, field: fld,
     engagementType: eng, address: addr, addressDisplay: addrD,
     relatedRow: rel, startYear: y, startMonth: m, startDay: d, duration: dur,
-    reservedNumber: reservedNumbers[0], submitToken: submitToken, ccList: ccList
+    reservedNumber: reservedNumbers[0], ccList: ccList
   };
   submitting = false;
   var sb = document.getElementById('submitBtn'); sb.disabled = false; sb.innerText = '✅ ثبت و ارسال';
   document.getElementById('finalMsg').innerText = ''; document.getElementById('finalMsg').className = '';
   navigateTo('previewSection');
 };
-
 document.getElementById('editBtn').onclick = function() { navigateTo('workOrderSection'); };
-
 document.getElementById('submitBtn').onclick = function() {
   if (submitting) return;
   submitting = true;
@@ -1633,8 +1933,7 @@ document.getElementById('submitBtn').onclick = function() {
       reservedNumbers = []; panelLoaded = false; reportsLoaded = false;
       showSuccessModal(r);
     } else if (r && r.duplicate) {
-      showMsg('finalMsg', '⚠️ ' + r.message, 'err');
-      b.innerText = '⚠️ قبلاً ثبت شده';
+      showMsg('finalMsg', '⚠️ ' + r.message, 'err'); b.innerText = '⚠️ قبلاً ثبت شده';
       submitting = false; b.disabled = false; b.style.pointerEvents = 'auto';
     } else {
       submitting = false; b.disabled = false; b.style.pointerEvents = 'auto';
@@ -1648,6 +1947,21 @@ document.getElementById('submitBtn').onclick = function() {
     document.getElementById('editBtn').disabled = false;
     showMsg('finalMsg', '❌ ' + (err.message || 'خطا'), 'err');
   });
+};
+
+function showSuccessModal(data) {
+  var html = '';
+  if (data.code) html += '<div class="success-row"><span class="success-lbl">کد:</span><span class="success-val code">' + escHtml(data.code) + '</span></div>';
+  if (data.recipient) html += '<div class="success-row"><span class="success-lbl">مخاطب:</span><span class="success-val">' + escHtml(data.recipient) + '</span></div>';
+  if (data.ccList && data.ccList.length > 0) html += '<div class="success-row"><span class="success-lbl">رونوشت:</span><span class="success-val">' + escHtml(data.ccList.join('، ')) + '</span></div>';
+  if (data.startShamsi) html += '<div class="success-row"><span class="success-lbl">شروع:</span><span class="success-val">' + escHtml(data.startShamsi) + (data.duration ? ' — ' + data.duration + ' روز' : '') + '</span></div>';
+  if (data.status) html += '<div class="success-row"><span class="success-lbl">وضعیت:</span><span class="success-val">' + escHtml(data.status) + '</span></div>';
+  document.getElementById('successContent').innerHTML = html;
+  document.getElementById('successModal').classList.add('open');
+}
+document.getElementById('successCloseBtn').onclick = function() {
+  document.getElementById('successModal').classList.remove('open');
+  navigateTo('workOrderSection');
 };
 
 function showMsg(id, text, type) { var el = document.getElementById(id); if (!el) return; el.className = 'msg msg-' + (type || 'info'); el.innerText = text; }
